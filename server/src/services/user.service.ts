@@ -16,6 +16,11 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     username: record.username,
     display: record.display,
     createdAt: new Date(record.createdAt),
+    // TODO: wire up to real match history data in Sprint 2
+    onlineStatus: "online",
+    totalGamesPlayed: record.totalGamesPlayed ?? 0,
+    winRate: record.winRate ?? 0,
+    favoriteGame: record.favoriteGame ?? null,
   });
 }
 
@@ -40,12 +45,19 @@ export async function createUser(
     username,
     createdAt: createdAt.toISOString(),
     display: username,
+    totalGamesPlayed: 0,
+    winRate: 0,
+    favoriteGame: null,
   });
   await updateAuth(username, password, id);
   return Promise.resolve({
     username,
     createdAt,
     display: username,
+    onlineStatus: "online",
+    totalGamesPlayed: 0,
+    winRate: 0,
+    favoriteGame: null,
   });
 }
 

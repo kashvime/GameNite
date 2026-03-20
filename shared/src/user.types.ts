@@ -11,6 +11,10 @@ export interface SafeUserInfo {
   username: string;
   display: string;
   createdAt: Date;
+  onlineStatus: "online" | "offline" | "in_match";
+  totalGamesPlayed: number;
+  winRate: number;
+  favoriteGame: string | null;
 }
 
 /*** TYPES USED IN THE USER API ***/
