@@ -5,6 +5,10 @@ import { randomUUID } from "crypto";
 
 let response: Response;
 
+const auth1 = { username: "user1", password: "pwd1111" };
+const user1 = { username: "user1", display: "Yāo", onlineStatus: "online", totalGamesPlayed: 0, winRate: 0, favoriteGame: null };
+const auth2 = { username: "user2", password: "pwd2222" };
+const user2 = { username: "user2", display: "Sénior Dos", onlineStatus: "online", totalGamesPlayed: 0, winRate: 0, favoriteGame: null };
 const auth3 = { username: "user3", password: "pwd3333" };
 const authBad = { username: "user3", password: "user3" };
 
@@ -44,6 +48,10 @@ describe("POST /api/game/create", () => {
         username: "user3",
         display: "Frau Drei",
         createdAt: expect.anything(),
+        onlineStatus: expect.any(String),
+        totalGamesPlayed: expect.any(Number),
+        winRate: expect.any(Number),
+        favoriteGame: expect.anything(),
       },
       createdAt: expect.anything(),
       minPlayers: 2,
@@ -52,6 +60,10 @@ describe("POST /api/game/create", () => {
           username: "user3",
           display: "Frau Drei",
           createdAt: expect.anything(),
+          onlineStatus: expect.any(String),
+          totalGamesPlayed: expect.any(Number),
+          winRate: expect.any(Number),
+          favoriteGame: expect.anything(),
         },
       ],
     });
