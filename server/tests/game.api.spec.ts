@@ -5,8 +5,8 @@ import { randomUUID } from "crypto";
 
 let response: Response;
 
-const auth1 = { username: "user1", password: "pwd1111" };
-const user1 = {
+const _auth1 = { username: "user1", password: "pwd1111" };
+const _user1 = {
   username: "user1",
   display: "Yāo",
   onlineStatus: "online",
@@ -14,8 +14,8 @@ const user1 = {
   winRate: 0,
   favoriteGame: null,
 };
-const auth2 = { username: "user2", password: "pwd2222" };
-const user2 = {
+const _auth2 = { username: "user2", password: "pwd2222" };
+const _user2 = {
   username: "user2",
   display: "Sénior Dos",
   onlineStatus: "online",

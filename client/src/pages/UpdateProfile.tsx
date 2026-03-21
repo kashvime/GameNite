@@ -1,11 +1,9 @@
 import { useState } from "react";
 import useLoginContext from "../hooks/useLoginContext";
-import useTimeSince from "../hooks/useTimeSince";
 import useEditProfileForm from "../hooks/useEditProfileForm";
 
 export default function UpdateProfile() {
   const { user } = useLoginContext();
-  const timeSince = useTimeSince();
   const [showPass, setShowPass] = useState(false);
   const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
     useEditProfileForm();

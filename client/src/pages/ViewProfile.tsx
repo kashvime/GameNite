@@ -1,6 +1,5 @@
 import type { SafeUserInfo } from "@gamenite/shared";
 import { useEffect, useState } from "react";
-import useTimeSince from "../hooks/useTimeSince";
 import { getUserById } from "../services/userService";
 
 interface ViewProfileProps {
@@ -10,7 +9,6 @@ export default function ViewProfile({ username }: ViewProfileProps) {
   const [componentState, setComponentState] = useState<
     { type: "waiting" } | { type: "error"; msg: string } | { type: "profile"; user: SafeUserInfo }
   >({ type: "waiting" });
-  const timeSince = useTimeSince();
 
   useEffect(() => {
     let cancel = false;
