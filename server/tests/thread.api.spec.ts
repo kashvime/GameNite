@@ -27,6 +27,10 @@ describe("GET /api/thread/list", () => {
         createdAt: expect.anything(),
         display: "Yāo",
         username: "user1",
+        onlineStatus: expect.any(String),
+        totalGamesPlayed: expect.any(Number),
+        winRate: expect.any(Number),
+        favoriteGame: null,
       },
     });
   });
@@ -53,7 +57,7 @@ describe("GET /api/thread/:id", () => {
         onlineStatus: expect.any(String),
         totalGamesPlayed: expect.any(Number),
         winRate: expect.any(Number),
-        favoriteGame: expect.anything(),
+        favoriteGame: null,
       },
       createdAt: new Date("2025-04-02").toISOString(),
     });
@@ -90,6 +94,10 @@ describe("POST /api/thread/create", () => {
         username: "user2",
         display: expect.any(String),
         createdAt: expect.anything(),
+        onlineStatus: expect.any(String),
+        totalGamesPlayed: expect.any(Number),
+        winRate: expect.any(Number),
+        favoriteGame: null,
       },
       comments: [],
     });
@@ -137,7 +145,7 @@ describe("POST /api/thread/:id/comment", () => {
           onlineStatus: expect.any(String),
           totalGamesPlayed: expect.any(Number),
           winRate: expect.any(Number),
-          favoriteGame: expect.anything(),
+          favoriteGame: null,
         },
       },
     ]);

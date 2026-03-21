@@ -5,9 +5,23 @@ import { app } from "../src/app.ts";
 
 let response: Response;
 const auth1 = { username: "user1", password: "pwd1111" };
-const user1 = { username: "user1", display: "Yāo" };
+const user1 = {
+  username: "user1",
+  display: "Yāo",
+  onlineStatus: "online",
+  totalGamesPlayed: 0,
+  winRate: 0,
+  favoriteGame: null,
+};
 const auth2 = { username: "user2", password: "pwd2222" };
-const user2 = { username: "user2", display: "Sénior Dos" };
+const user2 = {
+  username: "user2",
+  display: "Sénior Dos",
+  onlineStatus: "online",
+  totalGamesPlayed: 0,
+  winRate: 0,
+  favoriteGame: null,
+};
 
 describe("GET /api/user/:id", () => {
   it("should 404 for nonexistent users", async () => {
@@ -81,7 +95,6 @@ describe("POST/api/user/:username", () => {
   });
 
   it("should update individual parts of a user correctly", async () => {
-    // Change the username
     response = await supertest(app)
       .post("/api/user/user1")
       .send({ auth: auth1, payload: { display: "New User 1 Display" } });
@@ -92,7 +105,6 @@ describe("POST/api/user/:username", () => {
       createdAt: expect.anything(),
     });
 
-    // We have changed the username, which should be reflected
     response = await supertest(app)
       .post("/api/user/user1")
       .send({ auth: auth1, payload: { display: "New User 1 Display" } });
@@ -103,7 +115,6 @@ describe("POST/api/user/:username", () => {
       createdAt: expect.anything(),
     });
 
-    // Change the password
     response = await supertest(app)
       .post("/api/user/user1")
       .send({ auth: auth1, payload: { password: "new_password_1" } });
@@ -114,13 +125,11 @@ describe("POST/api/user/:username", () => {
       createdAt: expect.anything(),
     });
 
-    // We have changed the password, so auth shouldn't work
     response = await supertest(app)
       .post("/api/user/user1")
       .send({ auth: auth1, payload: { password: "new_password_1" } });
     expect(response.status).toBe(403);
 
-    // But the new password should allow changes
     response = await supertest(app)
       .post("/api/user/user1")
       .send({
@@ -148,6 +157,10 @@ describe("POST /api/user/signup", () => {
       username,
       display: username,
       createdAt: expect.anything(),
+      onlineStatus: "online",
+      totalGamesPlayed: 0,
+      winRate: 0,
+      favoriteGame: null,
     });
   });
 
