@@ -6,6 +6,7 @@ import {
   CommentRepo,
   GameRepo,
   MessageRepo,
+  ScoreRepo,
   ThreadRepo,
   UserRepo,
 } from "./repository.ts";
@@ -123,6 +124,7 @@ export async function resetEverythingToDefaults() {
   await CommentRepo.clear();
   await GameRepo.clear();
   await MessageRepo.clear();
+  await ScoreRepo.clear();
   await ThreadRepo.clear();
   await UserRepo.clear();
 

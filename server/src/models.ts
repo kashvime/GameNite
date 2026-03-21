@@ -123,3 +123,24 @@ export interface UserRecord {
   winRate?: number;
   favoriteGame?: string | null;
 }
+
+
+/**
+ * Represents a completed game result in the database.
+ * - `userId`: the user who played
+ * - `opponentId`: the opponent (null for single-player)
+ * - `gameType`: which game was played
+ * - `score`: final score for the match
+ * - `result`: outcome of the match
+ * - `durationSeconds`: how long the match lasted
+ * - `createdAt`: when the match completed
+ */
+export interface ScoreRecord {
+  userId: RecordId; // References User records
+  opponentId?: RecordId; // References User records (null for single-player)
+  gameType: string; // e.g. 'chess', 'nim'
+  score: number;
+  result: "win" | "loss" | "draw";
+  durationSeconds?: number;
+  createdAt: DateISO;
+}
