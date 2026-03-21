@@ -7,6 +7,7 @@ export default function UpdateProfile() {
   const [showPass, setShowPass] = useState(false);
   const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
     useEditProfileForm();
+  const [bio, setBio] = useState(user.bio ?? "");
 
   return (
     <form className="content spacedSection" onSubmit={handleSubmit}>
@@ -16,20 +17,28 @@ export default function UpdateProfile() {
       <div
         style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "fit-content" }}
       >
-        <div
-          style={{
-            width: "120px",
-            height: "120px",
-            background: "#d1d5db",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "0.875rem",
-            color: "#6b7280",
-          }}
-        >
-          Profile Picture
-        </div>
+        {user.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt="Your avatar"
+            style={{ width: "120px", height: "120px", objectFit: "cover" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "120px",
+              height: "120px",
+              background: "#d1d5db",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.875rem",
+              color: "#6b7280",
+            }}
+          >
+            No Photo
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <span
             style={{
@@ -60,11 +69,30 @@ export default function UpdateProfile() {
       {/* Stats */}
       <div>
         <h3>Chess Statistic</h3>
-        <ul>
-          <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
-          <li>Win Rate: {user.winRate ?? 0}%</li>
-          {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
-        </ul>
+        {(user.totalGamesPlayed ?? 0) === 0 ? (
+          <p className="smallAndGray">No games played yet.</p>
+        ) : (
+          <ul>
+            <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
+            <li>Win Rate: {user.winRate ?? 0}%</li>
+            {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
+          </ul>
+        )}
+      </div>
+
+      <hr />
+
+      {/* Edit bio */}
+      <div className="spacedSection">
+        <h3>Bio</h3>
+        <textarea
+          className="widefill notTooWide"
+          placeholder="Write a short bio..."
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          rows={3}
+          style={{ resize: "vertical" }}
+        />
       </div>
 
       <hr />
