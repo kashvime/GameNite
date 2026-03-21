@@ -12,6 +12,13 @@ vi.mock("react-router-dom", async () => {
 });
 const mockedReset = vi.fn();
 
+const baseUser = {
+  onlineStatus: "online" as const,
+  totalGamesPlayed: 0,
+  winRate: 0,
+  favoriteGame: null,
+};
+
 describe("Header component", () => {
   beforeEach(() => {
     mockedUseNavigate.mockReset();
@@ -22,7 +29,7 @@ describe("Header component", () => {
     render(
       <LoginContext
         value={{
-          user: { username: "username", display: "displayname", createdAt: new Date("01-02-2025") },
+          user: { ...baseUser, username: "username", display: "displayname", createdAt: new Date("01-02-2025") },
           pass: "pwd",
           socket: {} as GameSocket,
           reset: mockedReset,
@@ -40,6 +47,7 @@ describe("Header component", () => {
       <LoginContext
         value={{
           user: {
+            ...baseUser,
             username: "username123",
             display: "displayname",
             createdAt: new Date("01-02-2025"),
@@ -63,6 +71,7 @@ describe("Header component", () => {
       <LoginContext
         value={{
           user: {
+            ...baseUser,
             username: "username123",
             display: "displayname",
             createdAt: new Date("01-02-2025"),
