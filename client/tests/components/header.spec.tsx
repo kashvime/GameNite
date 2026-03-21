@@ -17,6 +17,8 @@ const baseUser = {
   totalGamesPlayed: 0,
   winRate: 0,
   favoriteGame: null,
+  bio: null,
+  avatarUrl: null,
 };
 
 describe("Header component", () => {
