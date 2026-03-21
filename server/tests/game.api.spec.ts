@@ -48,6 +48,8 @@ describe("POST /api/game/create", () => {
         totalGamesPlayed: expect.any(Number),
         winRate: expect.any(Number),
         favoriteGame: null,
+        bio: null,
+        avatarUrl: null,
       },
       createdAt: expect.anything(),
       minPlayers: 2,
@@ -60,6 +62,8 @@ describe("POST /api/game/create", () => {
           totalGamesPlayed: expect.any(Number),
           winRate: expect.any(Number),
           favoriteGame: null,
+          bio: null,
+          avatarUrl: null,
         },
       ],
     });

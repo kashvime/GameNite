@@ -31,6 +31,8 @@ describe("GET /api/thread/list", () => {
         totalGamesPlayed: expect.any(Number),
         winRate: expect.any(Number),
         favoriteGame: null,
+        bio: null,
+        avatarUrl: null,
       },
     });
   });
@@ -58,6 +60,8 @@ describe("GET /api/thread/:id", () => {
         totalGamesPlayed: expect.any(Number),
         winRate: expect.any(Number),
         favoriteGame: null,
+        bio: null,
+        avatarUrl: null,
       },
       createdAt: new Date("2025-04-02").toISOString(),
     });
@@ -98,6 +102,8 @@ describe("POST /api/thread/create", () => {
         totalGamesPlayed: expect.any(Number),
         winRate: expect.any(Number),
         favoriteGame: null,
+        bio: null,
+        avatarUrl: null,
       },
       comments: [],
     });
@@ -146,6 +152,8 @@ describe("POST /api/thread/:id/comment", () => {
           totalGamesPlayed: expect.any(Number),
           winRate: expect.any(Number),
           favoriteGame: null,
+          bio: null,
+          avatarUrl: null,
         },
       },
     ]);
