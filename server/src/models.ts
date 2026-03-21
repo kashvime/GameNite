@@ -124,7 +124,6 @@ export interface UserRecord {
   favoriteGame?: string | null;
 }
 
-
 /**
  * Represents a completed game result in the database.
  * - `userId`: the user who played
