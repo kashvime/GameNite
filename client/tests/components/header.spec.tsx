@@ -29,7 +29,12 @@ describe("Header component", () => {
     render(
       <LoginContext
         value={{
-          user: { ...baseUser, username: "username", display: "displayname", createdAt: new Date("01-02-2025") },
+          user: {
+            ...baseUser,
+            username: "username",
+            display: "displayname",
+            createdAt: new Date("01-02-2025"),
+          },
           pass: "pwd",
           socket: {} as GameSocket,
           reset: mockedReset,

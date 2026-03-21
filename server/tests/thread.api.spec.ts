@@ -46,7 +46,16 @@ describe("GET /api/thread/:id", () => {
       title: "Hello game knights",
       text: "I'm a big Nim buff and am excited to join this community.",
       comments: [],
-      createdBy: { username: "user1", display: "Yāo", createdAt: expect.anything(), onlineStatus: expect.any(String), totalGamesPlayed: expect.any(Number), winRate: expect.any(Number), favoriteGame: expect.anything() },      createdAt: new Date("2025-04-02").toISOString(),
+      createdBy: {
+        username: "user1",
+        display: "Yāo",
+        createdAt: expect.anything(),
+        onlineStatus: expect.any(String),
+        totalGamesPlayed: expect.any(Number),
+        winRate: expect.any(Number),
+        favoriteGame: expect.anything(),
+      },
+      createdAt: new Date("2025-04-02").toISOString(),
     });
   });
 });
@@ -121,7 +130,16 @@ describe("POST /api/thread/:id/comment", () => {
         commentId: expect.anything(),
         createdAt: expect.anything(),
         text: "FIRST!",
-        createdBy: { username: "user2", display: "Sénior Dos", createdAt: expect.anything(), onlineStatus: expect.any(String), totalGamesPlayed: expect.any(Number), winRate: expect.any(Number), favoriteGame: expect.anything() },      },
+        createdBy: {
+          username: "user2",
+          display: "Sénior Dos",
+          createdAt: expect.anything(),
+          onlineStatus: expect.any(String),
+          totalGamesPlayed: expect.any(Number),
+          winRate: expect.any(Number),
+          favoriteGame: expect.anything(),
+        },
+      },
     ]);
   });
 });

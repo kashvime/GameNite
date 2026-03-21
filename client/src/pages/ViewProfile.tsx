@@ -17,7 +17,6 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
     getUserById(username)
       .then((response) => {
-  
         if (cancel) return;
         if ("error" in response) {
           setComponentState({ type: "error", msg: response.error });
@@ -60,7 +59,14 @@ export default function ViewProfile({ username }: ViewProfileProps) {
           <h2>Profile</h2>
 
           {/* Avatar + online status */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "fit-content" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              width: "fit-content",
+            }}
+          >
             <div
               style={{
                 width: "120px",
