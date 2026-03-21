@@ -122,6 +122,8 @@ export interface UserRecord {
   totalGamesPlayed?: number;
   winRate?: number;
   favoriteGame?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
 }
 
 /**

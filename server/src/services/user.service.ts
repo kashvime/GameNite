@@ -21,6 +21,8 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     totalGamesPlayed: record.totalGamesPlayed ?? 0,
     winRate: record.winRate ?? 0,
     favoriteGame: record.favoriteGame ?? null,
+    bio: record.bio ?? null,
+    avatarUrl: record.avatarUrl ?? null,
   });
 }
 
@@ -48,6 +50,8 @@ export async function createUser(
     totalGamesPlayed: 0,
     winRate: 0,
     favoriteGame: null,
+    bio: null,
+    avatarUrl: null,
   });
   await updateAuth(username, password, id);
   return Promise.resolve({
@@ -58,6 +62,8 @@ export async function createUser(
     totalGamesPlayed: 0,
     winRate: 0,
     favoriteGame: null,
+    bio: null,
+    avatarUrl: null,
   });
 }
 
@@ -90,13 +96,15 @@ export async function getUsersByUsername(usernames: string[]): Promise<SafeUserI
  */
 export async function updateUser(
   username: string,
-  { display, password }: UserUpdateRequest,
+  { display, password, bio, avatarUrl }: UserUpdateRequest,
 ): Promise<SafeUserInfo> {
   const user = await getUserByUsername(username);
   if (!user) throw new Error(`No user ${username}`);
   if (password !== undefined) await updateAuth(username, password, user.userId);
   const newUser = await UserRepo.get(user.userId);
   if (display !== undefined) newUser.display = display;
+  if (bio !== undefined) newUser.bio = bio;
+  if (avatarUrl !== undefined) newUser.avatarUrl = avatarUrl;
   await UserRepo.set(user.userId, newUser);
   return populateSafeUserInfo(user.userId);
 }
