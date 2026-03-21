@@ -5,6 +5,7 @@ import type {
   CommentRecord,
   GameRecord,
   MessageRecord,
+  ScoreRecord,
   ThreadRecord,
   UserRecord,
 } from "./models.ts";
