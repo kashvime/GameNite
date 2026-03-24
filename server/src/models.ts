@@ -120,3 +120,19 @@ export interface UserRecord {
   display: string;
   createdAt: DateISO;
 }
+
+/**
+ * Represents a friend relationship between two users.
+ * - `from`: the user who sent the friend request
+ * - `to`: the user who received the friend request
+ * - `status`: whether the request is pending or accepted
+ * - `createdAt`: when the request was sent
+ * - `acceptedAt`: when the request was accepted (if applicable)
+ */
+export interface FriendRecord {
+  from: RecordId; // References User records
+  to: RecordId; // References User records
+  status: "pending" | "accepted" | "rejected";
+  createdAt: DateISO;
+  acceptedAt?: DateISO;
+}

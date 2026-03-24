@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { z } from "zod";
 import * as http from "node:http";
 import * as chat from "./controllers/chat.controller.ts";
+import * as friend from "./controllers/friend.controller.ts";
 import * as game from "./controllers/game.controller.ts";
 import * as user from "./controllers/user.controller.ts";
 import * as thread from "./controllers/thread.controller.ts";
@@ -19,6 +20,14 @@ app.use(express.json());
 app.use(
   "/api",
   Router()
+    .use(
+      "/friend",
+      Router()
+        .post("/request", friend.postSendRequest)
+        .post("/respond", friend.postRespondToRequest)
+        .post("/pending", friend.postPendingRequests)
+        .post("/list", friend.postFriends),
+    )
     .use(
       "/game",
       express
