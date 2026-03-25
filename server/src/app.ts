@@ -9,6 +9,8 @@ import * as friend from "./controllers/friend.controller.ts";
 import * as game from "./controllers/game.controller.ts";
 import * as user from "./controllers/user.controller.ts";
 import * as thread from "./controllers/thread.controller.ts";
+import * as authController from "./controllers/auth.controller.ts";
+
 import { type GameServer } from "./types.ts";
 
 export const app = express();
@@ -47,7 +49,7 @@ app.use(
     )
     .use(
       "/user",
-      Router() // Any concrete routes here should be disallowed as usernames
+      Router() //
         .post("/list", user.postList)
         .post("/login", user.postLogin)
         .post("/signup", user.postSignup)
@@ -55,6 +57,8 @@ app.use(
         .get("/:username", user.getByUsername),
     ),
 );
+
+app.post("/api/auth/sso-login", authController.ssoLogin);
 
 io.on("connection", (socket) => {
   const socketId = socket.id;
