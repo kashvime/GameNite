@@ -65,6 +65,7 @@ export default function Login({ setAuth }: LoginProps) {
           value={username}
           onChange={(event) => handleInputChange(event, "username")}
           placeholder="Username"
+          aria-label="Username"
           className="widefill"
         />
 
@@ -73,6 +74,7 @@ export default function Login({ setAuth }: LoginProps) {
           value={password}
           onChange={(event) => handleInputChange(event, "password")}
           placeholder="Password"
+          aria-label="Password"
           className="widefill"
         />
 
@@ -82,6 +84,7 @@ export default function Login({ setAuth }: LoginProps) {
             value={confirm}
             onChange={(event) => handleInputChange(event, "confirm")}
             placeholder="Confirm Password"
+            aria-label="Confirm Password"
             className="widefill"
           />
         )}
@@ -89,10 +92,11 @@ export default function Login({ setAuth }: LoginProps) {
         <div className="labeled-section">
           <input
             type="checkbox"
+            id="showPasswordToggle"
             checked={showPassword}
             onChange={() => setShowPassword((prev) => !prev)}
           />
-          <label>Show Password</label>
+          <label htmlFor="showPasswordToggle">Show Password</label>
         </div>
 
         {err && <p className="error-message centered">{err}</p>}
