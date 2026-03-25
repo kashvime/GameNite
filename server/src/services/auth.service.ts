@@ -1,6 +1,8 @@
-import { AuthRepo } from "../repository.ts";
+import { AuthRepo, UserRepo } from "../repository.ts";
 import type { UserWithId } from "../types.ts";
 import type { UserAuth } from "@gamenite/shared";
+import { randomUUID } from "crypto";
+import type { UserRecord } from "../models.ts";
 
 /**
  * Retrieves a single user from the database.
@@ -53,5 +55,44 @@ export async function checkAuth({ username, password }: UserAuth): Promise<UserW
 export async function enforceAuth(auth: UserAuth): Promise<UserWithId> {
   const user = await checkAuth(auth);
   if (!user) throw new Error("Invalid auth");
+  return user;
+}
+
+/**
+ * Handles SSO login by using email as username.
+ * Creates a new user if one does not exist.
+ */
+export async function ssoLogin(email: string, name: string): Promise<UserRecord> {
+  const auth = await AuthRepo.find(email);
+
+  let user: UserRecord;
+
+  if (!auth) {
+    const userId = randomUUID();
+
+    await updateAuth(email, "SSO_LOGIN", userId);
+
+    user = {
+      username: email,
+      display: name,
+      createdAt: new Date().toISOString(),
+      totalGamesPlayed: 0,
+      winRate: 0,
+      favoriteGame: null,
+      bio: null,
+      avatarUrl: null,
+    };
+
+    await UserRepo.set(userId, user);
+  } else {
+    const existingUser = await UserRepo.get(auth.userId);
+
+    if (!existingUser) {
+      throw new Error("User profile not found for existing auth");
+    }
+
+    user = existingUser;
+  }
+
   return user;
 }
