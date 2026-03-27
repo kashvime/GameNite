@@ -1,11 +1,12 @@
 import { ScoreRepo } from "../repository.ts";
 import type { ScoreRecord, RecordId } from "../models.ts";
-import type { GameKey } from "@gamenite/shared";
+import type { GameKey, MatchInfo } from "@gamenite/shared";
+import { populateSafeUserInfo } from "./user.service.ts";
 
 /**
  * Saves a completed match record for every player in the game.
  * One ScoreRecord is written per player so each user's match history
- * is queryable by their own userId or opponents userID.
+ * is queryable by their own userId.
  *
  * @param players - All game players' user IDs
  * @param gameType - The game that was played
@@ -40,20 +41,26 @@ export async function saveMatchRecords(
 }
 
 /**
- * Retrieves all match records for a given user.
+ * Retrieves all match records for a given user, with opponent info populated.
  *
  * @param userId - Valid user id
- * @returns all ScoreRecords where the user was the primary player
+ * @returns all MatchInfo records where the user was the primary player
  */
-export async function getMatchesByUserId(userId: RecordId): Promise<ScoreRecord[]> {
+export async function getMatchesByUserId(userId: RecordId): Promise<MatchInfo[]> {
   const keys = await ScoreRepo.getAllKeys();
   const records = await ScoreRepo.getMany(keys);
 
-  const matches: ScoreRecord[] = [];
+  const matches: MatchInfo[] = [];
   for (const record of records) {
-    if (record.userId === userId) {
-      matches.push(record);
-    }
+    if (record.userId !== userId) continue;
+    const opponent = record.opponentId ? await populateSafeUserInfo(record.opponentId) : undefined;
+    matches.push({
+      gameType: record.gameType,
+      result: record.result,
+      opponent,
+      score: record.score,
+      createdAt: new Date(record.createdAt),
+    });
   }
   return matches;
 }
