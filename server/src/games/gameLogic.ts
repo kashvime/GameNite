@@ -23,6 +23,7 @@ export interface GameLogic<GameState, GameView> {
   start: (numPlayers: number) => GameState;
   update: (state: GameState, movePayload: unknown, playerIndex: number) => GameState | null;
   isDone: (state: GameState) => boolean;
+  winner: (state: GameState) => number | null;
   viewAs: (state: GameState, playerIndex: number) => GameView;
   tagView: (view: GameView) => TaggedGameView;
   describeMove: (
