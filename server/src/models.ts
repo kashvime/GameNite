@@ -131,7 +131,7 @@ export interface UserRecord {
  * - `userId`: the user who played
  * - `opponentId`: the opponent (null for single-player)
  * - `gameType`: which game was played
- * - `gameId`: the specific game record 
+ * - `gameId`: the specific game record
  * - `score`: final score for the match
  * - `result`: outcome of the match
  * - `durationSeconds`: how long the match lasted
