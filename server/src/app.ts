@@ -10,6 +10,7 @@ import * as game from "./controllers/game.controller.ts";
 import * as user from "./controllers/user.controller.ts";
 import * as thread from "./controllers/thread.controller.ts";
 import * as authController from "./controllers/auth.controller.ts";
+import * as score from "./controllers/score.controller.ts";
 
 import { type GameServer } from "./types.ts";
 
@@ -55,7 +56,8 @@ app.use(
         .post("/signup", user.postSignup)
         .post("/:username", user.postByUsername)
         .get("/:username", user.getByUsername),
-    ),
+    )
+    .use("/matches", Router().post("/", score.postMatches)),
 );
 
 app.post("/api/auth/sso-login", authController.ssoLogin);
