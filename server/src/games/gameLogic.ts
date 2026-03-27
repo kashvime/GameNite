@@ -11,6 +11,8 @@ import { type TaggedGameView } from "@gamenite/shared";
  *  - `update`: updates the game state given a move by a player, or returns
  *    null if the move was not valid
  *  - `isDone`: checks if a state represents a completed game
+ *  - `winner`: returns the index of the winning player, or null if the game
+ *    ended in a draw.
  *  - `viewAs`: creates the view of a game's state for a given player (-1 for
  *    watchers)
  *  - `tagView`: adds the correct game key to the game view
