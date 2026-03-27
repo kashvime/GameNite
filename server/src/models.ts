@@ -131,6 +131,7 @@ export interface UserRecord {
  * - `userId`: the user who played
  * - `opponentId`: the opponent (null for single-player)
  * - `gameType`: which game was played
+ * - `gameId`: the specific game record 
  * - `score`: final score for the match
  * - `result`: outcome of the match
  * - `durationSeconds`: how long the match lasted
@@ -140,7 +141,8 @@ export interface ScoreRecord {
   userId: RecordId; // References User records
   opponentId?: RecordId; // References User records (null for single-player)
   gameType: string; // e.g. 'chess', 'nim'
-  score: number;
+  gameId: RecordId;
+  score?: number;
   result: "win" | "loss" | "draw";
   durationSeconds?: number;
   createdAt: DateISO;
