@@ -30,6 +30,15 @@ export const guessLogic: GameLogic<GuessState, GuessView> = {
     };
   },
   isDone: ({ guesses }) => guesses.every((guess) => guess !== null),
+
+  winner: ({ secret, guesses }) => {
+    if (!allGuessed(guesses)) return null;
+    const firstPlayerDistance = Math.abs(guesses[0] - secret);
+    const secondPlayerDistance = Math.abs(guesses[1] - secret);
+    if (firstPlayerDistance === secondPlayerDistance) return null;
+    return firstPlayerDistance < secondPlayerDistance ? 0 : 1;
+  },
+
   viewAs: ({ secret, guesses }, playerIndex) => {
     if (allGuessed(guesses)) {
       return { finished: true, secret, guesses };
