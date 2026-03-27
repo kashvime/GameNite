@@ -33,6 +33,9 @@ export default function SideBarNav() {
       <NavLink to="/friends" className={navClass}>
         Friends
       </NavLink>
+      <NavLink to="/matches" className={navClass}>
+        Match History
+      </NavLink>
       <NavLink
         to={`/profile/${username}`}
         id="menu_user"
