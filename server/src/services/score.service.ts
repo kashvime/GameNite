@@ -57,7 +57,7 @@ export async function getMatchesByUserId(userId: RecordId): Promise<MatchInfo[]>
     matches.push({
       gameType: record.gameType,
       result: record.result,
-      opponent,
+      opponent: opponent,
       score: record.score,
       createdAt: new Date(record.createdAt),
     });
