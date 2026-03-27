@@ -38,3 +38,22 @@ export async function saveMatchRecords(
     }),
   );
 }
+
+/**
+ * Retrieves all match records for a given user.
+ *
+ * @param userId - Valid user id
+ * @returns all ScoreRecords where the user was the primary player
+ */
+export async function getMatchesByUserId(userId: RecordId): Promise<ScoreRecord[]> {
+  const keys = await ScoreRepo.getAllKeys();
+  const records = await ScoreRepo.getMany(keys);
+
+  const matches: ScoreRecord[] = [];
+  for (const record of records) {
+    if (record.userId === userId) {
+      matches.push(record);
+    }
+  }
+  return matches;
+}
