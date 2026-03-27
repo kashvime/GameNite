@@ -1,5 +1,6 @@
 import useAuth from "../hooks/useAuth.ts";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
+import { NavLink } from "react-router-dom";
 
 export default function MatchHistory() {
   const auth = useAuth();
@@ -12,15 +13,34 @@ export default function MatchHistory() {
         {"message" in matches ? (
           matches.message
         ) : (
-          <div className="dottedList" role="list">
-            {matches.map((match, i) => (
-              <div key={i} role="listitem">
-                <span>{match.gameType}</span>
-                <span>{match.result}</span>
-                <span>{match.createdAt}</span>
-              </div>
-            ))}
-          </div>
+          <table className="matchTable">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Opponent</th>
+                <th>Result</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matches.map((match, i) => (
+                <tr key={i}>
+                  <td>{match.gameType}</td>
+                  <td>
+                    {match.opponent ? (
+                      <NavLink to={`/profile/${match.opponent.username}`}>
+                        {match.opponent.display}
+                      </NavLink>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className={`result-${match.result}`}>{match.result}</td>
+                  <td>{new Date(match.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
