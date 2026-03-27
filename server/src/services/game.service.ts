@@ -6,6 +6,7 @@ import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
 import { type GameViewUpdates, type UserWithId } from "../types.ts";
 import { GameRepo } from "../repository.ts";
+import { saveMatchRecords } from "./score.service.ts";
 
 /**
  * The service interface for individual games
@@ -184,6 +185,9 @@ export async function updateGame(
   game.state = result.state;
   game.done = game.done || result.done;
   await GameRepo.set(gameId, game);
+  if (result.done) {
+    await saveMatchRecords(game.players, game.type, gameId, result.winner, new Date());
+  }
 
   return {
     views: result.views,
