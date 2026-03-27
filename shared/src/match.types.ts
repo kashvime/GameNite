@@ -11,7 +11,7 @@ import { type SafeUserInfo } from "./user.types.ts";
 export interface MatchInfo {
   gameType: string;
   result: "win" | "loss" | "draw";
-  opponent: SafeUserInfo;
+  opponent?: SafeUserInfo;
   score?: number;
   createdAt: Date;
 }
