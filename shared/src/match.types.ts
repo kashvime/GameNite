@@ -15,3 +15,12 @@ export interface MatchInfo {
   score?: number;
   createdAt: Date;
 }
+export interface MatchFilter {
+  gameType?: string;
+  result?: "win" | "loss" | "draw";
+  opponentUsername?: string;
+  dateRange?: {
+    from: Date;
+    to: Date;
+  };
+}
