@@ -1,0 +1,50 @@
+.filterBar {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  background-color: lightblue;
+  width: fit-content;
+  margin: 20px 0;
+  border: 1px solid var(--gray-foreground);
+}
+
+.filterChips {
+  display: flex;
+  gap: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.filterChip {
+  padding: 0.2rem 0.9rem;
+  background: gray;
+  color: white;
+  border-radius: 999px;
+  font-size: 0.7rem;
+}
+
+.clearAll {
+  background: none;
+  border: none;
+  color: var(--gray-foreground);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+.filterChip button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.65rem;
+}
+
+.dateError {
+  font-size: 0.8rem;
+  color: red;
+}
+
+.dateInputs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
