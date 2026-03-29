@@ -1,4 +1,5 @@
 import { type SafeUserInfo } from "./user.types.ts";
+import { z } from "zod";
 
 /**
  * Represents a completed match in a user's match history.
@@ -15,12 +16,19 @@ export interface MatchInfo {
   score?: number;
   createdAt: Date;
 }
-export interface MatchFilter {
-  gameType?: string;
-  result?: "win" | "loss" | "draw";
-  opponentUsername?: string;
-  dateRange?: {
-    from: Date;
-    to: Date;
-  };
-}
+
+/*** TYPES USED IN THE MATCH API ***/
+
+export const zMatchFilter = z.object({
+  gameType: z.string().optional(),
+  result: z.enum(["win", "loss", "draw"]).optional(),
+  opponentUsername: z.string().optional(),
+  dateRange: z
+    .object({
+      from: z.coerce.date(),
+      to: z.coerce.date(),
+    })
+    .optional(),
+});
+
+export type MatchFilter = z.infer<typeof zMatchFilter>;

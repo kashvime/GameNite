@@ -1,15 +1,23 @@
 import useAuth from "../hooks/useAuth.ts";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
+import useFriends from "../hooks/useFriends.ts";
+import { useState } from "react";
+import type { MatchFilter } from "@gamenite/shared";
 import { NavLink } from "react-router-dom";
+import MatchFilterBar from "../components/MatchFilterBar.tsx";
 
 export default function MatchHistory() {
   const auth = useAuth();
-  const matches = useMatchHistory(auth);
+  const [filter, setFilter] = useState<MatchFilter>({});
+  const matches = useMatchHistory(auth, filter);
+  const { state: friendsState } = useFriends(auth);
+  const friends = friendsState.type === "loaded" ? friendsState.friends : [];
 
   return (
     <div className="content">
       <div className="spacedSection">
         <h2>Match History</h2>
+        <MatchFilterBar filter={filter} setFilter={setFilter} friends={friends} />
         {"message" in matches ? (
           matches.message
         ) : (

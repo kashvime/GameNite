@@ -1,4 +1,4 @@
-import type { ErrorMsg, MatchInfo, UserAuth } from "@gamenite/shared";
+import type { ErrorMsg, MatchFilter, MatchInfo, UserAuth } from "@gamenite/shared";
 import { useEffect, useState } from "react";
 import { getMatchHistory } from "../services/matchService.ts";
 
@@ -7,12 +7,14 @@ import { getMatchHistory } from "../services/matchService.ts";
  * @param auth - The authenticated user's credentials
  * @returns A message to display to the user (Loading... or an error message), or a list of match records
  */
-export default function useMatchHistory(auth: UserAuth): { message: string } | MatchInfo[] {
+export default function useMatchHistory(
+  auth: UserAuth,
+  filter?: MatchFilter,
+): { message: string } | MatchInfo[] {
   const [matches, setMatches] = useState<MatchInfo[] | ErrorMsg | null>(null);
-
   useEffect(() => {
-    getMatchHistory(auth).then(setMatches);
-  }, [auth]);
+    getMatchHistory(auth, filter).then(setMatches);
+  }, [auth, filter]);
 
   if (!matches) return { message: "Loading..." };
   if ("error" in matches) return { message: `Error: ${matches.error}` };
