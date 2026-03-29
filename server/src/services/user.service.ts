@@ -28,9 +28,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     gameCounts[r.gameType] = (gameCounts[r.gameType] ?? 0) + 1;
   }
   const favoriteGame =
-    totalGamesPlayed > 0
-      ? Object.entries(gameCounts).sort((a, b) => b[1] - a[1])[0][0]
-      : null;
+    totalGamesPlayed > 0 ? Object.entries(gameCounts).sort((a, b) => b[1] - a[1])[0][0] : null;
 
   return {
     username: record.username,
