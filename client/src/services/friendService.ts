@@ -54,3 +54,24 @@ export const getFriends = async (auth: UserAuth): APIResponse<SafeUserInfo[]> =>
     return exceptionToErrorMsg(error);
   }
 };
+
+export type FriendshipStatus =
+  | { status: "friends" }
+  | { status: "pending_sent" }
+  | { status: "pending_received"; requestId: string }
+  | { status: "not_connected" };
+
+export const getFriendshipStatus = async (
+  auth: UserAuth,
+  toUsername: string,
+): APIResponse<FriendshipStatus> => {
+  try {
+    const res = await api.post<FriendshipStatus | ErrorMsg>(`${FRIEND_API_URL}/status`, {
+      auth,
+      payload: { toUsername },
+    });
+    return res.data;
+  } catch (error) {
+    return exceptionToErrorMsg(error);
+  }
+};

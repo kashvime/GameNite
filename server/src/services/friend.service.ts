@@ -107,3 +107,43 @@ export async function getFriends(userId: RecordId): Promise<SafeUserInfo[]> {
   }
   return friends;
 }
+
+/**
+ * Returns the friendship status between two users.
+ *
+ * @param fromUserId - The user checking the status (the logged-in user).
+ * @param toUsername - The username of the profile being viewed.
+ * @returns "friends", "pending_sent", "pending_received", or "not_connected"
+ */
+export async function getFriendshipStatus(
+  fromUserId: RecordId,
+  toUsername: string,
+): Promise<
+  | { status: "friends" }
+  | { status: "pending_sent" }
+  | { status: "pending_received"; requestId: RecordId }
+  | { status: "not_connected" }
+  | { error: string }
+> {
+  const toAuth = await getUserByUsername(toUsername);
+  if (!toAuth) return { error: `No user ${toUsername}` };
+  const toUserId = toAuth.userId;
+
+  const keys = await FriendRepo.getAllKeys();
+  const records = await FriendRepo.getMany(keys);
+
+  for (let i = 0; i < records.length; i++) {
+    const record = records[i];
+    const isMatch =
+      (record.from === fromUserId && record.to === toUserId) ||
+      (record.from === toUserId && record.to === fromUserId);
+    if (!isMatch) continue;
+
+    if (record.status === "accepted") return { status: "friends" };
+    if (record.status === "pending") {
+      if (record.from === fromUserId) return { status: "pending_sent" };
+      return { status: "pending_received", requestId: keys[i] };
+    }
+  }
+  return { status: "not_connected" };
+}
