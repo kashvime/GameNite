@@ -18,12 +18,12 @@ export default function UpdateProfile() {
     getMatchHistory(auth).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
-      setMatches(res as MatchInfo[]);
+      setMatches(res);
     });
     return () => {
       cancel = true;
     };
-  }, []);
+  }, [auth.username]);
 
   return (
     <form className="content spacedSection" onSubmit={handleSubmit}>
