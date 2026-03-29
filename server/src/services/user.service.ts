@@ -1,6 +1,6 @@
 import { type SafeUserInfo, type UserUpdateRequest } from "@gamenite/shared";
 import { getUserByUsername, updateAuth } from "./auth.service.ts";
-import { UserRepo } from "../repository.ts";
+import { UserRepo, ScoreRepo } from "../repository.ts";
 
 const disallowedUsernames = new Set(["login", "signup", "list"]);
 
@@ -12,18 +12,35 @@ const disallowedUsernames = new Set(["login", "signup", "list"]);
  */
 export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo> {
   const record = await UserRepo.get(userId);
-  return Promise.resolve({
+
+  // Calculate real stats from match history
+  const keys = await ScoreRepo.getAllKeys();
+  const allRecords = await ScoreRepo.getMany(keys);
+  const userRecords = allRecords.filter((r) => r.userId === userId);
+
+  const totalGamesPlayed = userRecords.length;
+  const wins = userRecords.filter((r) => r.result === "win").length;
+  const winRate = totalGamesPlayed > 0 ? Math.round((wins / totalGamesPlayed) * 100) : 0;
+
+  // Favorite game = most played game type
+  const gameCounts: Record<string, number> = {};
+  for (const r of userRecords) {
+    gameCounts[r.gameType] = (gameCounts[r.gameType] ?? 0) + 1;
+  }
+  const favoriteGame =
+    totalGamesPlayed > 0 ? Object.entries(gameCounts).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+  return {
     username: record.username,
     display: record.display,
     createdAt: new Date(record.createdAt),
-    // TODO: wire up to real match history data in Sprint 2
     onlineStatus: "online",
-    totalGamesPlayed: record.totalGamesPlayed ?? 0,
-    winRate: record.winRate ?? 0,
-    favoriteGame: record.favoriteGame ?? null,
+    totalGamesPlayed,
+    winRate,
+    favoriteGame,
     bio: record.bio ?? null,
     avatarUrl: record.avatarUrl ?? null,
-  });
+  };
 }
 
 /**
