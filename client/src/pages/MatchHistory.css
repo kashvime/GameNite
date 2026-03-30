@@ -11,5 +11,9 @@
   color: var(--gray-foreground);
 }
 
-.result-win { color: green; }
-.result-loss { color: red; }
+.result-win {
+  color: green;
+}
+.result-loss {
+  color: red;
+}
