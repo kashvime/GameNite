@@ -1,0 +1,15 @@
+.matchTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.matchTable th,
+.matchTable td {
+  text-align: left;
+  padding: 0.5rem 1rem;
+  border-top: 1px dashed black;
+  color: var(--gray-foreground);
+}
+
+.result-win { color: green; }
+.result-loss { color: red; }

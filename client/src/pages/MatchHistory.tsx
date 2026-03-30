@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { MatchFilter } from "@gamenite/shared";
 import { NavLink } from "react-router-dom";
 import MatchFilterBar from "../components/MatchFilterBar.tsx";
-
+import "./MatchHistory.css";
 /**
  * Displays the authenticated user's match history in a table, with
  * filtering by game type, result, opponent, and date range.
