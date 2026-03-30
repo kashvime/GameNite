@@ -77,7 +77,6 @@ export default function UpdateProfile() {
         <ul>
           <li>Name: {user.display}</li>
           <li>Join Date: {new Date(user.createdAt).toLocaleDateString()}</li>
-          {user.bio ? <li>Bio: {user.bio}</li> : <li className="smallAndGray">No bio yet.</li>}
         </ul>
       </div>
 
