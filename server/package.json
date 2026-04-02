@@ -9,7 +9,7 @@
     "prettier:fix": "prettier --ignore-path ../.gitignore --write .",
     "test": "vitest run --coverage",
     "dev": "nodemon --watch src --exec tsx ./src/server.ts",
-    "start": "MODE=production node ./src/server.ts",
+    "start": "MODE=production tsx ./src/server.ts",
     "vitest": "vitest"
   },
   "devDependencies": {
