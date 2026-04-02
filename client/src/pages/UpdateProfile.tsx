@@ -85,20 +85,31 @@ export default function UpdateProfile() {
 
       {/* Stats */}
       <div>
-        <h3>Chess Statistic</h3>
+        <h3>Chess Statistics</h3>
         {(user.totalGamesPlayed ?? 0) === 0 ? (
           <p className="smallAndGray">No games played yet.</p>
         ) : (
-          <ul>
-            <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
-            <li>Win Rate: {user.winRate ?? 0}%</li>
-            {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
-            <li>Rating: {user.rating}</li>
-            <li>League: {computeLeague(user.rating)}</li>
-          </ul>
+          <>
+            <ul>
+              <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
+              <li>Win Rate: {user.winRate ?? 0}%</li>
+              {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
+            </ul>
+            <h4>Ratings</h4>
+            {Object.keys(user.ratings ?? {}).length === 0 ? (
+              <p className="smallAndGray">No rated games played yet.</p>
+            ) : (
+              <ul>
+                {Object.entries(user.ratings ?? {}).map(([gameType, rating]) => (
+                  <li key={gameType}>
+                    {gameType}: {rating} — {computeLeague(rating)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
-
       <hr />
 
       {/* Recent matches */}

@@ -130,7 +130,7 @@ export interface UserRecord {
   favoriteGame?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
-  rating?: number;
+  ratings?: Partial<Record<GameKey, number>>;
 }
 
 /**
