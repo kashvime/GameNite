@@ -4,13 +4,16 @@ import express, { Router } from "express";
 import { Server } from "socket.io";
 import { z } from "zod";
 import * as http from "node:http";
-import * as chat from "./controllers/chat.controller.ts";
-import * as friend from "./controllers/friend.controller.ts";
-import * as game from "./controllers/game.controller.ts";
-import * as user from "./controllers/user.controller.ts";
-import * as thread from "./controllers/thread.controller.ts";
-import * as authController from "./controllers/auth.controller.ts";
-import * as score from "./controllers/score.controller.ts";
+
+import * as chat from "./controllers/chat.controller.js";
+import * as friend from "./controllers/friend.controller.js";
+import * as game from "./controllers/game.controller.js";
+import * as user from "./controllers/user.controller.js";
+import * as thread from "./controllers/thread.controller.js";
+import * as score from "./controllers/score.controller.js";
+
+import passport from "./config/passport.js";
+import { googleAuth, googleCallback } from "./controllers/auth.controller.js";
 
 import { type GameServer } from "./types.ts";
 
@@ -18,8 +21,11 @@ export const app = express();
 export const httpServer = http.createServer(app);
 const io: GameServer = new Server(httpServer);
 
+// ✅ Middleware
 app.use(express.json());
+app.use(passport.initialize());
 
+// ✅ API ROUTES (unchanged)
 app.use(
   "/api",
   Router()
@@ -34,16 +40,14 @@ app.use(
     )
     .use(
       "/game",
-      express
-        .Router() //
+      Router()
         .post("/create", game.postCreate)
         .get("/list", game.getList)
         .get("/:id", game.getById),
     )
     .use(
       "/thread",
-      express
-        .Router() //
+      Router()
         .post("/create", thread.postCreate)
         .get("/list", thread.getList)
         .get("/:id", thread.getById)
@@ -51,7 +55,7 @@ app.use(
     )
     .use(
       "/user",
-      Router() //
+      Router()
         .post("/list", user.postList)
         .post("/login", user.postLogin)
         .post("/signup", user.postSignup)
@@ -61,7 +65,8 @@ app.use(
     .use("/matches", Router().post("/", score.postMatches)),
 );
 
-app.post("/api/auth/sso-login", authController.ssoLogin);
+app.get("/auth/google", googleAuth);
+app.get("/auth/google/callback", ...googleCallback);
 
 io.on("connection", (socket) => {
   const socketId = socket.id;
@@ -81,17 +86,24 @@ io.on("connection", (socket) => {
   socket.on("gameWatch", game.socketWatch(socket, io));
 
   socket.onAny((name, payload) => {
-    const zPayload = z.object({ auth: z.object({ username: z.string() }), payload: z.any() });
+    const zPayload = z.object({
+      auth: z.object({ username: z.string() }),
+      payload: z.any(),
+    });
+
     const checked = zPayload.safeParse(payload);
 
     if (checked.error) {
       console.log(`RECV error: ${checked.error.message}`);
     } else {
       console.log(
-        `RECV [${socketId}] got ${name}${checked.data.auth.username} ${JSON.stringify(checked.data.payload)}`,
+        `RECV [${socketId}] got ${name}${checked.data.auth.username} ${JSON.stringify(
+          checked.data.payload,
+        )}`,
       );
     }
   });
+
   socket.onAnyOutgoing((name) => {
     console.log(`SEND [${socketId}] gets ${name}`);
   });
