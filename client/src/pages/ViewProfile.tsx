@@ -1,6 +1,7 @@
 import type { SafeUserInfo } from "@gamenite/shared";
 import { useEffect, useState } from "react";
 import { getUserById } from "../services/userService";
+import { computeLeague } from "@gamenite/shared";
 
 interface ViewProfileProps {
   username: string;
@@ -113,6 +114,8 @@ export default function ViewProfile({ username }: ViewProfileProps) {
               <li>Total Games Played: {user.totalGamesPlayed}</li>
               <li>Win Rate: {user.winRate}%</li>
               {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
+              <li>Rating: {user.rating}</li>
+              <li>League: {computeLeague(user.rating)}</li>
             </ul>
           </div>
         </div>

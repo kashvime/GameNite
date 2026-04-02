@@ -23,6 +23,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     favoriteGame: record.favoriteGame ?? null,
     bio: record.bio ?? null,
     avatarUrl: record.avatarUrl ?? null,
+    rating: record.rating ?? 1000,
   });
 }
 
@@ -64,6 +65,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
+    rating: 1000,
   });
 }
 
@@ -107,4 +109,24 @@ export async function updateUser(
   if (avatarUrl !== undefined) newUser.avatarUrl = avatarUrl;
   await UserRepo.set(user.userId, newUser);
   return populateSafeUserInfo(user.userId);
+}
+
+/**
+ * Updates a user's Elo rating after a completed match.
+ *
+ * @param userId - The user whose rating to update
+ * @param opponentRating - The opponent's current rating
+ * @param result - The outcome of the match from the user's perspective
+ */
+export async function updateRating(
+  userId: string,
+  opponentRating: number,
+  result: "win" | "loss" | "draw",
+): Promise<void> {
+  const record = await UserRepo.get(userId);
+  const playerRating = record.rating ?? 1000;
+  const actualScore = result === "win" ? 1 : result === "draw" ? 0.5 : 0;
+  const expectedScore = 1 / (1 + 10 ** ((opponentRating - playerRating) / 400));
+  record.rating = Math.round(playerRating + 32 * (actualScore - expectedScore));
+  await UserRepo.set(userId, record);
 }

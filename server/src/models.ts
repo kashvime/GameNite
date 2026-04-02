@@ -114,6 +114,12 @@ export interface ThreadRecord {
  * - `password`: user's password
  * - `display`: A display name
  * - `createdAt`: when this user registered.
+ * - `totalGamesPlayed`: total number of games played
+ * - `winRate`: win rate as a percentage (0-100)
+ * - `favoriteGame`: the game the user has played the most
+ * - `bio`: optional short user-written bio
+ * - `avatarUrl`: optional path to uploaded profile picture
+ * - `rating`: the user's current Elo rating (starts at 1000)
  */
 export interface UserRecord {
   username: string; // References Auth records
@@ -124,6 +130,7 @@ export interface UserRecord {
   favoriteGame?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+  rating?: number;
 }
 
 /**
