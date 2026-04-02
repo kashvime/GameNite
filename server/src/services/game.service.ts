@@ -189,7 +189,6 @@ export async function updateGame(
   game.state = result.state;
   game.done = game.done || result.done;
   await GameRepo.set(gameId, game);
-  const leagueChanges: { userId: string; oldLeague: League; newLeague: League }[] = [];
 
   if (result.done) {
     await saveMatchRecords(game.players, game.type, gameId, result.winner, new Date());

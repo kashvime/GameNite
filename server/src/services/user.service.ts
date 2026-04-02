@@ -76,6 +76,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
+    ratings: {},
   });
   await updateAuth(username, password, id);
   return Promise.resolve({
