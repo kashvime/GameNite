@@ -1,5 +1,6 @@
 import {
   computeLeague,
+  type GameKey,
   type League,
   type SafeUserInfo,
   type UserUpdateRequest,
@@ -45,7 +46,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     favoriteGame,
     bio: record.bio ?? null,
     avatarUrl: record.avatarUrl ?? null,
-    rating: record.rating ?? 1000,
+    ratings: record.ratings ?? {},
   };
 }
 
@@ -87,7 +88,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
-    rating: 1000,
+    ratings: {},
   });
 }
 
@@ -134,25 +135,28 @@ export async function updateUser(
 }
 
 /**
- * Updates a user's Elo rating after a completed match.
+ * Updates a user's Elo rating for a specific game after a completed match.
  *
  * @param userId - The user whose rating to update
- * @param opponentRating - The opponent's current rating
+ * @param gameType - The game that was played
+ * @param opponentRating - The opponent's current rating for this game
  * @param result - The outcome of the match from the user's perspective
+ * @returns the league change if one occurred, or null
  */
 export async function updateRating(
   userId: string,
+  gameType: GameKey,
   opponentRating: number,
   result: "win" | "loss" | "draw",
 ): Promise<{ oldLeague: League; newLeague: League } | null> {
   const record = await UserRepo.get(userId);
-  const playerRating = record.rating ?? 1000;
+  const playerRating = record.ratings?.[gameType] ?? 1000;
   const actualScore = result === "win" ? 1 : result === "draw" ? 0.5 : 0;
   const expectedScore = 1 / (1 + 10 ** ((opponentRating - playerRating) / 400));
   const newRating = Math.round(playerRating + 32 * (actualScore - expectedScore));
   const oldLeague = computeLeague(playerRating);
   const newLeague = computeLeague(newRating);
-  record.rating = newRating;
+  record.ratings = { ...record.ratings, [gameType]: newRating };
   await UserRepo.set(userId, record);
   return oldLeague !== newLeague ? { oldLeague, newLeague } : null;
 }

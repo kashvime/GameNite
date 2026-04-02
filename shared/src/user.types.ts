@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { GameKey } from "./index.ts";
 
 /**
  * Represents a "safe" user object that excludes sensitive information like
@@ -25,7 +26,7 @@ export interface SafeUserInfo {
   favoriteGame: string | null;
   bio: string | null;
   avatarUrl: string | null;
-  rating: number;
+  ratings: Partial<Record<GameKey, number>>;
 }
 
 /*** TYPES USED IN THE USER API ***/

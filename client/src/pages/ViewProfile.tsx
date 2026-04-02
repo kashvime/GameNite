@@ -114,9 +114,20 @@ export default function ViewProfile({ username }: ViewProfileProps) {
               <li>Total Games Played: {user.totalGamesPlayed}</li>
               <li>Win Rate: {user.winRate}%</li>
               {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
-              <li>Rating: {user.rating}</li>
-              <li>League: {computeLeague(user.rating)}</li>
             </ul>
+
+            <h4>Ratings</h4>
+            {Object.keys(user.ratings ?? {}).length === 0 ? (
+              <p className="smallAndGray">No rated games played yet.</p>
+            ) : (
+              <ul>
+                {Object.entries(user.ratings ?? {}).map(([gameType, rating]) => (
+                  <li key={gameType}>
+                    {gameType}: {rating} — {computeLeague(rating)}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       );

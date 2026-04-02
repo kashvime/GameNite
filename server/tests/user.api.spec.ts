@@ -14,7 +14,7 @@ const user1 = {
   favoriteGame: null,
   bio: null,
   avatarUrl: null,
-  rating: 1000,
+  ratings: {},
 };
 const auth2 = { username: "user2", password: "pwd2222" };
 const user2 = {
@@ -26,7 +26,7 @@ const user2 = {
   favoriteGame: null,
   bio: null,
   avatarUrl: null,
-  rating: 1000,
+  ratings: {},
 };
 
 describe("GET /api/user/:id", () => {
@@ -169,7 +169,7 @@ describe("POST /api/user/signup", () => {
       favoriteGame: null,
       bio: null,
       avatarUrl: null,
-      rating: 1000,
+      ratings: {},
     });
   });
 

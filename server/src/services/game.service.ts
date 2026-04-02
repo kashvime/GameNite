@@ -156,7 +156,7 @@ export interface GameUpdateResult {
   views: GameViewUpdates;
   moveDescription: string;
   chatId: string;
-  leagueChanges?: { userId: string; oldLeague: League; newLeague: League }[];
+  leagueChanges: { userId: string; oldLeague: League; newLeague: League }[];
 }
 
 /**
@@ -173,6 +173,7 @@ export async function updateGame(
   user: UserWithId,
   move: unknown,
 ): Promise<GameUpdateResult> {
+  const leagueChanges: { userId: string; oldLeague: League; newLeague: League }[] = [];
   const game = await GameRepo.find(gameId);
   if (!game) throw new Error(`user ${user.username} acted on an invalid game`);
   if (!game.state) {
@@ -197,13 +198,13 @@ export async function updateGame(
         UserRepo.get(game.players[0]),
         UserRepo.get(game.players[1]),
       ]);
-      const rating0 = player0.rating ?? 1000;
-      const rating1 = player1.rating ?? 1000;
+      const rating0 = player0.ratings?.[game.type] ?? 1000;
+      const rating1 = player1.ratings?.[game.type] ?? 1000;
       const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
       const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
       const [change0, change1] = await Promise.all([
-        updateRating(game.players[0], rating1, result0),
-        updateRating(game.players[1], rating0, result1),
+        updateRating(game.players[0], game.type, rating1, result0),
+        updateRating(game.players[1], game.type, rating0, result1),
       ]);
       if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
       if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });

@@ -33,7 +33,7 @@ describe("GET /api/thread/list", () => {
         favoriteGame: null,
         bio: null,
         avatarUrl: null,
-        rating: 1000,
+        ratings: {},
       },
     });
   });
@@ -63,7 +63,7 @@ describe("GET /api/thread/:id", () => {
         favoriteGame: null,
         bio: null,
         avatarUrl: null,
-        rating: 1000,
+        ratings: {},
       },
       createdAt: new Date("2025-04-02").toISOString(),
     });
@@ -106,7 +106,7 @@ describe("POST /api/thread/create", () => {
         favoriteGame: null,
         bio: null,
         avatarUrl: null,
-        rating: 1000,
+        ratings: expect.any(Object),
       },
       comments: [],
     });
@@ -157,7 +157,7 @@ describe("POST /api/thread/:id/comment", () => {
           favoriteGame: null,
           bio: null,
           avatarUrl: null,
-          rating: 1000,
+          ratings: {},
         },
       },
     ]);
