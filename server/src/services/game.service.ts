@@ -4,6 +4,7 @@ import { populateSafeUserInfo, updateRating } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
 import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
+import { chessGameService } from "../games/chess.ts";
 import { type GameViewUpdates, type UserWithId } from "../types.ts";
 import { GameRepo, UserRepo } from "../repository.ts";
 import { saveMatchRecords } from "./score.service.ts";
@@ -14,6 +15,7 @@ import { saveMatchRecords } from "./score.service.ts";
 export const gameServices: { [key in GameKey]: GameServicer } = {
   nim: nimGameService,
   guess: guessGameService,
+  chess: chessGameService,
 };
 
 /**
@@ -187,9 +189,10 @@ export async function updateGame(
   game.state = result.state;
   game.done = game.done || result.done;
   await GameRepo.set(gameId, game);
+  const leagueChanges: { userId: string; oldLeague: League; newLeague: League }[] = [];
+
   if (result.done) {
     await saveMatchRecords(game.players, game.type, gameId, result.winner, new Date());
-
     if (game.players.length === 2) {
       const [player0, player1] = await Promise.all([
         UserRepo.get(game.players[0]),
