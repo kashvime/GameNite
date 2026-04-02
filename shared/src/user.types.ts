@@ -12,6 +12,7 @@ import { z } from "zod";
  * - `favoriteGame`: the game the user has played the most
  * - `bio`: optional short user-written bio
  * - `avatarUrl`: optional path to uploaded profile picture
+ * - `rating`: the user's current Elo rating
  */
 
 export interface SafeUserInfo {
@@ -24,6 +25,7 @@ export interface SafeUserInfo {
   favoriteGame: string | null;
   bio: string | null;
   avatarUrl: string | null;
+  rating: number;
 }
 
 /*** TYPES USED IN THE USER API ***/

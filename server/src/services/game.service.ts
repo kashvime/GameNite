@@ -1,11 +1,11 @@
 import { type GameInfo, type GameKey, type TaggedGameView } from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
-import { populateSafeUserInfo } from "./user.service.ts";
+import { populateSafeUserInfo, updateRating } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
 import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
 import { type GameViewUpdates, type UserWithId } from "../types.ts";
-import { GameRepo } from "../repository.ts";
+import { GameRepo, UserRepo } from "../repository.ts";
 import { saveMatchRecords } from "./score.service.ts";
 
 /**
@@ -187,6 +187,19 @@ export async function updateGame(
   await GameRepo.set(gameId, game);
   if (result.done) {
     await saveMatchRecords(game.players, game.type, gameId, result.winner, new Date());
+
+    if (game.players.length === 2) {
+      const [player0, player1] = await Promise.all([
+        UserRepo.get(game.players[0]),
+        UserRepo.get(game.players[1]),
+      ]);
+      const rating0 = player0.rating ?? 1000;
+      const rating1 = player1.rating ?? 1000;
+      const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
+      const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
+      await updateRating(game.players[0], rating1, result0);
+      await updateRating(game.players[1], rating0, result1);
+    }
   }
 
   return {

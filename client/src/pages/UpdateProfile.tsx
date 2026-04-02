@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useLoginContext from "../hooks/useLoginContext";
 import useEditProfileForm from "../hooks/useEditProfileForm";
+import { computeLeague } from "@gamenite/shared";
 import { getMatchHistory } from "../services/matchService";
 import type { MatchInfo } from "@gamenite/shared";
 
@@ -92,6 +93,8 @@ export default function UpdateProfile() {
             <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
             <li>Win Rate: {user.winRate ?? 0}%</li>
             {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
+            <li>Rating: {user.rating}</li>
+            <li>League: {computeLeague(user.rating)}</li>
           </ul>
         )}
       </div>
