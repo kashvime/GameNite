@@ -41,9 +41,11 @@ export async function saveMatchRecords(
 
 /**
  * Retrieves all match records for a given user, with opponent info populated.
+ * Results are sorted by date (newest first by default) and paginated.
  *
  * @param userId - Valid user id
- * @returns all MatchInfo records where the user was the primary player
+ * @param filter - Optional filter, sort order, and pagination settings
+ * @returns the filtered, sorted, and paginated list of match records
  */
 export async function getMatchesByUserId(
   userId: RecordId,
@@ -71,5 +73,14 @@ export async function getMatchesByUserId(
       createdAt: new Date(record.createdAt),
     });
   }
-  return matches;
+  // Sort by date
+  matches.sort((a, b) => {
+    const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    return filter?.sortOrder === "oldest" ? -diff : diff;
+  });
+
+  // Paginate
+  const page = filter?.page ?? 1;
+  const pageSize = filter?.pageSize ?? 20;
+  return matches.slice((page - 1) * pageSize, page * pageSize);
 }
