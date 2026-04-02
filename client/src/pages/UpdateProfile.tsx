@@ -7,7 +7,6 @@ import type { MatchInfo } from "@gamenite/shared";
 
 export default function UpdateProfile() {
   const { user, pass } = useLoginContext();
-  const auth = { username: user.username, password: pass };
   const [showPass, setShowPass] = useState(false);
   const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
     useEditProfileForm();
@@ -16,6 +15,7 @@ export default function UpdateProfile() {
 
   useEffect(() => {
     let cancel = false;
+    const auth = { username: user.username, password: pass };
     getMatchHistory(auth).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
@@ -24,7 +24,7 @@ export default function UpdateProfile() {
     return () => {
       cancel = true;
     };
-  }, [auth.username]);
+  }, [user.username, pass]);
 
   return (
     <form className="content spacedSection" onSubmit={handleSubmit}>
