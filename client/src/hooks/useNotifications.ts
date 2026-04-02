@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import type { SafeUserInfo, UserAuth } from "@gamenite/shared";
+import type { League, SafeUserInfo, UserAuth } from "@gamenite/shared";
 import { getPendingRequests } from "../services/friendService";
+import useLoginContext from "./useLoginContext";
 
 export interface Notification {
   id: string;
@@ -14,6 +15,7 @@ export interface Notification {
 export default function useNotifications(auth: UserAuth) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const seenRequestIds = useRef<Set<string>>(new Set());
+  const { socket } = useLoginContext();
 
   useEffect(() => {
     const poll = async () => {
@@ -42,6 +44,32 @@ export default function useNotifications(auth: UserAuth) {
     const interval = setInterval(poll, 10000);
     return () => clearInterval(interval);
   }, [auth.username, auth.password, auth]);
+
+  useEffect(() => {
+    const handleLeagueChanged = ({
+      oldLeague,
+      newLeague,
+    }: {
+      oldLeague: League;
+      newLeague: League;
+    }) => {
+      const promoted = newLeague > oldLeague;
+      setNotifications((prev) => [
+        ...prev,
+        {
+          id: `league-${Date.now()}`,
+          message: promoted
+            ? `You've been promoted to ${newLeague}!`
+            : `You've been demoted to ${newLeague}.`,
+        },
+      ]);
+    };
+
+    socket.on("leagueChanged", handleLeagueChanged);
+    return () => {
+      socket.off("leagueChanged", handleLeagueChanged);
+    };
+  }, [socket]);
 
   const dismiss = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));

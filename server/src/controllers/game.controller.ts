@@ -153,8 +153,13 @@ export const socketMakeMove: SocketAPI = (socket, io) => async (body) => {
       payload: { gameId, move },
     } = withAuth(zGameMakeMovePayload).parse(body);
     const user = await enforceAuth(auth);
-    const { views, moveDescription, chatId } = await updateGame(gameId, user, move);
+    const { views, moveDescription, chatId, leagueChanges } = await updateGame(gameId, user, move);
     sendViewUpdates(io, gameId, views);
+
+    // Notify players of any league changes
+    for (const { userId, oldLeague, newLeague } of leagueChanges ?? []) {
+      io.to(userRoom(gameId, userId)).emit("leagueChanged", { oldLeague, newLeague });
+    }
 
     // Store the move description suffix and broadcast to the chat room
     const now = new Date();

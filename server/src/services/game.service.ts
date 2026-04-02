@@ -1,4 +1,4 @@
-import { type GameInfo, type GameKey, type TaggedGameView } from "@gamenite/shared";
+import { type GameInfo, type GameKey, type League, type TaggedGameView } from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
 import { populateSafeUserInfo, updateRating } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
@@ -154,6 +154,7 @@ export interface GameUpdateResult {
   views: GameViewUpdates;
   moveDescription: string;
   chatId: string;
+  leagueChanges?: { userId: string; oldLeague: League; newLeague: League }[];
 }
 
 /**
@@ -185,9 +186,10 @@ export async function updateGame(
   game.state = result.state;
   game.done = game.done || result.done;
   await GameRepo.set(gameId, game);
+  const leagueChanges: { userId: string; oldLeague: League; newLeague: League }[] = [];
+
   if (result.done) {
     await saveMatchRecords(game.players, game.type, gameId, result.winner, new Date());
-
     if (game.players.length === 2) {
       const [player0, player1] = await Promise.all([
         UserRepo.get(game.players[0]),
@@ -197,8 +199,12 @@ export async function updateGame(
       const rating1 = player1.rating ?? 1000;
       const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
       const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
-      await updateRating(game.players[0], rating1, result0);
-      await updateRating(game.players[1], rating0, result1);
+      const [change0, change1] = await Promise.all([
+        updateRating(game.players[0], rating1, result0),
+        updateRating(game.players[1], rating0, result1),
+      ]);
+      if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
+      if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });
     }
   }
 
@@ -206,6 +212,7 @@ export async function updateGame(
     views: result.views,
     moveDescription: result.moveDescription,
     chatId: game.chat,
+    leagueChanges,
   };
 }
 

@@ -1,4 +1,9 @@
-import { type SafeUserInfo, type UserUpdateRequest } from "@gamenite/shared";
+import {
+  computeLeague,
+  type League,
+  type SafeUserInfo,
+  type UserUpdateRequest,
+} from "@gamenite/shared";
 import { getUserByUsername, updateAuth } from "./auth.service.ts";
 import { UserRepo, ScoreRepo } from "../repository.ts";
 
@@ -139,11 +144,15 @@ export async function updateRating(
   userId: string,
   opponentRating: number,
   result: "win" | "loss" | "draw",
-): Promise<void> {
+): Promise<{ oldLeague: League; newLeague: League } | null> {
   const record = await UserRepo.get(userId);
   const playerRating = record.rating ?? 1000;
   const actualScore = result === "win" ? 1 : result === "draw" ? 0.5 : 0;
   const expectedScore = 1 / (1 + 10 ** ((opponentRating - playerRating) / 400));
-  record.rating = Math.round(playerRating + 32 * (actualScore - expectedScore));
+  const newRating = Math.round(playerRating + 32 * (actualScore - expectedScore));
+  const oldLeague = computeLeague(playerRating);
+  const newLeague = computeLeague(newRating);
+  record.rating = newRating;
   await UserRepo.set(userId, record);
+  return oldLeague !== newLeague ? { oldLeague, newLeague } : null;
 }
