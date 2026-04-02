@@ -41,7 +41,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     bio: record.bio ?? null,
     avatarUrl: record.avatarUrl ?? null,
     rating: record.rating ?? 1000,
-  });
+  };
 }
 
 /**
