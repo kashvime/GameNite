@@ -29,7 +29,8 @@ app.use(
         .post("/request", friend.postSendRequest)
         .post("/respond", friend.postRespondToRequest)
         .post("/pending", friend.postPendingRequests)
-        .post("/list", friend.postFriends),
+        .post("/list", friend.postFriends)
+        .post("/status", friend.postFriendshipStatus),
     )
     .use(
       "/game",

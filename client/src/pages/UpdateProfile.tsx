@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useLoginContext from "../hooks/useLoginContext";
 import useEditProfileForm from "../hooks/useEditProfileForm";
 import { computeLeague } from "@gamenite/shared";
+import { getMatchHistory } from "../services/matchService";
+import type { MatchInfo } from "@gamenite/shared";
 
 export default function UpdateProfile() {
-  const { user } = useLoginContext();
+  const { user, pass } = useLoginContext();
+  const auth = { username: user.username, password: pass };
   const [showPass, setShowPass] = useState(false);
   const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
     useEditProfileForm();
   const [bio, setBio] = useState(user.bio ?? "");
+  const [matches, setMatches] = useState<MatchInfo[] | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    getMatchHistory(auth).then((res) => {
+      if (cancel) return;
+      if (!res || "error" in res) return;
+      setMatches(res);
+    });
+    return () => {
+      cancel = true;
+    };
+  }, [auth.username]);
 
   return (
     <form className="content spacedSection" onSubmit={handleSubmit}>
@@ -79,6 +95,30 @@ export default function UpdateProfile() {
             {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
             <li>Rating: {user.rating}</li>
             <li>League: {computeLeague(user.rating)}</li>
+          </ul>
+        )}
+      </div>
+
+      <hr />
+
+      {/* Recent matches */}
+      <div>
+        <h3>Recent Matches</h3>
+        {matches === null ? (
+          <p className="smallAndGray">Loading matches...</p>
+        ) : matches.length === 0 ? (
+          <p className="smallAndGray">No matches played yet.</p>
+        ) : (
+          <ul>
+            {matches.slice(0, 5).map((match, i) => (
+              <li key={i}>
+                {match.gameType} — {match.result}
+                {match.opponent && ` vs ${match.opponent.display}`}
+                {match.score !== undefined && ` — Score: ${match.score}`}
+                {" — "}
+                {new Date(match.createdAt).toLocaleDateString()}
+              </li>
+            ))}
           </ul>
         )}
       </div>

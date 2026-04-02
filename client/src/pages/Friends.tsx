@@ -15,54 +15,82 @@ export default function Friends() {
     else setToUsername("");
   };
 
-  if (state.type === "waiting") return <div>Loading...</div>;
+  if (state.type === "waiting") return <div className="smallAndGray">Loading friends...</div>;
   if (state.type === "error") return <div style={{ color: "#f00" }}>{state.msg}</div>;
 
   return (
-    <>
+    <div className="content spacedSection">
       <h2>Friends</h2>
 
-      <section>
+      {/* Add a Friend */}
+      <div className="spacedSection">
         <h3>Add a Friend</h3>
-        <input
-          type="text"
-          placeholder="Username"
-          value={toUsername}
-          onChange={(e) => setToUsername(e.target.value)}
-        />
-        <button onClick={handleSend}>Send Request</button>
-        {sendError && <div style={{ color: "#f00" }}>{sendError}</div>}
-      </section>
+        <div style={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
+          <input
+            className="widefill notTooWide"
+            type="text"
+            placeholder="Username"
+            value={toUsername}
+            onChange={(e) => setToUsername(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          />
+          <button className="primary narrow" onClick={handleSend}>
+            Send Request
+          </button>
+        </div>
+        {sendError && <p style={{ color: "#f00" }}>{sendError}</p>}
+      </div>
 
+      <hr />
+
+      {/* Pending Requests */}
       {state.pending.length > 0 && (
-        <section>
-          <h3>Pending Requests</h3>
-          <ul>
-            {state.pending.map(({ requestId, from }) => (
-              <li key={requestId}>
-                {from.display} (@{from.username})
-                <button onClick={() => respond(requestId, true)}>Accept</button>
-                <button onClick={() => respond(requestId, false)}>Reject</button>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <>
+          <div className="spacedSection">
+            <h3>Pending Requests</h3>
+            <ul>
+              {state.pending.map(({ requestId, from }) => (
+                <li
+                  key={requestId}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <span>
+                    {from.display} (@{from.username})
+                  </span>
+                  <button className="primary narrow" onClick={() => respond(requestId, true)}>
+                    Accept
+                  </button>
+                  <button className="secondary narrow" onClick={() => respond(requestId, false)}>
+                    Reject
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <hr />
+        </>
       )}
 
-      <section>
+      {/* Friends List */}
+      <div className="spacedSection">
         <h3>Your Friends</h3>
         {state.friends.length === 0 ? (
-          <p>No friends yet.</p>
+          <p className="smallAndGray">No friends yet. Add someone above!</p>
         ) : (
           <ul>
             {state.friends.map((friend) => (
-              <li key={friend.username}>
+              <li key={friend.username} style={{ marginBottom: "0.4rem" }}>
                 {friend.display} (@{friend.username})
               </li>
             ))}
           </ul>
         )}
-      </section>
-    </>
+      </div>
+    </div>
   );
 }
