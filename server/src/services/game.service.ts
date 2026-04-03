@@ -1,11 +1,12 @@
-import { type GameInfo, type GameKey, type TaggedGameView } from "@gamenite/shared";
+import { type GameInfo, type GameKey, type League, type TaggedGameView } from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
-import { populateSafeUserInfo } from "./user.service.ts";
+import { populateSafeUserInfo, updateRating } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
 import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
+import { chessGameService } from "../games/chess.ts";
 import { type GameViewUpdates, type UserWithId } from "../types.ts";
-import { GameRepo } from "../repository.ts";
+import { GameRepo, UserRepo } from "../repository.ts";
 import { saveMatchRecords } from "./score.service.ts";
 
 /**
@@ -14,6 +15,7 @@ import { saveMatchRecords } from "./score.service.ts";
 export const gameServices: { [key in GameKey]: GameServicer } = {
   nim: nimGameService,
   guess: guessGameService,
+  chess: chessGameService,
 };
 
 /**
@@ -154,6 +156,7 @@ export interface GameUpdateResult {
   views: GameViewUpdates;
   moveDescription: string;
   chatId: string;
+  leagueChanges: { userId: string; oldLeague: League; newLeague: League }[];
 }
 
 /**
@@ -170,6 +173,7 @@ export async function updateGame(
   user: UserWithId,
   move: unknown,
 ): Promise<GameUpdateResult> {
+  const leagueChanges: { userId: string; oldLeague: League; newLeague: League }[] = [];
   const game = await GameRepo.find(gameId);
   if (!game) throw new Error(`user ${user.username} acted on an invalid game`);
   if (!game.state) {
@@ -185,14 +189,32 @@ export async function updateGame(
   game.state = result.state;
   game.done = game.done || result.done;
   await GameRepo.set(gameId, game);
+
   if (result.done) {
     await saveMatchRecords(game.players, game.type, gameId, result.winner, new Date());
+    if (game.players.length === 2) {
+      const [player0, player1] = await Promise.all([
+        UserRepo.get(game.players[0]),
+        UserRepo.get(game.players[1]),
+      ]);
+      const rating0 = player0.ratings?.[game.type] ?? 1000;
+      const rating1 = player1.ratings?.[game.type] ?? 1000;
+      const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
+      const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
+      const [change0, change1] = await Promise.all([
+        updateRating(game.players[0], game.type, rating1, result0),
+        updateRating(game.players[1], game.type, rating0, result1),
+      ]);
+      if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
+      if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });
+    }
   }
 
   return {
     views: result.views,
     moveDescription: result.moveDescription,
     chatId: game.chat,
+    leagueChanges,
   };
 }
 

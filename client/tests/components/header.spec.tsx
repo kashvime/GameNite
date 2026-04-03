@@ -19,6 +19,7 @@ const baseUser = {
   favoriteGame: null,
   bio: null,
   avatarUrl: null,
+  ratings: {},
 };
 
 describe("Header component", () => {
@@ -36,6 +37,7 @@ describe("Header component", () => {
             username: "username",
             display: "displayname",
             createdAt: new Date("01-02-2025"),
+            ratings: {},
           },
           pass: "pwd",
           socket: {} as GameSocket,
@@ -58,6 +60,7 @@ describe("Header component", () => {
             username: "username123",
             display: "displayname",
             createdAt: new Date("01-02-2025"),
+            ratings: {},
           },
           pass: "pwd",
           socket: {} as GameSocket,
@@ -82,6 +85,7 @@ describe("Header component", () => {
             username: "username123",
             display: "displayname",
             createdAt: new Date("01-02-2025"),
+            ratings: {},
           },
           pass: "pwd",
           socket: {} as GameSocket,

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import useLoginContext from "../hooks/useLoginContext";
 import useEditProfileForm from "../hooks/useEditProfileForm";
+import { computeLeague } from "@gamenite/shared";
 import { getMatchHistory } from "../services/matchService";
 import type { MatchInfo } from "@gamenite/shared";
 
 export default function UpdateProfile() {
   const { user, pass } = useLoginContext();
-  const auth = { username: user.username, password: pass };
   const [showPass, setShowPass] = useState(false);
   const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
     useEditProfileForm();
@@ -15,6 +15,7 @@ export default function UpdateProfile() {
 
   useEffect(() => {
     let cancel = false;
+    const auth = { username: user.username, password: pass };
     getMatchHistory(auth).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
@@ -23,7 +24,7 @@ export default function UpdateProfile() {
     return () => {
       cancel = true;
     };
-  }, [auth.username]);
+  }, [user.username, pass]);
 
   return (
     <form className="content spacedSection" onSubmit={handleSubmit}>
@@ -84,18 +85,31 @@ export default function UpdateProfile() {
 
       {/* Stats */}
       <div>
-        <h3>Chess Statistic</h3>
+        <h3>Chess Statistics</h3>
         {(user.totalGamesPlayed ?? 0) === 0 ? (
           <p className="smallAndGray">No games played yet.</p>
         ) : (
-          <ul>
-            <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
-            <li>Win Rate: {user.winRate ?? 0}%</li>
-            {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
-          </ul>
+          <>
+            <ul>
+              <li>Total Games Played: {user.totalGamesPlayed ?? 0}</li>
+              <li>Win Rate: {user.winRate ?? 0}%</li>
+              {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
+            </ul>
+            <h4>Ratings</h4>
+            {Object.keys(user.ratings ?? {}).length === 0 ? (
+              <p className="smallAndGray">No rated games played yet.</p>
+            ) : (
+              <ul>
+                {Object.entries(user.ratings ?? {}).map(([gameType, rating]) => (
+                  <li key={gameType}>
+                    {gameType}: {rating} — {computeLeague(rating)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
-
       <hr />
 
       {/* Recent matches */}
