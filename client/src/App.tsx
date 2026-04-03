@@ -1,7 +1,7 @@
 /* eslint no-console: "off" */
 
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Login from "./pages/Login.tsx";
 import type { AuthContext } from "./contexts/LoginContext.ts";
 import Layout from "./components/Layout.tsx";
@@ -22,6 +22,9 @@ import TimeContextKeeper from "./components/UpdatingTimeContext.tsx";
 import Friends from "./pages/Friends.tsx";
 import MatchHistory from "./pages/MatchHistory.tsx";
 import Leaderboard from "./pages/Leaderboard.tsx";
+import AuthSuccess from "./pages/AuthSuccess";
+import { jwtDecode } from "jwt-decode";
+import type { SafeUserInfo } from "@gamenite/shared";
 
 /** If `true`, all incoming socket messages will be logged */
 const DEBUG_SOCKETS = false;
@@ -48,11 +51,40 @@ function NoSuchRoute() {
 
 export default function App() {
   const [auth, setAuth] = useState<AuthContext | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const user = jwtDecode<SafeUserInfo>(token);
+
+        queueMicrotask(() => {
+          setAuth({
+            user,
+            pass: token,
+            reset: () => {
+              setAuth(null);
+              localStorage.removeItem("token");
+            },
+          });
+        });
+      } catch {
+        localStorage.removeItem("token");
+      }
+    }
+    queueMicrotask(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     socket && (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login setAuth={(auth) => setAuth(auth)} />} />
+          <Route path="/auth-success" element={<AuthSuccess setAuth={setAuth} />} />{" "}
           <Route
             element={
               <LoggedInRoute auth={auth} socket={socket}>

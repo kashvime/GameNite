@@ -2,8 +2,6 @@ import useLoginForm from "../hooks/useLoginForm.ts";
 import "./Login.css";
 import { useState } from "react";
 import { type AuthContext } from "../contexts/LoginContext.ts";
-import type { SafeUserInfo } from "@gamenite/shared";
-import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   setAuth: (s: AuthContext | null) => void;
@@ -14,44 +12,6 @@ export default function Login({ setAuth }: LoginProps) {
     useLoginForm(setAuth);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [ssoEmail, setSsoEmail] = useState("");
-  const [ssoName, setSsoName] = useState("");
-  const navigate = useNavigate();
-
-  {
-    /* SSO BUTTON FUNCTION */
-  }
-  const handleSSOLogin = async () => {
-    try {
-      if (!ssoEmail || !ssoName) {
-        alert("Enter email and name");
-        return;
-      }
-
-      const res = await fetch("/api/auth/sso-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: ssoEmail,
-          name: ssoName,
-        }),
-      });
-
-      const data = (await res.json()) as SafeUserInfo;
-
-      setAuth({
-        user: data,
-        pass: "SSO_LOGIN",
-        reset: () => setAuth(null),
-      });
-
-      navigate("/");
-    } catch (err) {
-      alert("SSO failed");
-    }
-  };
 
   return (
     <div className="container">
@@ -107,25 +67,11 @@ export default function Login({ setAuth }: LoginProps) {
 
         <div className="intertext">or</div>
 
-        {/* SSO INPUTS */}
-        <input
-          type="text"
-          placeholder="SSO Email"
-          className="widefill"
-          onChange={(e) => setSsoEmail(e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="SSO Name"
-          className="widefill"
-          onChange={(e) => setSsoName(e.target.value)}
-        />
-
-        {/* SSO BUTTON */}
-        <button type="button" className="widefill primary" onClick={handleSSOLogin}>
-          Continue with SSO
-        </button>
+        <a href="http://localhost:8000/auth/google">
+          <button type="button" className="widefill primary">
+            Continue with Google
+          </button>
+        </a>
 
         <button
           className="narrowcenter secondary"
