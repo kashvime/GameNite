@@ -21,6 +21,7 @@ import NewThread from "./pages/NewThread.tsx";
 import TimeContextKeeper from "./components/UpdatingTimeContext.tsx";
 import Friends from "./pages/Friends.tsx";
 import MatchHistory from "./pages/MatchHistory.tsx";
+import Leaderboard from "./pages/Leaderboard.tsx";
 
 /** If `true`, all incoming socket messages will be logged */
 const DEBUG_SOCKETS = false;
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="/friends" element={<Friends />} />
             <Route path="/matches" element={<MatchHistory />} />
             <Route path="/*" element={<NoSuchRoute />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
           </Route>
         </Routes>
       </BrowserRouter>

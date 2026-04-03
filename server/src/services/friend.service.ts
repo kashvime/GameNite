@@ -147,3 +147,20 @@ export async function getFriendshipStatus(
   }
   return { status: "not_connected" };
 }
+
+/**
+ * Returns the user IDs of all accepted friends for a given user.
+ * Used internally for leaderboard filtering.
+ */
+export async function getFriendIds(userId: RecordId): Promise<RecordId[]> {
+  const keys = await FriendRepo.getAllKeys();
+  const records = await FriendRepo.getMany(keys);
+
+  const friendIds: RecordId[] = [];
+  for (const record of records) {
+    if (record.status !== "accepted") continue;
+    if (record.from === userId) friendIds.push(record.to);
+    else if (record.to === userId) friendIds.push(record.from);
+  }
+  return friendIds;
+}

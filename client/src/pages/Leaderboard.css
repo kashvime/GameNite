@@ -1,0 +1,57 @@
+.leaderboard-filters {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.leaderboard-table {
+  width: 100%;
+  max-width: 600px;
+  border-collapse: collapse;
+}
+
+.leaderboard-table thead tr {
+  border-bottom: 2px solid #000;
+}
+
+.leaderboard-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+}
+
+.leaderboard-table td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px dashed #000;
+}
+
+.leaderboard-table tr.leaderboard-top td {
+  font-weight: 600;
+  background-color: var(--gray-background);
+}
+
+.leaderboard-rank {
+  width: 4rem;
+  text-align: center;
+}
+
+.leaderboard-wins {
+  width: 5rem;
+  text-align: center;
+}
+
+.leaderboard-me td {
+  border-top: 2px dashed #000;
+  font-style: italic;
+  color: oklch(0.45 0.1 260);
+}
+
+.leaderboard-select {
+  border-radius: 0.5rem;
+  border: 1px solid var(--gray-foreground);
+  padding-inline: 0.5rem;
+  min-height: 2.5rem;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+}
