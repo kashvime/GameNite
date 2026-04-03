@@ -153,7 +153,12 @@ export const socketMakeMove: SocketAPI = (socket, io) => async (body) => {
       payload: { gameId, move },
     } = withAuth(zGameMakeMovePayload).parse(body);
     const user = await enforceAuth(auth);
-    const { views, moveDescription, chatId, leagueChanges } = await updateGame(gameId, user, move);
+    const { views, moveDescription, chatId, leagueChanges } = await updateGame(
+      gameId,
+      user,
+      move,
+      io,
+    );
     sendViewUpdates(io, gameId, views);
 
     // Notify players of any league changes
