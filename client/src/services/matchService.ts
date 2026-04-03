@@ -1,6 +1,8 @@
 import type { APIResponse } from "../util/types.ts";
 import { api, exceptionToErrorMsg } from "./api.ts";
-import type { MatchFilter, MatchInfo } from "@gamenite/shared";
+import type { ErrorMsg, MatchFilter, MatchInfo, SafeUserInfo, UserAuth } from "@gamenite/shared";
+
+export type LeaderboardEntry = { user: SafeUserInfo; wins: number };
 
 const MATCH_API_URL = `/api/matches`;
 

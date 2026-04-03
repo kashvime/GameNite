@@ -1,8 +1,12 @@
-import { zMatchFilter, type MatchInfo } from "@gamenite/shared";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { zMatchFilter, type MatchInfo, type GameKey, zUserAuth } from "@gamenite/shared";
 import { type Request } from "express";
 import { type RestAPI } from "../types.ts";
-import { getMatchesByUserId } from "../services/score.service.ts";
-import { getUserByUsername } from "../services/auth.service.ts";
+import { getMatchesByUserId, getLeaderboard, getUserRank } from "../services/score.service.ts";
+import { getUserByUsername, checkAuth } from "../services/auth.service.ts";
+import { getFriendIds } from "../services/friend.service.ts";
+import { type RecordId } from "../models.ts";
 
 type JwtUser = { username: string };
 

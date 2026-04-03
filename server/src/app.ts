@@ -59,7 +59,7 @@ app.use(
     .use(
       "/game",
       Router()
-        .post("/create", requireAuth, game.postCreate) 
+        .post("/create", requireAuth, game.postCreate)
         .get("/list", game.getList)
         .get("/:id", game.getById),
     )
@@ -71,6 +71,7 @@ app.use(
         .get("/list", thread.getList)
         .get("/:id", thread.getById)
         .post("/:id/comment", requireAuth, thread.postByIdComment),
+    )
     .use(
       "/user",
       Router()

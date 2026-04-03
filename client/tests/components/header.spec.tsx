@@ -13,6 +13,7 @@ vi.mock("react-router-dom", async () => {
 const mockedReset = vi.fn();
 
 const baseUser = {
+  userId: "test-id",
   onlineStatus: "online" as const,
   totalGamesPlayed: 0,
   winRate: 0,

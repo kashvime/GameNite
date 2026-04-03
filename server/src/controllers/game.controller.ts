@@ -1,4 +1,4 @@
-import { type GameInfo, zGameKey, zGameMakeMovePayload } from "@gamenite/shared";
+import { type GameInfo, type League, zGameKey, zGameMakeMovePayload } from "@gamenite/shared";
 import { type RestAPI, type GameViewUpdates, type SocketAPI, type GameServer } from "../types.ts";
 import {
   createGame,
@@ -137,7 +137,10 @@ export const socketMakeMove: SocketAPI = (socket, io) => async (body) => {
       newLeague: string;
     }[]) {
       const { userId, oldLeague, newLeague } = change;
-      io.to(userRoom(gameId, userId)).emit("leagueChanged", { oldLeague, newLeague });
+      io.to(userRoom(gameId, userId)).emit("leagueChanged", {
+        oldLeague: oldLeague as League,
+        newLeague: newLeague as League,
+      });
     }
     const now = new Date();
     const moveLogPayload = await addMoveLogToChat(chatId, moveDescription, user, now);
