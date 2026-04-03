@@ -64,7 +64,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   useEffect(() => {
     let cancel = false;
-    getMatchHistory(auth).then((res) => {
+    getMatchHistory().then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
       setMatches(res);
@@ -96,7 +96,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   const handleChallenge = async () => {
     setChallengeError(null);
-    const game = await createGame(auth, "chess");
+    const game = await createGame("chess");
     if ("error" in game) {
       setChallengeError(game.error);
       return;
