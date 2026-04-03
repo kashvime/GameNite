@@ -72,6 +72,10 @@ export const postSignup: RestAPI<SafeUserInfo & { token: string }> = async (req,
   }
 
   const userInfo = await createUser(userAuth.data.username, userAuth.data.password, new Date());
+  if ("error" in userInfo) {
+    res.send(userInfo); // return error without token
+    return;
+  }
   const token = issueToken(userAuth.data.username);
   res.send({ ...userInfo, token });
 };

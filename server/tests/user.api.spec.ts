@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import supertest, { type Response } from "supertest";
 import { app } from "../src/app.ts";
 
+process.env.JWT_SECRET = "test";
+
 let response: Response;
 const auth1 = { username: "user1", password: "pwd1111" };
 const user1 = {
+  userId: expect.any(String),
   username: "user1",
   display: "Yāo",
   onlineStatus: "online",
@@ -18,6 +21,7 @@ const user1 = {
 };
 const auth2 = { username: "user2", password: "pwd2222" };
 const user2 = {
+  userId: expect.any(String),
   username: "user2",
   display: "Sénior Dos",
   onlineStatus: "online",
@@ -58,14 +62,12 @@ describe("POST /api/user/login", () => {
   it("should return the same response if user does not exist or if user exists and password is wrong", async () => {
     const expectedResponse = { error: "Invalid username or password" };
 
-    // Incorrect password for existing user
     response = await supertest(app)
       .post("/api/user/login")
       .send({ ...auth1, password: "no" });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual(expectedResponse);
 
-    // Nonexistent username
     response = await supertest(app)
       .post("/api/user/login")
       .send({ ...auth1, username: randomUUID().toString() });
@@ -76,7 +78,11 @@ describe("POST /api/user/login", () => {
   it("should accept a correct username/password combination", async () => {
     response = await supertest(app).post("/api/user/login").send(auth1);
     expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({ ...user1, createdAt: expect.anything() });
+    expect(response.body).toStrictEqual({
+      ...user1,
+      createdAt: expect.anything(),
+      token: expect.any(String),
+    });
   });
 });
 
@@ -160,6 +166,7 @@ describe("POST /api/user/signup", () => {
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/^application.json/);
     expect(response.body).toStrictEqual({
+      userId: expect.any(String),
       username,
       display: username,
       createdAt: expect.anything(),
@@ -170,6 +177,7 @@ describe("POST /api/user/signup", () => {
       bio: null,
       avatarUrl: null,
       ratings: {},
+      token: expect.any(String),
     });
   });
 
