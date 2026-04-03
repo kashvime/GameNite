@@ -4,6 +4,8 @@ import express, { Router } from "express";
 import { Server } from "socket.io";
 import { z } from "zod";
 import * as http from "node:http";
+import { requireAuth } from "./middleware/auth.js";
+import cors from "cors";
 
 import * as chat from "./controllers/chat.controller.js";
 import * as friend from "./controllers/friend.controller.js";
@@ -21,22 +23,26 @@ export const app = express();
 export const httpServer = http.createServer(app);
 const io: GameServer = new Server(httpServer);
 
-// ✅ Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:4530",
+    credentials: true,
+  }),
+);
 app.use(passport.initialize());
 
-// ✅ API ROUTES (unchanged)
 app.use(
   "/api",
   Router()
     .use(
       "/friend",
       Router()
-        .post("/request", friend.postSendRequest)
-        .post("/respond", friend.postRespondToRequest)
-        .post("/pending", friend.postPendingRequests)
-        .post("/list", friend.postFriends)
-        .post("/status", friend.postFriendshipStatus),
+        .post("/request", requireAuth, friend.postSendRequest)
+        .post("/respond", requireAuth, friend.postRespondToRequest)
+        .post("/pending", requireAuth, friend.getPendingRequestsController)
+        .post("/list", requireAuth, friend.getFriendsController)
+        .post("/status", requireAuth, friend.postFriendshipStatus),
     )
     .use(
       "/game",

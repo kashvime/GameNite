@@ -15,19 +15,30 @@ export default function AuthSuccess({ setAuth }: Props) {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    if (token) {
-      const user = jwtDecode<SafeUserInfo>(token);
-
-      setAuth({
-        user,
-        pass: token,
-        reset: () => setAuth(null),
-      });
-
-      localStorage.setItem("token", token);
+    if (!token) {
+      navigate("/login");
+      return;
     }
 
-    navigate("/");
+    // ✅ save FIRST
+    localStorage.setItem("token", token);
+
+    // ✅ decode AFTER
+    const user = jwtDecode<SafeUserInfo>(token);
+
+    setAuth({
+      user,
+      pass: token,
+      reset: () => {
+        setAuth(null);
+        localStorage.removeItem("token");
+      },
+    });
+
+    // ✅ navigate AFTER everything is set
+    setTimeout(() => {
+      navigate("/");
+    }, 50); // tiny delay ensures storage is ready
   }, [navigate, setAuth]);
 
   return <div>Logging you in...</div>;

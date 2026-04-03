@@ -13,6 +13,7 @@
     "vitest": "vitest"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/passport": "^1.0.17",
@@ -26,7 +27,7 @@
   "dependencies": {
     "@gamenite/shared": "^1.0.0",
     "@keyv/mongo": "^3.1.0",
-    "chess.js": "^1.4.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
