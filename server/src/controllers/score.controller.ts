@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { zMatchFilter, type MatchInfo, type GameKey, zUserAuth } from "@gamenite/shared";
 import { type Request } from "express";
 import { type RestAPI } from "../types.ts";
@@ -55,6 +53,7 @@ export const getLeaderboardHandler: RestAPI = async (req, res) => {
   let userIds: RecordId[] | undefined;
   if (friendsOnly && requestUsername) {
     const auth = await getUserByUsername(requestUsername);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     if (auth) userIds = await getFriendIds(auth.userId);
   }
 
@@ -79,6 +78,7 @@ export const postMyRank: RestAPI<{ rank: number; wins: number } | null> = async 
   const friendsOnly = req.query.friendsOnly === "true";
 
   let userIds: RecordId[] | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   if (friendsOnly) userIds = await getFriendIds(user.userId);
 
   res.send(await getUserRank(user.userId, gameType as GameKey | undefined, dateRange, userIds));
