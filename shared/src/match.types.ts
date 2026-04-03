@@ -29,6 +29,8 @@ export const zMatchFilter = z.object({
       to: z.coerce.date(),
     })
     .optional(),
+  sortOrder: z.enum(["newest", "oldest"]).optional(),
+  page: z.number().int().gte(1).optional(),
+  pageSize: z.number().int().gte(1).lte(50).optional(),
 });
-
 export type MatchFilter = z.infer<typeof zMatchFilter>;

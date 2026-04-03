@@ -2,10 +2,11 @@ import useAuth from "../hooks/useAuth.ts";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
 import useFriends from "../hooks/useFriends.ts";
 import { useState } from "react";
-import type { MatchFilter } from "@gamenite/shared";
+import type { MatchFilter, MatchInfo } from "@gamenite/shared";
 import { NavLink } from "react-router-dom";
 import MatchFilterBar from "../components/MatchFilterBar.tsx";
 import "./MatchHistory.css";
+
 /**
  * Displays the authenticated user's match history in a table, with
  * filtering by game type, result, opponent, and date range.
@@ -13,8 +14,13 @@ import "./MatchHistory.css";
 
 export default function MatchHistory() {
   const auth = useAuth();
-  const [filter, setFilter] = useState<MatchFilter>({});
-  const matches = useMatchHistory(auth, filter);
+
+  const [filter, setFilter] = useState<MatchFilter>({} as MatchFilter);
+
+  const matchState = useMatchHistory(auth, filter);
+
+  const matches: MatchInfo[] = matchState.type === "loaded" ? matchState.matches : [];
+
   const { state: friendsState } = useFriends(auth);
   const friends = friendsState.type === "loaded" ? friendsState.friends : [];
 
@@ -22,9 +28,17 @@ export default function MatchHistory() {
     <div className="content">
       <div className="spacedSection">
         <h2>Match History</h2>
+
         <MatchFilterBar filter={filter} setFilter={setFilter} friends={friends} />
-        {"message" in matches ? (
-          matches.message
+
+        {matchState.type !== "loaded" ? (
+          matchState.type === "error" ? (
+            <p>{matchState.message}</p>
+          ) : matchState.type === "empty" ? (
+            <p>No matches played yet.</p>
+          ) : (
+            <p>Loading...</p>
+          )
         ) : (
           <table className="matchTable">
             <thead>
@@ -35,10 +49,12 @@ export default function MatchHistory() {
                 <th>Date</th>
               </tr>
             </thead>
+
             <tbody>
-              {matches.map((match, i) => (
-                <tr key={i}>
+              {matches.map((match: MatchInfo) => (
+                <tr key={`${match.gameType}-${new Date(match.createdAt).toISOString()}`}>
                   <td>{match.gameType}</td>
+
                   <td>
                     {match.opponent ? (
                       <NavLink to={`/profile/${match.opponent.username}`}>
@@ -48,7 +64,9 @@ export default function MatchHistory() {
                       "—"
                     )}
                   </td>
+
                   <td className={`result-${match.result}`}>{match.result}</td>
+
                   <td>{new Date(match.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}

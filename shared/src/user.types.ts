@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { GameKey } from "./index.ts";
 
 /**
  * Represents a "safe" user object that excludes sensitive information like
@@ -12,6 +13,7 @@ import { z } from "zod";
  * - `favoriteGame`: the game the user has played the most
  * - `bio`: optional short user-written bio
  * - `avatarUrl`: optional path to uploaded profile picture
+ * - `rating`: the user's current Elo rating
  */
 
 export interface SafeUserInfo {
@@ -24,6 +26,7 @@ export interface SafeUserInfo {
   favoriteGame: string | null;
   bio: string | null;
   avatarUrl: string | null;
+  ratings: Partial<Record<GameKey, number>>;
 }
 
 /*** TYPES USED IN THE USER API ***/
