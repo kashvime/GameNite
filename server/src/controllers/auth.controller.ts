@@ -18,9 +18,9 @@ export const googleCallback: RequestHandler[] = [
       if (!user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-
       const token = jwt.sign(
         {
+          userId: user.userId,
           username: user.username,
           display: user.display,
           createdAt: user.createdAt,

@@ -14,7 +14,7 @@ const handleErr = (err: AxiosError) => {
 };
 
 export const api = axios.create({
-  baseURL: "http://localhost:8000", // 🔥 THIS FIXES EVERYTHING
+  baseURL: "http://localhost:8000",
   withCredentials: true,
 });
 /**

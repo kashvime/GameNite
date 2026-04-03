@@ -44,21 +44,22 @@ app.use(
         .post("/list", requireAuth, friend.getFriendsController)
         .post("/status", requireAuth, friend.postFriendshipStatus),
     )
+
     .use(
       "/game",
       Router()
-        .post("/create", game.postCreate)
+        .post("/create", requireAuth, game.postCreate) 
         .get("/list", game.getList)
         .get("/:id", game.getById),
     )
+
     .use(
       "/thread",
       Router()
-        .post("/create", thread.postCreate)
+        .post("/create", requireAuth, thread.postCreate)
         .get("/list", thread.getList)
         .get("/:id", thread.getById)
-        .post("/:id/comment", thread.postByIdComment),
-    )
+        .post("/:id/comment", requireAuth, thread.postByIdComment),
     .use(
       "/user",
       Router()
@@ -68,7 +69,7 @@ app.use(
         .post("/:username", user.postByUsername)
         .get("/:username", user.getByUsername),
     )
-    .use("/matches", Router().post("/", score.postMatches)),
+    .use("/matches", Router().post("/", requireAuth, score.postMatches)),
 );
 
 app.get("/auth/google", googleAuth);

@@ -28,3 +28,8 @@ export interface WithAuth<T> {
   auth: UserAuth;
   payload: T;
 }
+
+export interface WithToken<T> {
+  token: string;
+  payload: T;
+}

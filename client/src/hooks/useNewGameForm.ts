@@ -1,6 +1,5 @@
 import type { GameKey } from "@gamenite/shared";
 import { type ChangeEvent, useState, type SubmitEvent } from "react";
-import useAuth from "./useAuth.ts";
 import { useNavigate } from "react-router-dom";
 import { createGame } from "../services/gameService.ts";
 
@@ -15,14 +14,11 @@ import { createGame } from "../services/gameService.ts";
 export default function useNewGameForm() {
   const [gameKey, setGameKey] = useState<GameKey | "">("");
   const [err, setErr] = useState<string | null>(null);
-  const auth = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setErr(null);
 
-    // type assertion is safe because NewGame.tsx only allows selection of
-    // valid game keys
     setGameKey(e.target.value as GameKey | "");
   };
 
@@ -34,7 +30,7 @@ export default function useNewGameForm() {
       return;
     }
     setErr(null);
-    const game = await createGame(auth, gameKey);
+    const game = await createGame(gameKey);
     if ("error" in game) {
       setErr(game.error);
       return;
