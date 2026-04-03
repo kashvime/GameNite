@@ -60,12 +60,11 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, auth.username]);
 
   useEffect(() => {
     let cancel = false;
-    getMatchHistory().then((res) => {
+    getMatchHistory(auth).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
       setMatches(res);
@@ -73,7 +72,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-  }, [username]);
+  }, [username, auth.username]);
 
   const handleAddFriend = async () => {
     setFriendError(null);
@@ -97,7 +96,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   const handleChallenge = async () => {
     setChallengeError(null);
-    const game = await createGame("chess");
+    const game = await createGame(auth, "chess");
     if ("error" in game) {
       setChallengeError(game.error);
       return;
