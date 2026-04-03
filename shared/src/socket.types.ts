@@ -37,4 +37,6 @@ export interface ServerToClientEvents {
   gameWatched: (payload: GamePlayInfo) => void;
   friendRequestReceived: (payload: { from: SafeUserInfo }) => void;
   leagueChanged: (payload: { newLeague: string; oldLeague: string }) => void;
+  leagueChanged: (payload: { newLeague: League; oldLeague: League }) => void;
+  leaderboardUpdated: () => void;
 }

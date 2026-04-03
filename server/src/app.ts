@@ -36,6 +36,17 @@ app.use(
   "/api",
   Router()
     .use(
+      "/scores",
+      Router()
+        .post("/", score.postMatches)
+        .get("/leaderboard", score.getLeaderboardHandler)
+        .post("/myrank", score.postMyRank),
+    )
+    .use(
+      "/scores",
+      Router().post("/", score.postMatches).get("/leaderboard", score.getLeaderboardHandler),
+    )
+    .use(
       "/friend",
       Router()
         .post("/request", requireAuth, friend.postSendRequest)
