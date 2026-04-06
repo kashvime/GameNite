@@ -15,7 +15,8 @@ export default function UpdateProfile() {
 
   useEffect(() => {
     let cancel = false;
-    getMatchHistory().then((res) => {
+    const auth = { username: user.username, password: pass };
+    getMatchHistory(auth).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
       setMatches(res);
