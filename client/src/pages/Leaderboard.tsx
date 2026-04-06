@@ -2,61 +2,35 @@ import { useState } from "react";
 import useLeaderboard from "../hooks/useLeaderboard.ts";
 import "./Leaderboard.css";
 import useAuth from "../hooks/useAuth.ts";
+import { computeLeague } from "@gamenite/shared";
+import type { GameKey } from "@gamenite/shared";
 
-const GAME_TYPES = ["All", "nim", "guess", "chess"];
-const TIME_PERIODS = ["Today", "This Week", "This Month", "All Time"] as const;
-type TimePeriod = (typeof TIME_PERIODS)[number];
-
-function getDateRange(period: TimePeriod): { from: Date; to: Date } | undefined {
-  const now = new Date();
-  const from = new Date();
-  if (period === "Today") {
-    from.setHours(0, 0, 0, 0);
-  } else if (period === "This Week") {
-    from.setDate(now.getDate() - 7);
-  } else if (period === "This Month") {
-    from.setDate(1);
-    from.setHours(0, 0, 0, 0);
-  } else {
-    return undefined;
-  }
-  return { from, to: now };
-}
+const GAME_TABS: GameKey[] = ["chess", "nim", "guess"];
 
 export default function Leaderboard() {
   const [friendsOnly, setFriendsOnly] = useState(false);
-  const [gameType, setGameType] = useState<string | undefined>(undefined);
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>("All Time");
-  const state = useLeaderboard(gameType, getDateRange(timePeriod), friendsOnly);
+  const [gameType, setGameType] = useState<GameKey>("chess");
+  const state = useLeaderboard(gameType, friendsOnly);
   const auth = useAuth();
 
   return (
     <div className="content">
       <div className="spacedSection">
         <h2>Leaderboard</h2>
+
+        <div className="leaderboard-tabs">
+          {GAME_TABS.map((tab) => (
+            <button
+              key={tab}
+              className={`leaderboard-tab${gameType === tab ? ' active' : ''}`}
+              onClick={() => setGameType(tab)}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+
         <div className="leaderboard-filters">
-          <select
-            className="leaderboard-select"
-            value={gameType ?? "All"}
-            onChange={(e) => setGameType(e.target.value === "All" ? undefined : e.target.value)}
-          >
-            {GAME_TYPES.map((g) => (
-              <option key={g} value={g}>
-                {g.charAt(0).toUpperCase() + g.slice(1)}
-              </option>
-            ))}
-          </select>
-          <select
-            className="leaderboard-select"
-            value={timePeriod}
-            onChange={(e) => setTimePeriod(e.target.value as TimePeriod)}
-          >
-            {TIME_PERIODS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
           <button
             className={`narrow ${friendsOnly ? "primary" : "secondary"}`}
             onClick={() => setFriendsOnly((v) => !v)}
@@ -64,24 +38,27 @@ export default function Leaderboard() {
             {friendsOnly ? "Friends Only" : "All Players"}
           </button>
         </div>
+
         {state.type === "waiting" && <div>Loading...</div>}
         {state.type === "error" && <div className="error-message">{state.msg}</div>}
         {state.type === "loaded" &&
           (() => {
             const isInTop = state.myRank
-              ? state.entries.some((e) => e.user.username === auth.username)
+              ? state.entries.some((entry) => entry.user.username === auth.username)
               : false;
             return (
               <>
                 {state.entries.length === 0 ? (
-                  <div className="smallAndGray">No matches played yet.</div>
+                  <div className="smallAndGray">No rated players yet.</div>
                 ) : (
+                  <div className="card" style={{ padding: 0, overflow: 'hidden', maxWidth: '600px' }}>
                   <table className="leaderboard-table">
                     <thead>
                       <tr>
                         <th className="leaderboard-rank">Rank</th>
                         <th>Player</th>
-                        <th className="leaderboard-wins">Wins</th>
+                        <th className="leaderboard-rating">Rating</th>
+                        <th>League</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -92,13 +69,20 @@ export default function Leaderboard() {
                             <span>{entry.user.display}</span>
                             <span className="smallAndGray"> @{entry.user.username}</span>
                           </td>
-                          <td className="leaderboard-wins">{entry.wins}</td>
+                          <td className="leaderboard-rating">{entry.rating}</td>
+                          <td>
+                            <span className={`league-badge league-${computeLeague(entry.rating)}`}>
+                              {computeLeague(entry.rating)}
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 )}
                 {state.myRank && !isInTop && (
+                  <div className="card" style={{ padding: 0, overflow: 'hidden', maxWidth: '600px' }}>
                   <table className="leaderboard-table">
                     <tbody>
                       <tr className="leaderboard-me">
@@ -107,10 +91,18 @@ export default function Leaderboard() {
                           <span>You</span>
                           <span className="smallAndGray"> @{auth.username}</span>
                         </td>
-                        <td className="leaderboard-wins">{state.myRank.wins}</td>
+                        <td className="leaderboard-rating">{state.myRank.rating}</td>
+                        <td>
+                          <span
+                            className={`league-badge league-${computeLeague(state.myRank.rating)}`}
+                          >
+                            {computeLeague(state.myRank.rating)}
+                          </span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
+                  </div>
                 )}
               </>
             );

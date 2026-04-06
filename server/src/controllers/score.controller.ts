@@ -38,15 +38,13 @@ export const postMatches: RestAPI<MatchInfo[]> = async (req, res) => {
 };
 
 /**
- * Returns the top users ranked by win count.
- * Query params: gameType? (string), limit? (number)
+ * Returns the top users ranked by Elo rating for the given game type.
+ * Query params: gameType (string, defaults to "chess"), limit? (number), friendsOnly? (boolean)
  */
 export const getLeaderboardHandler: RestAPI = async (req, res) => {
-  const gameType = typeof req.query.gameType === "string" ? req.query.gameType : undefined;
+  const rawGameType = typeof req.query.gameType === "string" ? req.query.gameType : "chess";
+  const gameType = rawGameType as GameKey;
   const limit = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : 30;
-  const from = typeof req.query.from === "string" ? new Date(req.query.from) : undefined;
-  const to = typeof req.query.to === "string" ? new Date(req.query.to) : undefined;
-  const dateRange = from && to ? { from, to } : undefined;
   const friendsOnly = req.query.friendsOnly === "true";
   const requestUsername = typeof req.query.username === "string" ? req.query.username : undefined;
 
@@ -56,10 +54,10 @@ export const getLeaderboardHandler: RestAPI = async (req, res) => {
     if (auth) userIds = await getFriendIds(auth.userId);
   }
 
-  res.send(await getLeaderboard(gameType as GameKey | undefined, dateRange, limit, userIds));
+  res.send(await getLeaderboard(gameType, limit, userIds));
 };
 
-export const postMyRank: RestAPI<{ rank: number; wins: number } | null> = async (req, res) => {
+export const postMyRank: RestAPI<{ rank: number; rating: number } | null> = async (req, res) => {
   const jwtUser = getJwtUser(req);
   if (!jwtUser) {
     res.status(401).send({ error: "Unauthorized" });
@@ -72,14 +70,12 @@ export const postMyRank: RestAPI<{ rank: number; wins: number } | null> = async 
     return;
   }
 
-  const gameType = typeof req.query.gameType === "string" ? req.query.gameType : undefined;
-  const from = typeof req.query.from === "string" ? new Date(req.query.from) : undefined;
-  const to = typeof req.query.to === "string" ? new Date(req.query.to) : undefined;
-  const dateRange = from && to ? { from, to } : undefined;
+  const rawGameType = typeof req.query.gameType === "string" ? req.query.gameType : "chess";
+  const gameType = rawGameType as GameKey;
   const friendsOnly = req.query.friendsOnly === "true";
 
   let userIds: RecordId[] | undefined;
   if (friendsOnly) userIds = await getFriendIds(user.userId);
 
-  res.send(await getUserRank(user.userId, gameType as GameKey | undefined, dateRange, userIds));
+  res.send(await getUserRank(user.userId, gameType, userIds));
 };
