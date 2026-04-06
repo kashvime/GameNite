@@ -1,5 +1,5 @@
 import type { SafeUserInfo, MatchInfo } from "@gamenite/shared";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserById } from "../services/userService";
 import {
@@ -19,7 +19,10 @@ interface ViewProfileProps {
 
 export default function ViewProfile({ username }: ViewProfileProps) {
   const { user: loggedInUser, pass } = useLoginContext();
-  const auth = { username: loggedInUser.username, password: pass };
+  const auth = useMemo(
+    () => ({ username: loggedInUser.username, password: pass }),
+    [loggedInUser.username, pass],
+  );
   const navigate = useNavigate();
 
   const [componentState, setComponentState] = useState<
@@ -60,7 +63,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-  }, [username, auth.username]);
+  }, [username, auth]);
 
   useEffect(() => {
     let cancel = false;
@@ -72,7 +75,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-  }, [username, auth.username]);
+  }, [username, auth]);
 
   const handleAddFriend = async () => {
     setFriendError(null);
