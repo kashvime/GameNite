@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { SafeUserInfo } from "@gamenite/shared";
 import useAuth from "../hooks/useAuth.ts";
 import useFriends from "../hooks/useFriends.ts";
-import { FriendHeadToHead } from "../components/FriendHeadtoHead.tsx";
+import FriendHeadToHead from "../components/FriendHeadtoHead.tsx";
 
 export default function Friends() {
   const auth = useAuth();
@@ -11,12 +11,12 @@ export default function Friends() {
   const [sendError, setSendError] = useState<string | null>(null);
   const [selectedFriend, setSelectedFriend] = useState<SafeUserInfo | null>(null);
 
-  const handleSend = async () => {
+  async function handleSend() {
     setSendError(null);
     const err = await send(toUsername);
     if (err) setSendError(err);
     else setToUsername("");
-  };
+  }
 
   if (state.type === "waiting") return <div className="smallAndGray">Loading friends...</div>;
   if (state.type === "error") return <div style={{ color: "#f00" }}>{state.msg}</div>;

@@ -1,3 +1,4 @@
+import "./FriendHeadtoHead.css";
 import { NavLink } from "react-router-dom";
 import type { MatchInfo, SafeUserInfo, UserAuth } from "@gamenite/shared";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
@@ -14,7 +15,7 @@ interface FriendHeadToHeadProps {
  * Displays head-to-head match statistics and filtered match history between
  * the authenticated user and one friend.
  */
-export function FriendHeadToHead({ auth, friend, onClose }: FriendHeadToHeadProps) {
+export default function FriendHeadToHead({ auth, friend, onClose }: FriendHeadToHeadProps) {
   const state = useMatchHistory(auth, { opponentUsername: friend.username });
 
   if (state.type !== "loaded")
@@ -35,7 +36,7 @@ export function FriendHeadToHead({ auth, friend, onClose }: FriendHeadToHeadProp
         @{friend.username}
       </NavLink>
 
-      <div style={{ display: "flex", gap: "1rem" }}>
+      <div className="statTiles">
         {(
           [
             ["Wins", wins],
@@ -44,16 +45,8 @@ export function FriendHeadToHead({ auth, friend, onClose }: FriendHeadToHeadProp
             ["Win Rate", winRate],
           ] as [string, string | number][]
         ).map(([label, value]) => (
-          <div
-            key={label}
-            style={{
-              textAlign: "center",
-              padding: "0.75rem 1rem",
-              border: "1px solid #ddd",
-              borderRadius: "0.5rem",
-            }}
-          >
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>{value}</div>
+          <div key={label} className="statTile">
+            <div className="statValue">{value}</div>
             <div className="smallAndGray">{label}</div>
           </div>
         ))}
