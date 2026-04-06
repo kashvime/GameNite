@@ -62,13 +62,14 @@ export async function enforceAuth(auth: UserAuth): Promise<UserWithId> {
  * Handles SSO login by using email as username.
  * Creates a new user if one does not exist.
  */
-export async function ssoLogin(email: string, name: string): Promise<UserRecord> {
+export async function ssoLogin(email: string, name: string): Promise<UserWithId> {
   const auth = await AuthRepo.find(email);
 
   let user: UserRecord;
+  let userId: string;
 
   if (!auth) {
-    const userId = randomUUID();
+    userId = randomUUID();
 
     await updateAuth(email, "SSO_LOGIN", userId);
 
@@ -85,7 +86,9 @@ export async function ssoLogin(email: string, name: string): Promise<UserRecord>
 
     await UserRepo.set(userId, user);
   } else {
-    const existingUser = await UserRepo.get(auth.userId);
+    userId = auth.userId;
+
+    const existingUser = await UserRepo.get(userId);
 
     if (!existingUser) {
       throw new Error("User profile not found for existing auth");
@@ -94,5 +97,8 @@ export async function ssoLogin(email: string, name: string): Promise<UserRecord>
     user = existingUser;
   }
 
-  return user;
+  return {
+    userId,
+    ...user,
+  };
 }

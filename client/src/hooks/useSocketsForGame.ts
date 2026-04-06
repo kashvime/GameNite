@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import useAuth from "./useAuth.ts";
 import type { GamePlayInfo, SafeUserInfo, TaggedGameView } from "@gamenite/shared";
 import useLoginContext from "./useLoginContext.ts";
 
@@ -18,7 +17,7 @@ import useLoginContext from "./useLoginContext.ts";
  */
 export default function useSocketsForGame(gameId: string, initialPlayers: SafeUserInfo[]) {
   const { user, socket } = useLoginContext();
-  const auth = useAuth();
+  const token = localStorage.getItem("token") ?? "";
   const [view, setView] = useState<null | TaggedGameView>(null);
   const [hasWatched, setHasWatched] = useState<boolean>(false);
   const [players, setPlayers] = useState<SafeUserInfo[]>(initialPlayers);
@@ -46,27 +45,28 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
     socket.on("gameWatched", handleWatched);
     socket.on("gamePlayersUpdated", handlePlayersUpdated);
     socket.on("gameStateUpdated", handleStateUpdated);
-    socket.emit("gameWatch", { auth, payload: gameId });
+    socket.emit("gameWatch", { token, payload: gameId });
 
     return () => {
       socket.off("gameWatched", handleWatched);
       socket.off("gamePlayersUpdated", handlePlayersUpdated);
       socket.off("gameStateUpdated", handleStateUpdated);
     };
-  }, [gameId, socket, userPlayerIndex, auth]);
+  }, [gameId, socket, userPlayerIndex, token]);
 
   function joinGame() {
-    socket.emit("gameJoinAsPlayer", { auth, payload: gameId });
+    socket.emit("gameJoinAsPlayer", { token, payload: gameId });
   }
 
   function startGame() {
-    socket.emit("gameStart", { auth, payload: gameId });
+    socket.emit("gameStart", { token, payload: gameId });
   }
 
   return {
     hasWatched,
     players,
     userPlayerIndex,
+
     view,
     joinGame,
     startGame,

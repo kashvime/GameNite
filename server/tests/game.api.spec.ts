@@ -2,72 +2,66 @@ import { describe, expect, it } from "vitest";
 import supertest, { type Response } from "supertest";
 import { app } from "../src/app.ts";
 import { randomUUID } from "crypto";
+import jwt from "jsonwebtoken";
+
+process.env.JWT_SECRET = "test";
+
+const makeToken = (username: string) => jwt.sign({ username }, process.env.JWT_SECRET as string);
 
 let response: Response;
 
-const auth3 = { username: "user3", password: "pwd3333" };
-const authBad = { username: "user3", password: "user3" };
+const TOKEN3 = makeToken("user3");
+
+const userShape = {
+  userId: expect.any(String),
+  createdAt: expect.anything(),
+  onlineStatus: expect.any(String),
+  totalGamesPlayed: expect.any(Number),
+  winRate: expect.any(Number),
+  favoriteGame: null,
+  bio: null,
+  avatarUrl: null,
+  ratings: expect.any(Object),
+};
 
 describe("POST /api/game/create", () => {
   it("should return 400 on ill-formed payload or invalid game key", async () => {
-    response = await supertest(app).post(`/api/game/create`).send({
-      auth: auth3,
-      payload: 9,
-    });
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: 9 });
     expect(response.status).toBe(400);
 
     response = await supertest(app)
       .post(`/api/game/create`)
-      .send({ auth: auth3, payload: "gameThatDoesNotExist" });
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "gameThatDoesNotExist" });
     expect(response.status).toBe(400);
   });
 
   it("should return 403 with bad auth", async () => {
     response = await supertest(app)
       .post(`/api/game/create`)
-      .send({ auth: authBad, payload: "nim" });
-    expect(response.status).toBe(403);
+      .set("Authorization", `Bearer invalidtoken`)
+      .send({ gameKey: "nim" });
+    expect(response.status).toBe(401);
   });
 
   it("should succeed when asked to create a game of nim", async () => {
-    response = await supertest(app).post(`/api/game/create`).send({
-      auth: auth3,
-      payload: "nim",
-    });
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "nim" });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       gameId: expect.anything(),
       chat: expect.anything(),
       type: "nim",
       status: "waiting",
-      createdBy: {
-        username: "user3",
-        display: "Frau Drei",
-        createdAt: expect.anything(),
-        onlineStatus: expect.any(String),
-        totalGamesPlayed: expect.any(Number),
-        winRate: expect.any(Number),
-        favoriteGame: null,
-        bio: null,
-        avatarUrl: null,
-        ratings: expect.any(Object),
-      },
+      createdBy: { ...userShape, username: "user3", display: "Frau Drei" },
       createdAt: expect.anything(),
       minPlayers: 2,
-      players: [
-        {
-          username: "user3",
-          display: "Frau Drei",
-          createdAt: expect.anything(),
-          onlineStatus: expect.any(String),
-          totalGamesPlayed: expect.any(Number),
-          winRate: expect.any(Number),
-          favoriteGame: null,
-          bio: null,
-          avatarUrl: null,
-          ratings: expect.any(Object),
-        },
-      ],
+      players: [{ ...userShape, username: "user3", display: "Frau Drei" }],
     });
   });
 });
@@ -79,10 +73,10 @@ describe("GET /api/game/:id", () => {
   });
 
   it("should succeed if a created game is requested", async () => {
-    response = await supertest(app).post(`/api/game/create`).send({
-      auth: auth3,
-      payload: "nim",
-    });
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "nim" });
     expect(response.status).toBe(200);
     const gameInfo = response.body;
 
@@ -97,11 +91,7 @@ describe("GET /api/game/list", () => {
     response = await supertest(app).get(`/api/game/list`);
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject([
-      {
-        type: "nim",
-        status: "waiting",
-        players: [{ username: "user1" }],
-      },
+      { type: "nim", status: "waiting", players: [{ username: "user1" }] },
       {
         type: "guess",
         status: "active",

@@ -17,7 +17,7 @@ export default function MatchHistory() {
 
   const [filter, setFilter] = useState<MatchFilter>({} as MatchFilter);
 
-  const matchState = useMatchHistory(auth, filter);
+  const matchState = useMatchHistory(filter);
 
   const matches: MatchInfo[] = matchState.type === "loaded" ? matchState.matches : [];
 

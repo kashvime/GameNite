@@ -19,6 +19,15 @@
     "playwright": "npm run playwright -w=client"
   },
   "dependencies": {
-    "chess.js": "^1.4.0"
+    "cors": "^2.8.6",
+    "jsonwebtoken": "^9.0.3",
+    "jwt-decode": "^4.0.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.17"
   }
 }

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import {
   computeLeague,
   type GameKey,
@@ -37,6 +40,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     totalGamesPlayed > 0 ? Object.entries(gameCounts).sort((a, b) => b[1] - a[1])[0][0] : null;
 
   return {
+    userId,
     username: record.username,
     display: record.display,
     createdAt: new Date(record.createdAt),
@@ -80,6 +84,7 @@ export async function createUser(
   });
   await updateAuth(username, password, id);
   return Promise.resolve({
+    userId: id,
     username,
     createdAt,
     display: username,

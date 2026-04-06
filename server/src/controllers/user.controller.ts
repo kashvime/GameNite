@@ -8,13 +8,18 @@ import {
 import { type RestAPI } from "../types.ts";
 import { z } from "zod";
 import { checkAuth, getUserByUsername } from "../services/auth.service.ts";
+import jwt from "jsonwebtoken";
+
+function issueToken(username: string): string {
+  return jwt.sign({ username }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+}
 
 /**
  * Handles user login by validating credentials.
  * @param req The request containing username and password in the body.
  * @param res The response, either returning the user or an error.
  */
-export const postLogin: RestAPI<SafeUserInfo> = async (req, res) => {
+export const postLogin: RestAPI<SafeUserInfo & { token: string }> = async (req, res) => {
   const userAuth = zUserAuth.safeParse(req.body);
   if (!userAuth.success) {
     res.status(400).send({ error: "Poorly-formed request" });
@@ -27,7 +32,9 @@ export const postLogin: RestAPI<SafeUserInfo> = async (req, res) => {
     return;
   }
 
-  res.send(await populateSafeUserInfo(user.userId));
+  const userInfo = await populateSafeUserInfo(user.userId);
+  const token = issueToken(user.username);
+  res.send({ ...userInfo, token });
 };
 
 /**
@@ -57,14 +64,20 @@ export const postByUsername: RestAPI<SafeUserInfo, { username: string }> = async
  * @param res The response, either returning the created user or an error.
  * @returns A promise resolving to void.
  */
-export const postSignup: RestAPI<SafeUserInfo> = async (req, res) => {
+export const postSignup: RestAPI<SafeUserInfo & { token: string }> = async (req, res) => {
   const userAuth = zUserAuth.safeParse(req.body);
   if (!userAuth.success) {
     res.status(400).send({ error: "Poorly-formed request" });
     return;
   }
 
-  res.send(await createUser(userAuth.data.username, userAuth.data.password, new Date()));
+  const userInfo = await createUser(userAuth.data.username, userAuth.data.password, new Date());
+  if ("error" in userInfo) {
+    res.send(userInfo); // return error without token
+    return;
+  }
+  const token = issueToken(userAuth.data.username);
+  res.send({ ...userInfo, token });
 };
 
 /**

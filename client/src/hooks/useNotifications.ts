@@ -19,7 +19,7 @@ export default function useNotifications(auth: UserAuth) {
 
   useEffect(() => {
     const poll = async () => {
-      const res = await getPendingRequests(auth);
+      const res = await getPendingRequests();
       if (!res || "error" in res) return;
 
       const newNotifications: Notification[] = [];

@@ -13,8 +13,10 @@ const handleErr = (err: AxiosError) => {
   return Promise.reject(err);
 };
 
-export const api = axios.create({ withCredentials: true });
-
+export const api = axios.create({
+  baseURL: "http://localhost:8000",
+  withCredentials: true,
+});
 /**
  * Add a request interceptor to the Axios instance.
  */
