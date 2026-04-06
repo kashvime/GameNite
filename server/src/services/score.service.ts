@@ -1,6 +1,6 @@
 import { ScoreRepo, UserRepo } from "../repository.ts";
 import type { ScoreRecord, RecordId } from "../models.ts";
-import type { GameKey, MatchInfo, MatchFilter } from "@gamenite/shared";
+import { computeLeague, type GameKey, type League, type MatchInfo, type MatchFilter } from "@gamenite/shared";
 import { populateSafeUserInfo } from "./user.service.ts";
 import type { GameServer } from "../types.ts";
 
@@ -77,8 +77,11 @@ export async function getMatchesByUserId(
       createdAt: new Date(record.createdAt),
     });
   }
-  // Sort by date
+  // Sort by selected order; default to newest first
   matches.sort((a, b) => {
+    if (filter?.sortOrder === "score") {
+      return (b.score ?? 0) - (a.score ?? 0);
+    }
     const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     return filter?.sortOrder === "oldest" ? -diff : diff;
   });
@@ -100,6 +103,7 @@ export async function getLeaderboard(
   gameType: GameKey,
   limit = 30,
   userIds?: RecordId[],
+  league?: League,
 ): Promise<{ user: Awaited<ReturnType<typeof populateSafeUserInfo>>; rating: number }[]> {
   const keys = await UserRepo.getAllKeys();
   const records = await UserRepo.getMany(keys);
@@ -110,6 +114,7 @@ export async function getLeaderboard(
     const rating = record.ratings?.[gameType];
     if (rating === undefined) continue;
     if (userIds && !userIds.includes(keys[i])) continue;
+    if (league && computeLeague(rating) !== league) continue;
     rated.push({ userId: keys[i], rating });
   }
 
@@ -134,16 +139,21 @@ export async function getUserRank(
   userId: RecordId,
   gameType: GameKey,
   userIds?: RecordId[],
+  league?: League,
 ): Promise<{ rank: number; rating: number } | null> {
   const keys = await UserRepo.getAllKeys();
   const records = await UserRepo.getMany(keys);
 
+  // Build the filtered pool to determine rank within the current view,
+  // but always include the requesting user so their position is visible
+  // even when their rating places them outside the selected league.
   const rated: { userId: RecordId; rating: number }[] = [];
   for (let i = 0; i < keys.length; i++) {
     const record = records[i];
     const rating = record.ratings?.[gameType];
     if (rating === undefined) continue;
     if (userIds && !userIds.includes(keys[i])) continue;
+    if (league && computeLeague(rating) !== league && keys[i] !== userId) continue;
     rated.push({ userId: keys[i], rating });
   }
 

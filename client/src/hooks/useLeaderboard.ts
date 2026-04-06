@@ -12,7 +12,7 @@ type LeaderboardState =
       myRank: { rank: number; rating: number } | null;
     };
 
-export default function useLeaderboard(gameType: string, friendsOnly?: boolean) {
+export default function useLeaderboard(gameType: string, friendsOnly?: boolean, league?: string) {
   const [state, setState] = useState<LeaderboardState>({ type: "waiting" });
   const [refreshToken, setRefreshToken] = useState(0);
   const { socket } = useLoginContext();
@@ -29,8 +29,8 @@ export default function useLeaderboard(gameType: string, friendsOnly?: boolean) 
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      getLeaderboard(auth, gameType, friendsOnly),
-      getMyRank(auth, gameType, friendsOnly),
+      getLeaderboard(auth, gameType, friendsOnly, league),
+      getMyRank(auth, gameType, friendsOnly, league),
     ]).then(([leaderboardRes, myRankRes]) => {
       if (cancelled) return;
       if ("error" in leaderboardRes) {
@@ -48,7 +48,7 @@ export default function useLeaderboard(gameType: string, friendsOnly?: boolean) 
     return () => {
       cancelled = true;
     };
-  }, [auth, gameType, friendsOnly, refreshToken]);
+  }, [auth, gameType, friendsOnly, league, refreshToken]);
 
   return state;
 }
