@@ -2,56 +2,118 @@
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .leaderboard-table {
   width: 100%;
-  max-width: 600px;
   border-collapse: collapse;
 }
 
 .leaderboard-table thead tr {
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .leaderboard-table th {
   text-align: left;
   padding: 0.5rem 0.75rem;
   font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .leaderboard-table td {
-  padding: 0.5rem 0.75rem;
-  border-top: 1px dashed #000;
+  padding: 0.6rem 0.75rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .leaderboard-table tr.leaderboard-top td {
   font-weight: 600;
-  background-color: var(--gray-background);
+  background-color: rgba(99, 102, 241, 0.06);
 }
 
 .leaderboard-rank {
   width: 4rem;
   text-align: center;
+  color: var(--color-text-muted);
 }
 
-.leaderboard-wins {
+.leaderboard-rating {
   width: 5rem;
   text-align: center;
+  font-weight: 600;
 }
 
 .leaderboard-me td {
-  border-top: 2px dashed #000;
+  border-top: 2px dashed var(--color-primary);
   font-style: italic;
-  color: oklch(0.45 0.1 260);
+  color: var(--color-primary);
 }
 
 .leaderboard-select {
-  border-radius: 0.5rem;
-  border: 1px solid var(--gray-foreground);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
   padding-inline: 0.5rem;
   min-height: 2.5rem;
   font-size: 1rem;
-  background-color: white;
+  background-color: var(--color-surface);
   cursor: pointer;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 1rem;
+}
+
+.leaderboard-tab {
+  padding: 0.5rem 1.4rem;
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  background: var(--color-bg);
+  cursor: pointer;
+  margin-right: 0.25rem;
+  margin-bottom: -2px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-radius: var(--radius) var(--radius) 0 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.leaderboard-tab:hover {
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.leaderboard-tab.active {
+  background: var(--color-surface);
+  font-weight: 600;
+  color: var(--color-primary);
+  border-color: var(--color-border);
+  border-bottom: 2px solid var(--color-surface);
+}
+
+.league-badge {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.league-bronze {
+  background: #cd7f32;
+  color: white;
+}
+
+.league-silver {
+  background: #9ca3af;
+  color: white;
+}
+
+.league-gold {
+  background: #f59e0b;
+  color: white;
 }

@@ -9,14 +9,10 @@ type LeaderboardState =
   | {
       type: "loaded";
       entries: LeaderboardEntry[];
-      myRank: { rank: number; wins: number } | null;
+      myRank: { rank: number; rating: number } | null;
     };
 
-export default function useLeaderboard(
-  gameType?: string,
-  dateRange?: { from: Date; to: Date },
-  friendsOnly?: boolean,
-) {
+export default function useLeaderboard(gameType: string, friendsOnly?: boolean) {
   const [state, setState] = useState<LeaderboardState>({ type: "waiting" });
   const [refreshToken, setRefreshToken] = useState(0);
   const { socket } = useLoginContext();
@@ -33,8 +29,8 @@ export default function useLeaderboard(
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      getLeaderboard(auth, gameType, dateRange, friendsOnly),
-      getMyRank(auth, gameType, dateRange, friendsOnly),
+      getLeaderboard(auth, gameType, friendsOnly),
+      getMyRank(auth, gameType, friendsOnly),
     ]).then(([leaderboardRes, myRankRes]) => {
       if (cancelled) return;
       if ("error" in leaderboardRes) {
@@ -52,7 +48,7 @@ export default function useLeaderboard(
     return () => {
       cancelled = true;
     };
-  }, [auth, gameType, friendsOnly, refreshToken, dateRange]);
+  }, [auth, gameType, friendsOnly, refreshToken]);
 
   return state;
 }

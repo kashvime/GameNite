@@ -1,4 +1,4 @@
-import { ScoreRepo } from "../repository.ts";
+import { ScoreRepo, UserRepo } from "../repository.ts";
 import type { ScoreRecord, RecordId } from "../models.ts";
 import type { GameKey, MatchInfo, MatchFilter } from "@gamenite/shared";
 import { populateSafeUserInfo } from "./user.service.ts";
@@ -89,66 +89,68 @@ export async function getMatchesByUserId(
   return matches.slice((page - 1) * pageSize, page * pageSize);
 }
 /**
- * Returns the top users ranked by win count, optionally filtered by game type.
+ * Returns the top users ranked by Elo rating for the given game type.
  *
- * @param gameType - Optional game type to filter by
- * @param limit - Maximum number of entries to return (default 10)
- * @returns Ranked list of users with their win counts
+ * @param gameType - The game type to rank by
+ * @param limit - Maximum number of entries to return (default 30)
+ * @param userIds - Optional list of user IDs to restrict to (friends-only filter)
+ * @returns Ranked list of users with their Elo rating for the game
  */
 export async function getLeaderboard(
-  gameType?: GameKey,
-  dateRange?: { from: Date; to: Date },
+  gameType: GameKey,
   limit = 30,
   userIds?: RecordId[],
-): Promise<{ user: Awaited<ReturnType<typeof populateSafeUserInfo>>; wins: number }[]> {
-  const keys = await ScoreRepo.getAllKeys();
-  const records = await ScoreRepo.getMany(keys);
+): Promise<{ user: Awaited<ReturnType<typeof populateSafeUserInfo>>; rating: number }[]> {
+  const keys = await UserRepo.getAllKeys();
+  const records = await UserRepo.getMany(keys);
 
-  const winCounts = new Map<RecordId, number>();
-  for (const record of records) {
-    if (record.result !== "win") continue;
-    if (gameType && record.gameType !== gameType) continue;
-    if (userIds && !userIds.includes(record.userId)) continue;
-    if (dateRange) {
-      const createdAt = new Date(record.createdAt);
-      if (createdAt < dateRange.from || createdAt > dateRange.to) continue;
-    }
-    winCounts.set(record.userId, (winCounts.get(record.userId) ?? 0) + 1);
+  const rated: { userId: RecordId; rating: number }[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    const record = records[i];
+    const rating = record.ratings?.[gameType];
+    if (rating === undefined) continue;
+    if (userIds && !userIds.includes(keys[i])) continue;
+    rated.push({ userId: keys[i], rating });
   }
 
-  const sorted = [...winCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+  rated.sort((a, b) => b.rating - a.rating);
 
   const entries = [];
-  for (const [userId, wins] of sorted) {
-    entries.push({ user: await populateSafeUserInfo(userId), wins });
+  for (const { userId, rating } of rated.slice(0, limit)) {
+    entries.push({ user: await populateSafeUserInfo(userId), rating });
   }
   return entries;
 }
 
+/**
+ * Returns the authenticated user's rank and Elo rating among all (or filtered) players for a game.
+ *
+ * @param userId - The user to look up
+ * @param gameType - The game type to rank by
+ * @param userIds - Optional list of user IDs to restrict ranking to (friends-only filter)
+ * @returns The user's rank and rating, or null if they have no rating for this game
+ */
 export async function getUserRank(
   userId: RecordId,
-  gameType?: GameKey,
-  dateRange?: { from: Date; to: Date },
+  gameType: GameKey,
   userIds?: RecordId[],
-): Promise<{ rank: number; wins: number } | null> {
-  const keys = await ScoreRepo.getAllKeys();
-  const records = await ScoreRepo.getMany(keys);
+): Promise<{ rank: number; rating: number } | null> {
+  const keys = await UserRepo.getAllKeys();
+  const records = await UserRepo.getMany(keys);
 
-  const winCounts = new Map<RecordId, number>();
-  for (const record of records) {
-    if (record.result !== "win") continue;
-    if (gameType && record.gameType !== gameType) continue;
-    if (userIds && !userIds.includes(record.userId)) continue;
-    if (dateRange) {
-      const createdAt = new Date(record.createdAt);
-      if (createdAt < dateRange.from || createdAt > dateRange.to) continue;
-    }
-    winCounts.set(record.userId, (winCounts.get(record.userId) ?? 0) + 1);
+  const rated: { userId: RecordId; rating: number }[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    const record = records[i];
+    const rating = record.ratings?.[gameType];
+    if (rating === undefined) continue;
+    if (userIds && !userIds.includes(keys[i])) continue;
+    rated.push({ userId: keys[i], rating });
   }
 
-  if (!winCounts.has(userId)) return null;
+  const entry = rated.find((r) => r.userId === userId);
+  if (!entry) return null;
 
-  const sorted = [...winCounts.entries()].sort((a, b) => b[1] - a[1]);
-  const rank = sorted.findIndex(([id]) => id === userId) + 1;
-  return { rank, wins: winCounts.get(userId)! };
+  rated.sort((a, b) => b.rating - a.rating);
+  const rank = rated.findIndex((r) => r.userId === userId) + 1;
+  return { rank, rating: entry.rating };
 }
