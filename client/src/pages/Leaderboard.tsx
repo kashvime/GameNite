@@ -27,7 +27,7 @@ export default function Leaderboard() {
           {GAME_TABS.map((tab) => (
             <button
               key={tab}
-              className={`leaderboard-tab${gameType === tab ? ' active' : ''}`}
+              className={`leaderboard-tab${gameType === tab ? " active" : ""}`}
               onClick={() => setGameType(tab)}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -37,15 +37,15 @@ export default function Leaderboard() {
 
         <div className="leaderboard-filters">
           <button
-            className={`narrow ${friendsOnly ? 'primary' : 'secondary'}`}
+            className={`narrow ${friendsOnly ? "primary" : "secondary"}`}
             onClick={() => setFriendsOnly((v) => !v)}
           >
-            {friendsOnly ? 'Friends Only' : 'All Players'}
+            {friendsOnly ? "Friends Only" : "All Players"}
           </button>
 
           <div className="leaderboard-league-filters">
             <button
-              className={`narrow leaderboard-league-btn${league === undefined ? ' active' : ''}`}
+              className={`narrow leaderboard-league-btn${league === undefined ? " active" : ""}`}
               onClick={() => setLeague(undefined)}
             >
               All Leagues
@@ -53,7 +53,7 @@ export default function Leaderboard() {
             {LEAGUES.map((l) => (
               <button
                 key={l}
-                className={`narrow leaderboard-league-btn league-btn-${l}${league === l ? ' active' : ''}`}
+                className={`narrow leaderboard-league-btn league-btn-${l}${league === l ? " active" : ""}`}
                 onClick={() => setLeague(league === l ? undefined : l)}
               >
                 {l.charAt(0).toUpperCase() + l.slice(1)}
@@ -78,7 +78,7 @@ export default function Leaderboard() {
                 ) : (
                   <div
                     className="card"
-                    style={{ padding: 0, overflow: 'hidden', maxWidth: '600px' }}
+                    style={{ padding: 0, overflow: "hidden", maxWidth: "600px" }}
                   >
                     <table className="leaderboard-table">
                       <thead>
@@ -95,16 +95,16 @@ export default function Leaderboard() {
                             key={entry.user.username}
                             className={
                               entry.user.username === auth.username
-                                ? 'leaderboard-you'
+                                ? "leaderboard-you"
                                 : i === 0
-                                  ? 'leaderboard-top'
-                                  : ''
+                                  ? "leaderboard-top"
+                                  : ""
                             }
                           >
                             <td className="leaderboard-rank">#{i + 1}</td>
                             <td>
                               <span>
-                                {entry.user.username === auth.username ? 'You' : entry.user.display}
+                                {entry.user.username === auth.username ? "You" : entry.user.display}
                               </span>
                               <span className="smallAndGray"> @{entry.user.username}</span>
                             </td>
@@ -122,32 +122,34 @@ export default function Leaderboard() {
                     </table>
                   </div>
                 )}
-                {state.myRank && !isInTop && (!league || computeLeague(state.myRank.rating) === league) && (
-                  <div
-                    className="card"
-                    style={{ padding: 0, overflow: 'hidden', maxWidth: '600px' }}
-                  >
-                    <table className="leaderboard-table">
-                      <tbody>
-                        <tr className="leaderboard-me">
-                          <td className="leaderboard-rank">#{state.myRank.rank}</td>
-                          <td>
-                            <span>You</span>
-                            <span className="smallAndGray"> @{auth.username}</span>
-                          </td>
-                          <td className="leaderboard-rating">{state.myRank.rating}</td>
-                          <td>
-                            <span
-                              className={`league-badge league-${computeLeague(state.myRank.rating)}`}
-                            >
-                              {computeLeague(state.myRank.rating)}
-                            </span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                {state.myRank &&
+                  !isInTop &&
+                  (!league || computeLeague(state.myRank.rating) === league) && (
+                    <div
+                      className="card"
+                      style={{ padding: 0, overflow: "hidden", maxWidth: "600px" }}
+                    >
+                      <table className="leaderboard-table">
+                        <tbody>
+                          <tr className="leaderboard-me">
+                            <td className="leaderboard-rank">#{state.myRank.rank}</td>
+                            <td>
+                              <span>You</span>
+                              <span className="smallAndGray"> @{auth.username}</span>
+                            </td>
+                            <td className="leaderboard-rating">{state.myRank.rating}</td>
+                            <td>
+                              <span
+                                className={`league-badge league-${computeLeague(state.myRank.rating)}`}
+                              >
+                                {computeLeague(state.myRank.rating)}
+                              </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
               </>
             );
           })()}
