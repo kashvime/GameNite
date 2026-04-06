@@ -1,5 +1,5 @@
 import type { SafeUserInfo, MatchInfo } from "@gamenite/shared";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserById } from "../services/userService";
 import {

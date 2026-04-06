@@ -1,11 +1,9 @@
 import "./FriendHeadtoHead.css";
 import { NavLink } from "react-router-dom";
-import type { MatchInfo, SafeUserInfo, UserAuth } from "@gamenite/shared";
+import type { MatchInfo, SafeUserInfo } from "@gamenite/shared";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
 
 interface FriendHeadToHeadProps {
-  /** The authenticated user */
-  auth: UserAuth;
   /** The friend whose record is being displayed. */
   friend: SafeUserInfo;
   onClose: () => void;
@@ -15,8 +13,8 @@ interface FriendHeadToHeadProps {
  * Displays head-to-head match statistics and filtered match history between
  * the authenticated user and one friend.
  */
-export default function FriendHeadToHead({ auth, friend, onClose }: FriendHeadToHeadProps) {
-  const state = useMatchHistory(auth, { opponentUsername: friend.username });
+export default function FriendHeadToHead({ friend, onClose }: FriendHeadToHeadProps) {
+  const state = useMatchHistory({ opponentUsername: friend.username });
 
   if (state.type !== "loaded")
     return <p>{state.type === "error" ? state.message : "Loading..."}</p>;
