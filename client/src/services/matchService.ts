@@ -1,24 +1,24 @@
 import type { APIResponse } from "../util/types.ts";
 import { api, exceptionToErrorMsg } from "./api.ts";
-import type { ErrorMsg, MatchFilter, MatchInfo, SafeUserInfo, UserAuth } from "@gamenite/shared";
-
 export type LeaderboardEntry = { user: SafeUserInfo; wins: number };
+import type { ErrorMsg, MatchFilter, MatchInfo, SafeUserInfo, UserAuth } from "@gamenite/shared";
 
 const MATCH_API_URL = `/api/matches`;
 
 /**
  * Sends a POST request to retrieve the authenticated user's match history.
- * Auth is handled via JWT (Authorization header), not request body.
  */
-
-export const getMatchHistory = async (filter?: MatchFilter): APIResponse<MatchInfo[]> => {
+export const getMatchHistory = async (
+  auth: UserAuth,
+  filter?: MatchFilter,
+): APIResponse<MatchInfo[]> => {
   try {
-    const res = await api.post(MATCH_API_URL, {
+    const res = await api.post<MatchInfo[] | ErrorMsg>(MATCH_API_URL, {
+      auth,
       payload: filter ?? {},
     });
-
-    return res.data as MatchInfo[];
-  } catch (error: unknown) {
+    return res.data;
+  } catch (error) {
     return exceptionToErrorMsg(error);
   }
 };

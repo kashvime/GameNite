@@ -1,8 +1,8 @@
-import { zMatchFilter, type MatchInfo, type GameKey, zUserAuth } from "@gamenite/shared";
+import { zMatchFilter, type MatchInfo, type GameKey } from "@gamenite/shared";
 import { type Request } from "express";
 import { type RestAPI } from "../types.ts";
 import { getMatchesByUserId, getLeaderboard, getUserRank } from "../services/score.service.ts";
-import { getUserByUsername, checkAuth } from "../services/auth.service.ts";
+import { getUserByUsername } from "../services/auth.service.ts";
 import { getFriendIds } from "../services/friend.service.ts";
 import { type RecordId } from "../models.ts";
 
@@ -53,7 +53,6 @@ export const getLeaderboardHandler: RestAPI = async (req, res) => {
   let userIds: RecordId[] | undefined;
   if (friendsOnly && requestUsername) {
     const auth = await getUserByUsername(requestUsername);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     if (auth) userIds = await getFriendIds(auth.userId);
   }
 
@@ -61,16 +60,18 @@ export const getLeaderboardHandler: RestAPI = async (req, res) => {
 };
 
 export const postMyRank: RestAPI<{ rank: number; wins: number } | null> = async (req, res) => {
-  const body = zUserAuth.safeParse(req.body);
-  if (!body.success) {
-    res.status(400).send({ error: "Poorly-formed request" });
+  const jwtUser = getJwtUser(req);
+  if (!jwtUser) {
+    res.status(401).send({ error: "Unauthorized" });
     return;
   }
-  const user = await checkAuth(body.data);
+
+  const user = await getUserByUsername(jwtUser.username);
   if (!user) {
-    res.status(403).send({ error: "Invalid credentials" });
+    res.status(403).send({ error: "User not found" });
     return;
   }
+
   const gameType = typeof req.query.gameType === "string" ? req.query.gameType : undefined;
   const from = typeof req.query.from === "string" ? new Date(req.query.from) : undefined;
   const to = typeof req.query.to === "string" ? new Date(req.query.to) : undefined;
@@ -78,7 +79,6 @@ export const postMyRank: RestAPI<{ rank: number; wins: number } | null> = async 
   const friendsOnly = req.query.friendsOnly === "true";
 
   let userIds: RecordId[] | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   if (friendsOnly) userIds = await getFriendIds(user.userId);
 
   res.send(await getUserRank(user.userId, gameType as GameKey | undefined, dateRange, userIds));

@@ -40,7 +40,7 @@ app.use(
       Router()
         .post("/", score.postMatches)
         .get("/leaderboard", score.getLeaderboardHandler)
-        .post("/myrank", score.postMyRank),
+        .post("/myrank", requireAuth, score.postMyRank),
     )
     .use(
       "/scores",
@@ -106,20 +106,16 @@ io.on("connection", (socket) => {
 
   socket.onAny((name, payload) => {
     const zPayload = z.object({
-      auth: z.object({ username: z.string() }),
+      token: z.string(),
       payload: z.any(),
     });
 
     const checked = zPayload.safeParse(payload);
 
     if (checked.error) {
-      console.log(`RECV error: ${checked.error.message}`);
+      console.log(`RECV [${socketId}] got ${name}`);
     } else {
-      console.log(
-        `RECV [${socketId}] got ${name}${checked.data.auth.username} ${JSON.stringify(
-          checked.data.payload,
-        )}`,
-      );
+      console.log(`RECV [${socketId}] got ${name} ${JSON.stringify(checked.data.payload)}`);
     }
   });
 

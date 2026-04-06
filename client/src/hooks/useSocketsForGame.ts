@@ -66,6 +66,7 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
     hasWatched,
     players,
     userPlayerIndex,
+
     view,
     joinGame,
     startGame,
