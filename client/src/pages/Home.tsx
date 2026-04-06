@@ -16,7 +16,7 @@ export default function Home() {
         <div className="home-section-header">
           <h2>Recent games</h2>
           <button className="primary narrow" onClick={() => navigate("/game/new")}>
-            + New Game
+            Create New Game
           </button>
         </div>
         <div className="home-section-body">
@@ -38,7 +38,7 @@ export default function Home() {
         <div className="home-section-header">
           <h2>Recent forum posts</h2>
           <button className="primary narrow" onClick={() => navigate("/forum/post/new")}>
-            + New Post
+            Create New Post
           </button>
         </div>
         <div className="home-section-body">
