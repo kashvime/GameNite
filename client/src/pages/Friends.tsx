@@ -1,22 +1,37 @@
 import { useState } from "react";
+import type { SafeUserInfo } from "@gamenite/shared";
 import useAuth from "../hooks/useAuth.ts";
 import useFriends from "../hooks/useFriends.ts";
+import FriendHeadToHead from "../components/FriendHeadtoHead.tsx";
 
 export default function Friends() {
   const auth = useAuth();
   const { state, send, respond } = useFriends(auth);
   const [toUsername, setToUsername] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<SafeUserInfo | null>(null);
 
-  const handleSend = async () => {
+  async function handleSend() {
     setSendError(null);
     const err = await send(toUsername);
     if (err) setSendError(err);
     else setToUsername("");
-  };
+  }
 
   if (state.type === "waiting") return <div className="smallAndGray">Loading friends...</div>;
   if (state.type === "error") return <div style={{ color: "#f00" }}>{state.msg}</div>;
+
+  if (selectedFriend) {
+    return (
+      <div className="content">
+        <FriendHeadToHead
+          auth={auth}
+          friend={selectedFriend}
+          onClose={() => setSelectedFriend(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="content spacedSection">
@@ -84,7 +99,11 @@ export default function Friends() {
         ) : (
           <ul>
             {state.friends.map((friend) => (
-              <li key={friend.username} style={{ marginBottom: "0.4rem" }}>
+              <li
+                key={friend.username}
+                style={{ marginBottom: "0.4rem", cursor: "pointer" }}
+                onClick={() => setSelectedFriend(friend)}
+              >
                 {friend.display} (@{friend.username})
               </li>
             ))}
