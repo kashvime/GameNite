@@ -52,7 +52,7 @@ export const getLeaderboard = async (
  * @param auth the user's authentication information
  * @param gameType the game type to fetch the leaderboard for
  * @param friendsOnly whether to only consider friends in the leaderboard (friends only toggle)
- * @returns 
+ * @returns
  */
 export const getMyRank = async (
   auth: UserAuth,
