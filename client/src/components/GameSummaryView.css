@@ -8,8 +8,12 @@
   transition: background 0.15s ease;
   cursor: pointer;
 }
-.gameSummary:last-child { border-bottom: none; }
-.gameSummary:hover { background: #f7f8ff; }
+.gameSummary:last-child {
+  border-bottom: none;
+}
+.gameSummary:hover {
+  background: #f7f8ff;
+}
 .gameSummary .stats {
   display: flex;
   align-items: center;
@@ -36,7 +40,9 @@
   text-decoration: none;
   transition: color 0.15s ease;
 }
-.gameSummary .mid:hover { color: var(--color-primary); }
+.gameSummary .mid:hover {
+  color: var(--color-primary);
+}
 .gameSummary .lastActivity {
   font-size: 0.8rem;
   color: var(--color-text-muted);
