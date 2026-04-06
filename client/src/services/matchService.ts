@@ -31,6 +31,7 @@ export const getLeaderboard = async (
   auth: UserAuth,
   gameType: string,
   friendsOnly?: boolean,
+  league?: string,
 ): APIResponse<LeaderboardEntry[]> => {
   try {
     const params = new URLSearchParams({ gameType });
@@ -38,6 +39,7 @@ export const getLeaderboard = async (
       params.set("friendsOnly", "true");
       params.set("username", auth.username);
     }
+    if (league) params.set("league", league);
     const res = await api.get<LeaderboardEntry[] | ErrorMsg>(
       `/api/scores/leaderboard?${params.toString()}`,
     );
@@ -58,10 +60,12 @@ export const getMyRank = async (
   auth: UserAuth,
   gameType: string,
   friendsOnly?: boolean,
+  league?: string,
 ): APIResponse<{ rank: number; rating: number } | null> => {
   try {
     const params = new URLSearchParams({ gameType });
     if (friendsOnly) params.set("friendsOnly", "true");
+    if (league) params.set("league", league);
     const res = await api.post<{ rank: number; rating: number } | null | ErrorMsg>(
       `/api/scores/myrank?${params.toString()}`,
       auth,

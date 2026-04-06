@@ -29,7 +29,7 @@ export const zMatchFilter = z.object({
       to: z.coerce.date(),
     })
     .optional(),
-  sortOrder: z.enum(["newest", "oldest"]).optional(),
+  sortOrder: z.enum(["newest", "oldest", "score"]).optional(),
   page: z.number().int().gte(1).optional(),
   pageSize: z.number().int().gte(1).lte(50).optional(),
 });
