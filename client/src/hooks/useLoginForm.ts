@@ -88,7 +88,16 @@ export default function useLoginForm(setAuth: (auth: AuthContext | null) => void
     if ("error" in user) {
       setErr(user.error);
     } else {
-      setAuth({ user, pass: password, reset: () => setAuth(null) });
+      const { token, ...userInfo } = user as SafeUserInfo & { token: string };
+      localStorage.setItem("token", token);
+      setAuth({
+        user: userInfo,
+        pass: token,
+        reset: () => {
+          setAuth(null);
+          localStorage.removeItem("token");
+        },
+      });
       navigate("/");
     }
   };

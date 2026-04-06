@@ -1,31 +1,40 @@
-import { withAuth, zMatchFilter, type GameKey, type MatchInfo } from "@gamenite/shared";
+import { zMatchFilter, type MatchInfo, type GameKey } from "@gamenite/shared";
+import { type Request } from "express";
 import { type RestAPI } from "../types.ts";
-import { checkAuth, getUserByUsername } from "../services/auth.service.ts";
 import { getMatchesByUserId, getLeaderboard, getUserRank } from "../services/score.service.ts";
-import { zUserAuth } from "@gamenite/shared";
+import { getUserByUsername } from "../services/auth.service.ts";
 import { getFriendIds } from "../services/friend.service.ts";
-import type { RecordId } from "../models.ts";
+import { type RecordId } from "../models.ts";
 
-const zPostMatches = withAuth(zMatchFilter);
+type JwtUser = { username: string };
 
-/**
- * Returns the match history for the authenticated user,
- * optionally filtered by game type, result, opponent username, or date range.
- * Body: { auth, payload: { gameType?, result?, opponentUsername?, dateRange? } }
- */
+function getJwtUser(req: Request): JwtUser | undefined {
+  const u = (req as Request & { user?: JwtUser }).user;
+  return u;
+}
+
 export const postMatches: RestAPI<MatchInfo[]> = async (req, res) => {
-  const body = zPostMatches.safeParse(req.body);
-  if (!body.success) {
+  const user = getJwtUser(req);
+  if (!user) {
+    res.status(401).send({ error: "Unauthorized" });
+    return;
+  }
+
+  const body = req.body as { payload?: unknown };
+  const filterInput = body?.payload ?? body;
+  const parsed = zMatchFilter.safeParse(filterInput);
+  if (!parsed.success) {
     res.status(400).send({ error: "Poorly-formed request" });
     return;
   }
-  const user = await checkAuth(body.data.auth);
-  if (!user) {
-    res.status(403).send({ error: "Invalid credentials" });
+
+  const userRecord = await getUserByUsername(user.username);
+  if (!userRecord) {
+    res.status(403).send({ error: "User not found" });
     return;
   }
 
-  res.send(await getMatchesByUserId(user.userId, body.data.payload));
+  res.send(await getMatchesByUserId(userRecord.userId, parsed.data));
 };
 
 /**
@@ -51,16 +60,18 @@ export const getLeaderboardHandler: RestAPI = async (req, res) => {
 };
 
 export const postMyRank: RestAPI<{ rank: number; wins: number } | null> = async (req, res) => {
-  const body = zUserAuth.safeParse(req.body);
-  if (!body.success) {
-    res.status(400).send({ error: "Poorly-formed request" });
+  const jwtUser = getJwtUser(req);
+  if (!jwtUser) {
+    res.status(401).send({ error: "Unauthorized" });
     return;
   }
-  const user = await checkAuth(body.data);
+
+  const user = await getUserByUsername(jwtUser.username);
   if (!user) {
-    res.status(403).send({ error: "Invalid credentials" });
+    res.status(403).send({ error: "User not found" });
     return;
   }
+
   const gameType = typeof req.query.gameType === "string" ? req.query.gameType : undefined;
   const from = typeof req.query.from === "string" ? new Date(req.query.from) : undefined;
   const to = typeof req.query.to === "string" ? new Date(req.query.to) : undefined;

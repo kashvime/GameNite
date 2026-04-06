@@ -4,6 +4,8 @@ import express, { Router } from "express";
 import { Server } from "socket.io";
 import { z } from "zod";
 import * as http from "node:http";
+import { requireAuth } from "./middleware/auth.js";
+import cors from "cors";
 
 import * as chat from "./controllers/chat.controller.js";
 import * as friend from "./controllers/friend.controller.js";
@@ -21,11 +23,15 @@ export const app = express();
 export const httpServer = http.createServer(app);
 const io: GameServer = new Server(httpServer);
 
-// ✅ Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:4530",
+    credentials: true,
+  }),
+);
 app.use(passport.initialize());
 
-// ✅ API ROUTES (unchanged)
 app.use(
   "/api",
   Router()
@@ -34,7 +40,7 @@ app.use(
       Router()
         .post("/", score.postMatches)
         .get("/leaderboard", score.getLeaderboardHandler)
-        .post("/myrank", score.postMyRank),
+        .post("/myrank", requireAuth, score.postMyRank),
     )
     .use(
       "/scores",
@@ -43,26 +49,28 @@ app.use(
     .use(
       "/friend",
       Router()
-        .post("/request", friend.postSendRequest)
-        .post("/respond", friend.postRespondToRequest)
-        .post("/pending", friend.postPendingRequests)
-        .post("/list", friend.postFriends)
-        .post("/status", friend.postFriendshipStatus),
+        .post("/request", requireAuth, friend.postSendRequest)
+        .post("/respond", requireAuth, friend.postRespondToRequest)
+        .post("/pending", requireAuth, friend.getPendingRequestsController)
+        .post("/list", requireAuth, friend.getFriendsController)
+        .post("/status", requireAuth, friend.postFriendshipStatus),
     )
+
     .use(
       "/game",
       Router()
-        .post("/create", game.postCreate)
+        .post("/create", requireAuth, game.postCreate)
         .get("/list", game.getList)
         .get("/:id", game.getById),
     )
+
     .use(
       "/thread",
       Router()
-        .post("/create", thread.postCreate)
+        .post("/create", requireAuth, thread.postCreate)
         .get("/list", thread.getList)
         .get("/:id", thread.getById)
-        .post("/:id/comment", thread.postByIdComment),
+        .post("/:id/comment", requireAuth, thread.postByIdComment),
     )
     .use(
       "/user",
@@ -73,7 +81,7 @@ app.use(
         .post("/:username", user.postByUsername)
         .get("/:username", user.getByUsername),
     )
-    .use("/matches", Router().post("/", score.postMatches)),
+    .use("/matches", Router().post("/", requireAuth, score.postMatches)),
 );
 
 app.get("/auth/google", googleAuth);
@@ -98,20 +106,16 @@ io.on("connection", (socket) => {
 
   socket.onAny((name, payload) => {
     const zPayload = z.object({
-      auth: z.object({ username: z.string() }),
+      token: z.string(),
       payload: z.any(),
     });
 
     const checked = zPayload.safeParse(payload);
 
     if (checked.error) {
-      console.log(`RECV error: ${checked.error.message}`);
+      console.log(`RECV [${socketId}] got ${name}`);
     } else {
-      console.log(
-        `RECV [${socketId}] got ${name}${checked.data.auth.username} ${JSON.stringify(
-          checked.data.payload,
-        )}`,
-      );
+      console.log(`RECV [${socketId}] got ${name} ${JSON.stringify(checked.data.payload)}`);
     }
   });
 

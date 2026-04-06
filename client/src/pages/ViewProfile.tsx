@@ -19,7 +19,6 @@ interface ViewProfileProps {
 
 export default function ViewProfile({ username }: ViewProfileProps) {
   const { user: loggedInUser, pass } = useLoginContext();
-  const auth = { username: loggedInUser.username, password: pass };
   const navigate = useNavigate();
 
   const [componentState, setComponentState] = useState<
@@ -52,6 +51,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   useEffect(() => {
     let cancel = false;
+    const auth = { username: loggedInUser.username, password: pass };
     getFriendshipStatus(auth, username).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
@@ -60,10 +60,11 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-  }, [username, auth.username]);
+  }, [username, loggedInUser.username, pass]);
 
   useEffect(() => {
     let cancel = false;
+    const auth = { username: loggedInUser.username, password: pass };
     getMatchHistory(auth).then((res) => {
       if (cancel) return;
       if (!res || "error" in res) return;
@@ -72,10 +73,11 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-  }, [username, auth.username]);
+  }, [username, loggedInUser.username, pass]);
 
   const handleAddFriend = async () => {
     setFriendError(null);
+    const auth = { username: loggedInUser.username, password: pass };
     const res = await sendFriendRequest(auth, username);
     if (res && "error" in res) {
       setFriendError(res.error);
@@ -86,6 +88,8 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   const handleRespond = async (requestId: string, accept: boolean) => {
     setFriendError(null);
+    const auth = { username: loggedInUser.username, password: pass };
+
     const res = await respondToFriendRequest(auth, requestId, accept);
     if (res && "error" in res) {
       setFriendError(res.error);
@@ -96,6 +100,8 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   const handleChallenge = async () => {
     setChallengeError(null);
+    const auth = { username: loggedInUser.username, password: pass };
+
     const game = await createGame(auth, "chess");
     if ("error" in game) {
       setChallengeError(game.error);

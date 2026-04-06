@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { ScoreRepo } from "../repository.ts";
 import type { ScoreRecord, RecordId } from "../models.ts";
 import type { GameKey, MatchInfo, MatchFilter } from "@gamenite/shared";

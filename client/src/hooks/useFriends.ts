@@ -27,7 +27,7 @@ export default function useFriends(auth: UserAuth) {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getFriends(auth), getPendingRequests(auth)]).then(([friendsRes, pendingRes]) => {
+    Promise.all([getFriends(), getPendingRequests()]).then(([friendsRes, pendingRes]) => {
       if (cancelled) return;
       if ("error" in friendsRes) {
         setState({ type: "error", msg: friendsRes.error });

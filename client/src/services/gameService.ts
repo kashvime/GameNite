@@ -9,10 +9,7 @@ const GAME_API_URL = `/api/game`;
  */
 export const createGame = async (auth: UserAuth, gameKey: GameKey): APIResponse<GameInfo> => {
   try {
-    const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, {
-      auth,
-      payload: gameKey,
-    });
+    const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, { gameKey });
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);
