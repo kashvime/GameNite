@@ -56,10 +56,11 @@ describe("GET /api/user/:id", () => {
 });
 
 describe("POST /api/user/login", () => {
-  it("should return 400 on ill-formed payload", async () => {
+  it("should return 400 on ill-formed payloads", async () => {
     response = await supertest(app)
-      .post("/api/user/login")
-      .send({ ...auth1, password: 3 });
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ password: 123 }); // password must be a string, not a number
     expect(response.status).toBe(400);
   });
 
