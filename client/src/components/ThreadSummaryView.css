@@ -8,8 +8,12 @@
   transition: background 0.15s ease;
   cursor: pointer;
 }
-.threadSummary:last-child { border-bottom: none; }
-.threadSummary:hover { background: #f7f8ff; }
+.threadSummary:last-child {
+  border-bottom: none;
+}
+.threadSummary:hover {
+  background: #f7f8ff;
+}
 .threadSummary .postStats {
   display: flex;
   align-items: center;
@@ -36,7 +40,9 @@
   text-decoration: none;
   transition: color 0.15s ease;
 }
-.threadSummary .mid:hover { color: var(--color-primary); }
+.threadSummary .mid:hover {
+  color: var(--color-primary);
+}
 .threadSummary .lastActivity {
   font-size: 0.8rem;
   color: var(--color-text-muted);
