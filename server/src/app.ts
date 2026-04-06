@@ -23,7 +23,7 @@ export const app = express();
 export const httpServer = http.createServer(app);
 const io: GameServer = new Server(httpServer);
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(
   cors({
     origin: "http://localhost:4530",
@@ -78,7 +78,7 @@ app.use(
         .post("/list", user.postList)
         .post("/login", user.postLogin)
         .post("/signup", user.postSignup)
-        .post("/:username", user.postByUsername)
+        .post("/:username", requireAuth, user.postByUsername)
         .get("/:username", user.getByUsername),
     )
     .use("/matches", Router().post("/", requireAuth, score.postMatches)),

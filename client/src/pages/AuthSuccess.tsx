@@ -20,12 +20,9 @@ export default function AuthSuccess({ setAuth }: Props) {
       return;
     }
 
-    // ✅ save FIRST
     localStorage.setItem("token", token);
 
-    // ✅ decode AFTER
     const user = jwtDecode<SafeUserInfo>(token);
-
     setAuth({
       user,
       pass: token,
@@ -33,12 +30,21 @@ export default function AuthSuccess({ setAuth }: Props) {
         setAuth(null);
         localStorage.removeItem("token");
       },
+      updateUser: (newUser: SafeUserInfo) => {
+        setAuth({
+          user: newUser,
+          pass: token,
+          reset: () => {
+            setAuth(null);
+            localStorage.removeItem("token");
+          },
+          updateUser: () => {},
+        });
+      },
     });
-
-    // ✅ navigate AFTER everything is set
     setTimeout(() => {
       navigate("/");
-    }, 50); // tiny delay ensures storage is ready
+    }, 50);
   }, [navigate, setAuth]);
 
   return <div>Logging you in...</div>;

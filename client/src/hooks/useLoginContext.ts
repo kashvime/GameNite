@@ -17,6 +17,7 @@ export default function useLoginContext(): {
   user: SafeUserInfo;
   pass: string;
   reset: () => void;
+  updateUser: (newUser: SafeUserInfo) => void;
 } {
   const context = useContext(LoginContext);
   if (!context) {

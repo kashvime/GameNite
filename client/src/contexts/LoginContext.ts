@@ -13,6 +13,7 @@ export interface AuthContext {
   user: SafeUserInfo;
   pass: string;
   reset: () => void;
+  updateUser: (newUser: SafeUserInfo) => void;
 }
 
 /**
