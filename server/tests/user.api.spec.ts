@@ -96,7 +96,7 @@ describe("POST/api/user/:username", () => {
     response = await supertest(app)
       .post("/api/user/user1")
       .set("Authorization", `Bearer ${makeToken("user1")}`)
-      .send({ invalidField: 4 });
+      .send({ password: 123 });
     expect(response.status).toBe(400);
   });
 
@@ -216,8 +216,11 @@ describe("POST /api/user/signup", () => {
 });
 
 describe("POST /api/user/list", () => {
-  it("should return 400 on ill-formed payload", async () => {
-    response = await supertest(app).post("/api/user/list").send(auth1);
+  it("should return 400 on ill-formed payloads", async () => {
+    response = await supertest(app)
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ password: 123 }); // password must be a string not a number
     expect(response.status).toBe(400);
   });
 

@@ -5,6 +5,17 @@ import { computeLeague } from "@gamenite/shared";
 import { getMatchHistory } from "../services/matchService";
 import type { MatchInfo } from "@gamenite/shared";
 
+/**
+ * Page component that allows the logged-in user to update their profile.
+ * Displays the user's current profile information and provides forms to:
+ * - Upload or change a profile picture
+ * - Edit their display name
+ * - Reset their password
+ * - Update their bio
+ *
+ * On successful submission, the login context is updated with the new user
+ * data so changes reflect immediately without requiring a re-login.
+ */
 export default function UpdateProfile() {
   const { user, pass } = useLoginContext();
   const [showPass, setShowPass] = useState(false);
