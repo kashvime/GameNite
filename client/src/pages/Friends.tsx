@@ -24,11 +24,7 @@ export default function Friends() {
   if (selectedFriend) {
     return (
       <div className="content">
-        <FriendHeadToHead
-          auth={auth}
-          friend={selectedFriend}
-          onClose={() => setSelectedFriend(null)}
-        />
+        <FriendHeadToHead friend={selectedFriend} onClose={() => setSelectedFriend(null)} />
       </div>
     );
   }
