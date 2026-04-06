@@ -80,7 +80,9 @@
   font-weight: 500;
   color: var(--color-text-muted);
   border-radius: var(--radius) var(--radius) 0 0;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .leaderboard-tab:hover {
