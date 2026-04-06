@@ -60,7 +60,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-}, [username, loggedInUser.username, pass]);
+  }, [username, loggedInUser.username, pass]);
 
   useEffect(() => {
     let cancel = false;
@@ -73,7 +73,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     return () => {
       cancel = true;
     };
-}, [username, loggedInUser.username, pass]);
+  }, [username, loggedInUser.username, pass]);
 
   const handleAddFriend = async () => {
     setFriendError(null);
