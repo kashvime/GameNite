@@ -110,7 +110,7 @@ export default function Login({ setAuth }: LoginProps) {
                   toggleMode();
                 }}
               >
-                {mode === "signup" ? "Log in" : "Sign up"}
+                {mode === "signup" ? "Use Existing Account" : "Create New Account"}
               </button>
             </div>
           </form>
