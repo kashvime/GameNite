@@ -26,14 +26,29 @@
   border-color: currentColor;
 }
 
-.league-btn-bronze { color: #cd7f32; }
-.league-btn-bronze.active { background: #cd7f32; color: white; }
+.league-btn-bronze {
+  color: #cd7f32;
+}
+.league-btn-bronze.active {
+  background: #cd7f32;
+  color: white;
+}
 
-.league-btn-silver { color: #9ca3af; }
-.league-btn-silver.active { background: #9ca3af; color: white; }
+.league-btn-silver {
+  color: #9ca3af;
+}
+.league-btn-silver.active {
+  background: #9ca3af;
+  color: white;
+}
 
-.league-btn-gold { color: #f59e0b; }
-.league-btn-gold.active { background: #f59e0b; color: white; }
+.league-btn-gold {
+  color: #f59e0b;
+}
+.league-btn-gold.active {
+  background: #f59e0b;
+  color: white;
+}
 
 .leaderboard-subtitle {
   margin: 0;
@@ -62,7 +77,6 @@
   padding: 0.6rem 0.75rem;
   border-top: 1px solid var(--color-border);
 }
-
 
 .leaderboard-table tr.leaderboard-you td {
   font-weight: 600;

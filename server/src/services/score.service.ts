@@ -1,6 +1,12 @@
 import { ScoreRepo, UserRepo } from "../repository.ts";
 import type { ScoreRecord, RecordId } from "../models.ts";
-import { computeLeague, type GameKey, type League, type MatchInfo, type MatchFilter } from "@gamenite/shared";
+import {
+  computeLeague,
+  type GameKey,
+  type League,
+  type MatchInfo,
+  type MatchFilter,
+} from "@gamenite/shared";
 import { populateSafeUserInfo } from "./user.service.ts";
 import type { GameServer } from "../types.ts";
 
