@@ -1,5 +1,6 @@
 import "./FriendHeadtoHead.css";
 import { NavLink } from "react-router-dom";
+import { useMemo } from "react";
 import type { MatchInfo, SafeUserInfo } from "@gamenite/shared";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
 
@@ -14,10 +15,13 @@ interface FriendHeadToHeadProps {
  * the authenticated user and one friend.
  */
 export default function FriendHeadToHead({ friend, onClose }: FriendHeadToHeadProps) {
-  const state = useMatchHistory({ opponentUsername: friend.username });
+  const filter = useMemo(() => ({ opponentUsername: friend.username }), [friend.username]);
+  const state = useMatchHistory(filter);
 
-  if (state.type !== "loaded")
-    return <p>{state.type === "error" ? state.message : "Loading..."}</p>;
+  if (state.type === "loading") return <p>Loading...</p>;
+  if (state.type === "error") return <p>{state.message}</p>;
+  if (state.type === "empty")
+    return <p>You haven't played any games against {friend.display} yet.</p>;
 
   const wins = state.matches.filter((m) => m.result === "win").length;
   const losses = state.matches.filter((m) => m.result === "loss").length;
