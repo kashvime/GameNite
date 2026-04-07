@@ -4,17 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { createGame } from "../services/gameService.ts";
 import useLoginContext from "./useLoginContext";
 
-/**
- * Custom hook to manage game creation form logic
- * @throws if outside a LoginContext
- * @returns an object containing
- *  - Form value `gameKey`
- *  - Possibly-null error message `err`
- *  - Form handlers `handleInputChange` and `handleSubmit`
- */
 export default function useNewGameForm() {
   const { user, pass } = useLoginContext();
   const [gameKey, setGameKey] = useState<GameKey | "">("");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -25,14 +18,13 @@ export default function useNewGameForm() {
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     if (gameKey === "") {
       setErr("Please select a game");
       return;
     }
     setErr(null);
     const auth = { username: user.username, password: pass };
-    const game = await createGame(auth, gameKey);
+    const game = await createGame(auth, gameKey, visibility);
     if ("error" in game) {
       setErr(game.error);
       return;
@@ -40,10 +32,5 @@ export default function useNewGameForm() {
     navigate(`/game/${game.gameId}`);
   };
 
-  return {
-    gameKey,
-    err,
-    handleInputChange,
-    handleSubmit,
-  };
+  return { gameKey, visibility, setVisibility, err, handleInputChange, handleSubmit };
 }

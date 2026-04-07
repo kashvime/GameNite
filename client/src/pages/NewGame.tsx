@@ -2,7 +2,8 @@ import useNewGameForm from "../hooks/useNewGameForm.ts";
 import { gameNames } from "../util/consts.ts";
 
 export default function NewGame() {
-  const { gameKey, handleInputChange, err, handleSubmit } = useNewGameForm();
+  const { gameKey, visibility, setVisibility, handleInputChange, err, handleSubmit } =
+    useNewGameForm();
 
   return (
     <form className="content spacedSection" onSubmit={handleSubmit}>
@@ -15,6 +16,16 @@ export default function NewGame() {
               {name}
             </option>
           ))}
+        </select>
+      </div>
+      <div>
+        <select
+          value={visibility}
+          aria-label="Visibility"
+          onChange={(e) => setVisibility(e.target.value as "public" | "private")}
+        >
+          <option value="public">Public — appears in game list, counts for leaderboard</option>
+          <option value="private">Private — invite only, no leaderboard impact</option>
         </select>
       </div>
       {err && <p className="error-message">{err}</p>}
