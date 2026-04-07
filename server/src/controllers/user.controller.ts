@@ -1,4 +1,4 @@
-import { type SafeUserInfo, withAuth, zUserAuth, zUserUpdateRequest } from "@gamenite/shared";
+import { type SafeUserInfo, zUserAuth, zUserUpdateRequest } from "@gamenite/shared";
 import {
   createUser,
   getUsersByUsername,
@@ -43,19 +43,24 @@ export const postLogin: RestAPI<SafeUserInfo & { token: string }> = async (req, 
  * @param res The response, either returning the updated user or an error
  */
 export const postByUsername: RestAPI<SafeUserInfo, { username: string }> = async (req, res) => {
-  const body = withAuth(zUserUpdateRequest).safeParse(req.body);
-  if (!body.success) {
+  const jwtUser = (req as unknown as { user?: { username: string } }).user;
+  if (!jwtUser) {
+    res.status(401).send({ error: "Unauthorized" });
+    return;
+  }
+
+  if (jwtUser.username !== req.params.username) {
+    res.status(403).send({ error: "Forbidden" });
+    return;
+  }
+
+  const updates = zUserUpdateRequest.safeParse(req.body);
+  if (!updates.success) {
     res.status(400).send({ error: "Poorly-formed request" });
     return;
   }
 
-  const user = await checkAuth(body.data.auth);
-  if (!user || user.username !== req.params.username) {
-    res.status(403).send({ error: "Invalid credentials" });
-    return;
-  }
-
-  res.send(await updateUser(req.params.username, body.data.payload));
+  res.send(await updateUser(req.params.username, updates.data));
 };
 
 /**

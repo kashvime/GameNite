@@ -13,20 +13,22 @@ import type { UserUpdateRequest } from "@gamenite/shared";
  *  - Submission handler `handleSubmit`
  */
 export default function useEditProfileForm() {
-  const { user, reset } = useLoginContext();
+  const { user, updateUser: updateUserContext } = useLoginContext();
   const [display, setDisplay] = useState(user.display);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [err, setErr] = useState<null | string>(null);
   const auth = useAuth();
 
-  /**
-   * Handles submission of the form
-   */
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>, avatarUrl?: string | null) => {
     e.preventDefault();
 
-    if (user.display === display && password === confirm && password === "") {
+    if (
+      user.display === display &&
+      password === confirm &&
+      password === "" &&
+      avatarUrl === (user.avatarUrl ?? null)
+    ) {
       setErr("No changes to submit");
       return;
     }
@@ -54,14 +56,14 @@ export default function useEditProfileForm() {
     const updates: UserUpdateRequest = {};
     if (display !== user.display) updates.display = display;
     if (password !== "") updates.password = password;
+    if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl ?? undefined;
     const response = await updateUser(auth, updates);
     if ("error" in response) {
       setErr(response.error);
       return;
     }
 
-    // We need to do this — or do something else that resets the login context
-    reset();
+    updateUserContext(response);
   };
 
   return {

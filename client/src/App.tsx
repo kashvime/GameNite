@@ -51,24 +51,36 @@ function NoSuchRoute() {
 
 export default function App() {
   const [auth, setAuth] = useState<AuthContext | null>(null);
+  const updateUser = (newUser: SafeUserInfo) => {
+    setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
+  };
+
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const token = sessionStorage.getItem("token");
 
     if (token) {
       try {
-        const user = jwtDecode<SafeUserInfo>(token);
+        const decoded = jwtDecode<SafeUserInfo>(token);
 
-        queueMicrotask(() => {
-          setAuth({
-            user,
-            pass: token,
-            reset: () => {
-              setAuth(null);
-              sessionStorage.removeItem("token");
-            },
+        // Fetch full user data to get avatarUrl and other fields
+        fetch(`http://localhost:8000/api/user/${encodeURIComponent(decoded.username)}`)
+          .then((res) => res.json())
+          .then((user: SafeUserInfo) => {
+            queueMicrotask(() => {
+              setAuth({
+                user,
+                pass: token,
+                reset: () => {
+                  setAuth(null);
+                  sessionStorage.removeItem("token");
+                },
+                updateUser: (newUser) => {
+                  setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
+                },
+              });
+            });
           });
-        });
       } catch {
         sessionStorage.removeItem("token");
       }
@@ -87,7 +99,7 @@ export default function App() {
           <Route path="/auth-success" element={<AuthSuccess setAuth={setAuth} />} />{" "}
           <Route
             element={
-              <LoggedInRoute auth={auth} socket={socket}>
+              <LoggedInRoute auth={auth} socket={socket} updateUser={updateUser}>
                 <TimeContextKeeper updateFrequency={20 * 1000}>
                   <ErrorBoundary fallbackRender={fallback}>
                     <Layout />

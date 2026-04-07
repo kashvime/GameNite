@@ -2,8 +2,13 @@ import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import supertest, { type Response } from "supertest";
 import { app } from "../src/app.ts";
+import jwt from "jsonwebtoken";
 
 process.env.JWT_SECRET = "test";
+
+function makeToken(username: string) {
+  return jwt.sign({ username }, "test");
+}
 
 let response: Response;
 const auth1 = { username: "user1", password: "pwd1111" };
@@ -19,7 +24,6 @@ const user1 = {
   avatarUrl: null,
   ratings: {},
 };
-const auth2 = { username: "user2", password: "pwd2222" };
 const user2 = {
   userId: expect.any(String),
   username: "user2",
@@ -52,10 +56,11 @@ describe("GET /api/user/:id", () => {
 });
 
 describe("POST /api/user/login", () => {
-  it("should return 400 on ill-formed payload", async () => {
+  it("should return 400 on ill-formed payloads", async () => {
     response = await supertest(app)
-      .post("/api/user/login")
-      .send({ ...auth1, password: 3 });
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ password: 123 }); // password must be a string, not a number
     expect(response.status).toBe(400);
   });
 
@@ -88,28 +93,34 @@ describe("POST /api/user/login", () => {
 
 describe("POST/api/user/:username", () => {
   it("should return 400 on ill-formed payloads", async () => {
-    response = await supertest(app).post("/api/user/user1").send({ auth: auth1, payload: 4 });
+    response = await supertest(app)
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ password: 123 });
     expect(response.status).toBe(400);
   });
 
   it("should reject invalid authorization", async () => {
     response = await supertest(app)
       .post("/api/user/user1")
-      .send({ auth: { ...auth1, password: "wrong" }, payload: { display: "New User 1 Display?" } });
+      .set("Authorization", `Bearer ${makeToken("wronguser")}`)
+      .send({ display: "New User 1 Display?" });
     expect(response.status).toBe(403);
   });
 
   it("requires the authorization to match the route", async () => {
     response = await supertest(app)
       .post("/api/user/user1")
-      .send({ auth: auth2, payload: { display: "New User 1 Display!" } });
+      .set("Authorization", `Bearer ${makeToken("user2")}`)
+      .send({ display: "New User 1 Display!" });
     expect(response.status).toBe(403);
   });
 
   it("should update individual parts of a user correctly", async () => {
     response = await supertest(app)
       .post("/api/user/user1")
-      .send({ auth: auth1, payload: { display: "New User 1 Display" } });
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ display: "New User 1 Display" });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       ...user1,
@@ -119,7 +130,8 @@ describe("POST/api/user/:username", () => {
 
     response = await supertest(app)
       .post("/api/user/user1")
-      .send({ auth: auth1, payload: { display: "New User 1 Display" } });
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ display: "New User 1 Display" });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       ...user1,
@@ -129,7 +141,8 @@ describe("POST/api/user/:username", () => {
 
     response = await supertest(app)
       .post("/api/user/user1")
-      .send({ auth: auth1, payload: { password: "new_password_1" } });
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ password: "new_password_1" });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       ...user1,
@@ -139,15 +152,8 @@ describe("POST/api/user/:username", () => {
 
     response = await supertest(app)
       .post("/api/user/user1")
-      .send({ auth: auth1, payload: { password: "new_password_1" } });
-    expect(response.status).toBe(403);
-
-    response = await supertest(app)
-      .post("/api/user/user1")
-      .send({
-        auth: { ...auth1, password: "new_password_1" },
-        payload: { display: "Newer User 1 Display" },
-      });
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ display: "Newer User 1 Display" });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       ...user1,
@@ -210,8 +216,11 @@ describe("POST /api/user/signup", () => {
 });
 
 describe("POST /api/user/list", () => {
-  it("should return 400 on ill-formed payload", async () => {
-    response = await supertest(app).post("/api/user/list").send(auth1);
+  it("should return 400 on ill-formed payloads", async () => {
+    response = await supertest(app)
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ password: 123 }); // password must be a string not a number
     expect(response.status).toBe(400);
   });
 

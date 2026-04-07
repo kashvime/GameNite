@@ -19,21 +19,21 @@ export const loginUser = async (auth: UserAuth): APIResponse<SafeUserInfo> => {
 /**
  * Sends a POST request to update parts of a user's profile
  */
+
 export const updateUser = async (
   auth: UserAuth,
   updates: UserUpdateRequest,
 ): APIResponse<SafeUserInfo> => {
   try {
-    const res = await api.post<SafeUserInfo | ErrorMsg>(`${USER_API_URL}/${auth.username}`, {
-      auth,
-      payload: updates,
-    });
+    const res = await api.post<SafeUserInfo | ErrorMsg>(
+      `${USER_API_URL}/${encodeURIComponent(auth.username)}`,
+      updates,
+    );
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);
   }
 };
-
 /**
  * Sends a POST request to create a user
  *
@@ -57,7 +57,10 @@ export const signupUser = async (user: UserAuth): APIResponse<SafeUserInfo> => {
  */
 export const getUserById = async (username: string): APIResponse<SafeUserInfo> => {
   try {
-    const res = await api.get<SafeUserInfo | ErrorMsg>(`${USER_API_URL}/${username}`);
+    const res = await api.get<SafeUserInfo | ErrorMsg>(
+      `${USER_API_URL}/${encodeURIComponent(username)}`,
+    );
+
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);

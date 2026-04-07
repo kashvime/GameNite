@@ -43,6 +43,7 @@ describe("Header component", () => {
           pass: "pwd",
           socket: {} as GameSocket,
           reset: mockedReset,
+          updateUser: () => {},
         }}
       >
         <Header />
@@ -66,6 +67,7 @@ describe("Header component", () => {
           pass: "pwd",
           socket: {} as GameSocket,
           reset: mockedReset,
+          updateUser: () => {},
         }}
       >
         <Header />
@@ -91,6 +93,7 @@ describe("Header component", () => {
           pass: "pwd",
           socket: {} as GameSocket,
           reset: mockedReset,
+          updateUser: () => {},
         }}
       >
         <Header />

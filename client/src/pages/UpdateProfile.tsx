@@ -5,12 +5,33 @@ import { computeLeague } from "@gamenite/shared";
 import { getMatchHistory } from "../services/matchService";
 import type { MatchInfo } from "@gamenite/shared";
 
+/**
+ * Page component that allows the logged-in user to update their profile.
+ * Displays the user's current profile information and provides forms to:
+ * - Upload or change a profile picture
+ * - Edit their display name
+ * - Reset their password
+ * - Update their bio
+ *
+ * On successful submission, the login context is updated with the new user
+ * data so changes reflect immediately without requiring a re-login.
+ */
 export default function UpdateProfile() {
   const { user, pass } = useLoginContext();
   const [showPass, setShowPass] = useState(false);
   const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
     useEditProfileForm();
   const [bio, setBio] = useState(user.bio ?? "");
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatarUrl ?? null);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
   const [matches, setMatches] = useState<MatchInfo[] | null>(null);
 
   useEffect(() => {
@@ -27,35 +48,51 @@ export default function UpdateProfile() {
   }, [user.username, pass]);
 
   return (
-    <form className="content spacedSection" onSubmit={handleSubmit}>
+    <form
+      className="content spacedSection"
+      onSubmit={(e) => {
+        handleSubmit(e, avatarPreview);
+      }}
+    >
+      {" "}
       <h2>Profile</h2>
-
       {/* Avatar + online status */}
       <div
         style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "fit-content" }}
       >
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt="Your avatar"
-            style={{ width: "120px", height: "120px", objectFit: "cover" }}
+        <label style={{ cursor: "pointer" }}>
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleAvatarChange}
           />
-        ) : (
-          <div
-            style={{
-              width: "120px",
-              height: "120px",
-              background: "#d1d5db",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "0.875rem",
-              color: "#6b7280",
-            }}
-          >
-            No Photo
+          {avatarPreview ? (
+            <img
+              src={avatarPreview}
+              alt="Your avatar"
+              style={{ width: "120px", height: "120px", objectFit: "cover" }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "120px",
+                height: "120px",
+                background: "#d1d5db",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.875rem",
+                color: "#6b7280",
+              }}
+            >
+              No Photo
+            </div>
+          )}
+          <div style={{ fontSize: "0.75rem", color: "#6b7280", textAlign: "center" }}>
+            Click to change
           </div>
-        )}
+        </label>
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <span
             style={{
@@ -69,9 +106,7 @@ export default function UpdateProfile() {
           <span>Online</span>
         </div>
       </div>
-
       <hr />
-
       {/* General information */}
       <div>
         <h3>General Information</h3>
@@ -80,9 +115,7 @@ export default function UpdateProfile() {
           <li>Join Date: {new Date(user.createdAt).toLocaleDateString()}</li>
         </ul>
       </div>
-
       <hr />
-
       {/* Stats */}
       <div>
         <h3>Chess Statistics</h3>
@@ -111,7 +144,6 @@ export default function UpdateProfile() {
         )}
       </div>
       <hr />
-
       {/* Recent matches */}
       <div>
         <h3>Recent Matches</h3>
@@ -133,9 +165,7 @@ export default function UpdateProfile() {
           </ul>
         )}
       </div>
-
       <hr />
-
       {/* Edit bio */}
       <div className="spacedSection">
         <h3>Bio</h3>
@@ -148,9 +178,7 @@ export default function UpdateProfile() {
           style={{ resize: "vertical" }}
         />
       </div>
-
       <hr />
-
       {/* Edit display name */}
       <div className="spacedSection">
         <h3>Display name</h3>
@@ -171,9 +199,7 @@ export default function UpdateProfile() {
           </button>
         </div>
       </div>
-
       <hr />
-
       {/* Reset password */}
       <div className="spacedSection">
         <h3>Reset password</h3>
@@ -184,6 +210,7 @@ export default function UpdateProfile() {
             placeholder="New password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
           />
           <button
             className="secondary narrow"
@@ -213,12 +240,11 @@ export default function UpdateProfile() {
             placeholder="Confirm new password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="new-password"
           />
         </div>
       </div>
-
       <hr />
-
       {err && <p className="error-message">{err}</p>}
       <div>
         <button className="primary narrow">Submit</button>

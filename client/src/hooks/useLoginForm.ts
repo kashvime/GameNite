@@ -97,6 +97,17 @@ export default function useLoginForm(setAuth: (auth: AuthContext | null) => void
           setAuth(null);
           sessionStorage.removeItem("token");
         },
+        updateUser: (newUser: SafeUserInfo) => {
+          setAuth({
+            user: newUser,
+            pass: token,
+            reset: () => {
+              setAuth(null);
+              localStorage.removeItem("token");
+            },
+            updateUser: () => {},
+          });
+        },
       });
       navigate("/");
     }

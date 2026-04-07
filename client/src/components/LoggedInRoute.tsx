@@ -2,11 +2,13 @@ import { type JSX, useMemo } from "react";
 import { type AuthContext, LoginContext } from "../contexts/LoginContext.ts";
 import { type GameSocket } from "../util/types.ts";
 import { Navigate } from "react-router-dom";
+import type { SafeUserInfo } from "@gamenite/shared";
 
 interface LoggedInRouteParams {
   auth: AuthContext | null;
   socket: GameSocket | null;
   children: JSX.Element;
+  updateUser: (newUser: SafeUserInfo) => void;
 }
 
 /**
