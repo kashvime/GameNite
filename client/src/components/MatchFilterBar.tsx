@@ -24,6 +24,12 @@ export default function MatchFilterBar({ filter, setFilter, friends }: MatchFilt
 
   const today = new Date().toISOString().split("T")[0];
 
+  const sortLabels: Record<NonNullable<MatchFilter["sortOrder"]>, string> = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    score: "Highest score",
+  };
+
   const activeFilters = [
     filter.gameType && {
       key: "gameType",
@@ -35,6 +41,7 @@ export default function MatchFilterBar({ filter, setFilter, friends }: MatchFilt
       label: `Opponent: ${filter.opponentUsername}`,
     },
     filter.dateRange && { key: "dateRange", label: `Date: ${fromDate} → ${toDate}` },
+    filter.sortOrder && { key: "sortOrder", label: `Sort: ${sortLabels[filter.sortOrder]}` },
   ].filter(Boolean) as { key: string; label: string }[];
 
   /**
@@ -118,6 +125,21 @@ export default function MatchFilterBar({ filter, setFilter, friends }: MatchFilt
               {friend.display}
             </option>
           ))}
+        </select>
+
+        <select
+          value={filter.sortOrder ?? ""}
+          onChange={(e) =>
+            setFilter({
+              ...filter,
+              sortOrder: (e.target.value as MatchFilter["sortOrder"]) || undefined,
+            })
+          }
+        >
+          <option value="">Sort</option>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="score">Highest score</option>
         </select>
 
         <div className="dateInputs">

@@ -1,4 +1,4 @@
-import { zMatchFilter, type MatchInfo, type GameKey } from "@gamenite/shared";
+import { zMatchFilter, type MatchInfo, type GameKey, type League } from "@gamenite/shared";
 import { type Request } from "express";
 import { type RestAPI } from "../types.ts";
 import { getMatchesByUserId, getLeaderboard, getUserRank } from "../services/score.service.ts";
@@ -48,13 +48,15 @@ export const getLeaderboardHandler: RestAPI = async (req, res) => {
   const friendsOnly = req.query.friendsOnly === "true";
   const requestUsername = typeof req.query.username === "string" ? req.query.username : undefined;
 
+  const league = typeof req.query.league === "string" ? (req.query.league as League) : undefined;
+
   let userIds: RecordId[] | undefined;
   if (friendsOnly && requestUsername) {
     const auth = await getUserByUsername(requestUsername);
     if (auth) userIds = await getFriendIds(auth.userId);
   }
 
-  res.send(await getLeaderboard(gameType, limit, userIds));
+  res.send(await getLeaderboard(gameType, limit, userIds, league));
 };
 
 export const postMyRank: RestAPI<{ rank: number; rating: number } | null> = async (req, res) => {
@@ -73,9 +75,10 @@ export const postMyRank: RestAPI<{ rank: number; rating: number } | null> = asyn
   const rawGameType = typeof req.query.gameType === "string" ? req.query.gameType : "chess";
   const gameType = rawGameType as GameKey;
   const friendsOnly = req.query.friendsOnly === "true";
+  const league = typeof req.query.league === "string" ? (req.query.league as League) : undefined;
 
   let userIds: RecordId[] | undefined;
   if (friendsOnly) userIds = await getFriendIds(user.userId);
 
-  res.send(await getUserRank(user.userId, gameType, userIds));
+  res.send(await getUserRank(user.userId, gameType, userIds, league));
 };

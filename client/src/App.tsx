@@ -57,7 +57,7 @@ export default function App() {
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (token) {
       try {
@@ -73,7 +73,7 @@ export default function App() {
                 pass: token,
                 reset: () => {
                   setAuth(null);
-                  localStorage.removeItem("token");
+                  sessionStorage.removeItem("token");
                 },
                 updateUser: (newUser) => {
                   setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
@@ -82,7 +82,7 @@ export default function App() {
             });
           });
       } catch {
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
       }
     }
     queueMicrotask(() => setLoading(false));

@@ -20,7 +20,8 @@ export default function AuthSuccess({ setAuth }: Props) {
       return;
     }
 
-    localStorage.setItem("token", token);
+    // ✅ save FIRST
+    sessionStorage.setItem("token", token);
 
     const user = jwtDecode<SafeUserInfo>(token);
     setAuth({
@@ -28,7 +29,7 @@ export default function AuthSuccess({ setAuth }: Props) {
       pass: token,
       reset: () => {
         setAuth(null);
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
       },
       updateUser: (newUser: SafeUserInfo) => {
         setAuth({

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GamePlayInfo, SafeUserInfo, TaggedGameView } from "@gamenite/shared";
 import useLoginContext from "./useLoginContext.ts";
 
@@ -17,11 +17,15 @@ import useLoginContext from "./useLoginContext.ts";
  */
 export default function useSocketsForGame(gameId: string, initialPlayers: SafeUserInfo[]) {
   const { user, socket } = useLoginContext();
-  const token = localStorage.getItem("token") ?? "";
+  const token = sessionStorage.getItem("token") ?? "";
   const [view, setView] = useState<null | TaggedGameView>(null);
   const [hasWatched, setHasWatched] = useState<boolean>(false);
   const [players, setPlayers] = useState<SafeUserInfo[]>(initialPlayers);
   const userPlayerIndex = players.findIndex(({ username }) => username === user.username);
+  const userPlayerIndexRef = useRef(userPlayerIndex);
+  useEffect(() => {
+    userPlayerIndexRef.current = userPlayerIndex;
+  });
 
   useEffect(() => {
     const handleWatched = (game: GamePlayInfo) => {
@@ -32,14 +36,23 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
       setView(game.view);
     };
 
-    const handlePlayersUpdated = (newPlayers: SafeUserInfo[]) => {
+    const handlePlayersUpdated = ({
+      gameId: id,
+      players: newPlayers,
+    }: {
+      gameId: string;
+      players: SafeUserInfo[];
+    }) => {
+      if (id !== gameId) return;
       setPlayers(newPlayers);
     };
 
-    const handleStateUpdated = (view: TaggedGameView & { forPlayer: boolean }) => {
-      if (!view) return;
-      if (userPlayerIndex >= 0 && !view.forPlayer) return;
-      setView(view);
+    const handleStateUpdated = (
+      update: TaggedGameView & { forPlayer: boolean; gameId: string },
+    ) => {
+      if (update.gameId !== gameId) return;
+      if (userPlayerIndexRef.current >= 0 && !update.forPlayer) return;
+      setView(update);
     };
 
     socket.on("gameWatched", handleWatched);
@@ -52,7 +65,7 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
       socket.off("gamePlayersUpdated", handlePlayersUpdated);
       socket.off("gameStateUpdated", handleStateUpdated);
     };
-  }, [gameId, socket, userPlayerIndex, token]);
+  }, [gameId, socket, token]);
 
   function joinGame() {
     socket.emit("gameJoinAsPlayer", { token, payload: gameId });

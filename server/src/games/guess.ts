@@ -13,7 +13,7 @@ function allGuessed(guesses: (number | null)[]): guesses is number[] {
 
 export const guessLogic: GameLogic<GuessState, GuessView> = {
   minPlayers: 2,
-  maxPlayers: null,
+  maxPlayers: 2,
   start: (numPlayers) => ({
     secret: Math.round(Math.random() * 100) + 1,
     guesses: Array.from({ length: numPlayers }).map(() => null),
