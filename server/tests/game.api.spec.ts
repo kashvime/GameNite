@@ -62,6 +62,7 @@ describe("POST /api/game/create", () => {
       createdAt: expect.anything(),
       minPlayers: 2,
       players: [{ ...userShape, username: "user3", display: "Frau Drei" }],
+      visibility: "public",
     });
   });
 });

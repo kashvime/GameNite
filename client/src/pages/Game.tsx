@@ -24,8 +24,8 @@ export default function Game() {
   }, [gameId]);
 
   const handleCopy = () => {
-    if (!game?.inviteCode) return;
-    navigator.clipboard.writeText(game.inviteCode);
+    if (!game || typeof game.inviteCode !== "string") return;
+    navigator.clipboard.writeText(String(game.inviteCode));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
