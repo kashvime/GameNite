@@ -44,7 +44,7 @@ function mergeByTime(a: ChatMessage[], b: ChatMessage[]): ChatMessage[] {
  */
 export default function useSocketsForChat(chatId: string) {
   const { user, socket } = useLoginContext();
-  const token = localStorage.getItem("token") ?? "";
+  const token = sessionStorage.getItem("token") ?? "";
   const [messages, setMessages] = useState<ChatMessage[] | null>(null);
 
   useEffect(() => {
