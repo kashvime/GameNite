@@ -31,7 +31,7 @@ async function resetStoredGames() {
       players: [user2id, user3id],
       createdAt: new Date("2025-04-21").toISOString(),
       createdBy: user2id,
-    },
+    } as GameRecord,
     [randomUUID().toString()]: {
       type: "guess",
       state: { secret: 43, guesses: [null, 2, 99, null] },
@@ -40,7 +40,7 @@ async function resetStoredGames() {
       players: [user1id, user0id, user3id, user2id],
       createdAt: recently.toISOString(),
       createdBy: user1id,
-    },
+    } as GameRecord,
     [randomUUID().toString()]: {
       type: "nim",
       done: false,
@@ -48,7 +48,7 @@ async function resetStoredGames() {
       players: [user1id],
       createdAt: new Date().toISOString(),
       createdBy: user1id,
-    },
+    } as GameRecord,
   };
 
   await GameRepo.clear();
