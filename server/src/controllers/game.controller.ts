@@ -6,6 +6,7 @@ import {
   getGameById,
   getGames,
   joinGame,
+  joinByInviteCode,
   startGame,
   updateGame,
   viewGame,
@@ -31,7 +32,12 @@ const zSocketPayload = <T extends z.ZodType>(zT: T) => z.object({ token: z.strin
  * starts with one player, the user who made the POST request.
  */
 export const postCreate: RestAPI<GameInfo> = async (req, res) => {
-  const body = zGameKey.safeParse((req.body as { gameKey?: unknown })?.gameKey ?? req.body);
+  const body = z
+    .object({
+      gameKey: zGameKey,
+      visibility: z.enum(["public", "private"]).default("public"),
+    })
+    .safeParse(req.body);
   if (body.error) {
     res.status(400).send({ error: "Poorly-formed request" });
     return;
@@ -46,8 +52,36 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     res.status(403).send({ error: "User not found" });
     return;
   }
-  const game = await createGame(user, body.data, new Date());
+  const game = await createGame(user, body.data.gameKey, new Date(), body.data.visibility);
   res.send(game);
+};
+
+export const postJoinByCode: RestAPI<GameInfo> = async (req, res) => {
+  const body = z.object({ code: z.string() }).safeParse(req.body);
+  if (body.error) {
+    res.status(400).send({ error: "Poorly-formed request" });
+    return;
+  }
+  const jwtUser = (req as unknown as { user?: { username: string } }).user;
+  if (!jwtUser) {
+    res.status(401).send({ error: "Unauthorized" });
+    return;
+  }
+  const user = await getUserByUsername(jwtUser.username);
+  if (!user) {
+    res.status(403).send({ error: "User not found" });
+    return;
+  }
+  try {
+    const result: GameInfo | { error: string } = await joinByInviteCode(body.data.code, user);
+    if ("error" in result) {
+      res.status(400).send(result);
+      return;
+    }
+    res.send(result);
+  } catch (e) {
+    res.status(500).send({ error: "Internal server error" });
+  }
 };
 
 export const getById: RestAPI<GameInfo, { id: string }> = async (req, res) => {
@@ -84,6 +118,12 @@ export const socketWatch: SocketAPI = (socket) => async (body) => {
     const roomsToJoin = isPlayer
       ? [parsed.payload, userRoom(parsed.payload, user.userId)]
       : [parsed.payload];
+
+    for (const room of roomsToJoin) {
+      if (!socket.rooms.has(room)) {
+        await socket.join(room);
+      }
+    }
     await socket.join(roomsToJoin);
     socket.emit("gameWatched", { gameId: parsed.payload, view, players });
   } catch (err) {

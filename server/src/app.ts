@@ -60,6 +60,7 @@ app.use(
       "/game",
       Router()
         .post("/create", requireAuth, game.postCreate)
+        .post("/join-by-code", requireAuth, game.postJoinByCode)
         .get("/list", game.getList)
         .get("/:id", game.getById),
     )

@@ -21,6 +21,8 @@ import type { GameServer } from "../types.ts";
  * @param winner - The index of the winning player, or null for a draw
  * @param playedAt - When the match was played
  * @param scores - Array of player scores
+ * @param io - Hook to connect with server
+ * @param visibility - Private or public game
  */
 export async function saveMatchRecords(
   players: RecordId[],
@@ -30,6 +32,7 @@ export async function saveMatchRecords(
   playedAt: Date,
   scores?: number[],
   io?: GameServer,
+  visibility: "public" | "private" = "public",
 ): Promise<void> {
   await Promise.all(
     players.map((userId, playerIndex) => {
@@ -46,7 +49,9 @@ export async function saveMatchRecords(
       return ScoreRepo.add(record);
     }),
   );
-  io?.emit("leaderboardUpdated");
+  if (visibility === "public") {
+    io?.emit("leaderboardUpdated");
+  }
 }
 
 /**

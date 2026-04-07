@@ -35,6 +35,8 @@ async function populateGameInfo(gameId: string): Promise<GameInfo> {
     type: game.type,
     status: !game.state ? "waiting" : game.done ? "done" : "active",
     minPlayers: gameServices[game.type].minPlayers,
+    visibility: game.visibility ?? "public",
+    inviteCode: game.inviteCode,
   };
 }
 
@@ -50,8 +52,11 @@ export async function createGame(
   user: UserWithId,
   type: GameKey,
   createdAt: Date,
+  visibility: "public" | "private" = "public",
 ): Promise<GameInfo> {
   const chat = await createChat(createdAt);
+  const inviteCode =
+    visibility === "private" ? Math.random().toString(36).slice(2, 8).toUpperCase() : undefined;
   const gameId = await GameRepo.add({
     type,
     done: false,
@@ -59,6 +64,8 @@ export async function createGame(
     createdAt: createdAt.toISOString(),
     createdBy: user.userId,
     players: [user.userId],
+    visibility,
+    inviteCode,
   });
   return populateGameInfo(gameId);
 }
@@ -144,8 +151,9 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
 export async function getGames(): Promise<GameInfo[]> {
   const keys = await GameRepo.getAllKeys();
   const unsorted = await Promise.all(keys.map(populateGameInfo));
-
-  return unsorted.toSorted((game1, game2) => game2.createdAt.getTime() - game1.createdAt.getTime());
+  return unsorted
+    .filter((game) => game.visibility === "public")
+    .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
 /**
@@ -200,6 +208,7 @@ export async function updateGame(
       new Date(),
       undefined,
       io,
+      game.visibility ?? "public",
     );
     if (game.players.length === 2) {
       const [player0, player1] = await Promise.all([
@@ -246,4 +255,20 @@ export async function viewGame(gameId: string, user: UserWithId) {
     view,
     players: await Promise.all(game.players.map(populateSafeUserInfo)),
   };
+}
+
+export async function joinByInviteCode(
+  code: string,
+  user: UserWithId,
+): Promise<GameInfo | { error: string }> {
+  const keys = await GameRepo.getAllKeys();
+  const records = await GameRepo.getMany(keys);
+  const idx = records.findIndex((r) => r.inviteCode === code.toUpperCase());
+  if (idx < 0) return { error: "Invalid invite code" };
+  const gameId = keys[idx];
+  try {
+    return await joinGame(gameId, user);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not join game" };
+  }
 }
