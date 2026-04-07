@@ -102,9 +102,9 @@ function userRoom(gameId: string, user: string) {
 }
 
 function sendViewUpdates(io: GameServer, gameId: string, updates: GameViewUpdates) {
-  io.to(gameId).emit("gameStateUpdated", { ...updates.watchers, forPlayer: false, gameId });
+  io.to(gameId).emit("gameStateUpdated", { ...updates.watchers, forPlayer: false });
   for (const { userId, view } of updates.players) {
-    io.to(userRoom(gameId, userId)).emit("gameStateUpdated", { ...view, forPlayer: true, gameId });
+    io.to(userRoom(gameId, userId)).emit("gameStateUpdated", { ...view, forPlayer: true });
   }
 }
 
@@ -138,13 +138,10 @@ export const socketJoinAsPlayer: SocketAPI = (socket, io) => async (body) => {
     const user = await getUserByUsername(jwtUser.username);
     if (!user) throw new Error("User not found");
     const game = await joinGame(parsed.payload, user);
+    io.to(parsed.payload).emit("gamePlayersUpdated", game.players);
     if (!socket.rooms.has(userRoom(parsed.payload, user.userId))) {
       await socket.join(userRoom(parsed.payload, user.userId));
     }
-    io.to(parsed.payload).emit("gamePlayersUpdated", {
-      gameId: parsed.payload,
-      players: game.players,
-    });
     if (game.players.length === gameServices[game.type].maxPlayers) {
       sendViewUpdates(io, parsed.payload, await startGame(parsed.payload, user));
     }
