@@ -33,8 +33,8 @@ export interface ServerToClientEvents {
   chatNewMessage: (payload: ChatNewMessagePayload) => void;
   chatUserJoined: (payload: ChatUserJoinedPayload) => void;
   chatUserLeft: (payload: ChatUserLeftPayload) => void;
-  gamePlayersUpdated: (payload: { gameId: string; players: SafeUserInfo[] }) => void;
-  gameStateUpdated: (payload: TaggedGameView & { forPlayer: boolean; gameId: string }) => void;
+  gamePlayersUpdated: (payload: SafeUserInfo[]) => void;
+  gameStateUpdated: (payload: TaggedGameView & { forPlayer: boolean }) => void;
   gameWatched: (payload: GamePlayInfo) => void;
   friendRequestReceived: (payload: { from: SafeUserInfo }) => void;
   leagueChanged: (payload: { newLeague: League; oldLeague: League }) => void;
