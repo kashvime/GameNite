@@ -11,6 +11,8 @@ import { type SafeUserInfo } from "./user.types.ts";
  * - `createdAt`: when the game was created
  * - `createdBy`: username of the person who created the game
  * - `minPlayers`: the minimum number of players required to start the game
+ * - `visibility`: if the games public or private
+ * - `createdBy`: code to join a private game
  */
 export interface GameInfo {
   gameId: string;
@@ -21,6 +23,8 @@ export interface GameInfo {
   createdAt: Date;
   createdBy: SafeUserInfo;
   minPlayers: number;
+  visibility: "public" | "private";
+  inviteCode?: string;
 }
 
 /**

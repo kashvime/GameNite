@@ -7,9 +7,16 @@ const GAME_API_URL = `/api/game`;
 /**
  * Sends a POST request to create a game
  */
-export const createGame = async (auth: UserAuth, gameKey: GameKey): APIResponse<GameInfo> => {
+export const createGame = async (
+  auth: UserAuth,
+  gameKey: GameKey,
+  visibility: "public" | "private" = "public",
+): APIResponse<GameInfo> => {
   try {
-    const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, { gameKey });
+    const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, {
+      gameKey,
+      visibility,
+    });
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);
@@ -34,6 +41,15 @@ export const getGameById = async (gameId: string): APIResponse<GameInfo> => {
 export const gameList = async (): APIResponse<GameInfo[]> => {
   try {
     const res = await api.get<GameInfo[] | ErrorMsg>(`${GAME_API_URL}/list`);
+    return res.data;
+  } catch (error) {
+    return exceptionToErrorMsg(error);
+  }
+};
+
+export const joinByCode = async (auth: UserAuth, code: string): APIResponse<GameInfo> => {
+  try {
+    const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/join-by-code`, { code });
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);
