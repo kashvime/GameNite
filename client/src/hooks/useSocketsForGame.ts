@@ -23,7 +23,9 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
   const [players, setPlayers] = useState<SafeUserInfo[]>(initialPlayers);
   const userPlayerIndex = players.findIndex(({ username }) => username === user.username);
   const userPlayerIndexRef = useRef(userPlayerIndex);
-  userPlayerIndexRef.current = userPlayerIndex;
+  useEffect(() => {
+    userPlayerIndexRef.current = userPlayerIndex;
+  });
 
   useEffect(() => {
     const handleWatched = (game: GamePlayInfo) => {
@@ -34,12 +36,20 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
       setView(game.view);
     };
 
-    const handlePlayersUpdated = ({ gameId: id, players: newPlayers }: { gameId: string; players: SafeUserInfo[] }) => {
+    const handlePlayersUpdated = ({
+      gameId: id,
+      players: newPlayers,
+    }: {
+      gameId: string;
+      players: SafeUserInfo[];
+    }) => {
       if (id !== gameId) return;
       setPlayers(newPlayers);
     };
 
-    const handleStateUpdated = (update: TaggedGameView & { forPlayer: boolean; gameId: string }) => {
+    const handleStateUpdated = (
+      update: TaggedGameView & { forPlayer: boolean; gameId: string },
+    ) => {
       if (update.gameId !== gameId) return;
       if (userPlayerIndexRef.current >= 0 && !update.forPlayer) return;
       setView(update);

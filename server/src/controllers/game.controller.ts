@@ -101,7 +101,10 @@ export const socketJoinAsPlayer: SocketAPI = (socket, io) => async (body) => {
     if (!socket.rooms.has(userRoom(parsed.payload, user.userId))) {
       await socket.join(userRoom(parsed.payload, user.userId));
     }
-    io.to(parsed.payload).emit("gamePlayersUpdated", { gameId: parsed.payload, players: game.players });
+    io.to(parsed.payload).emit("gamePlayersUpdated", {
+      gameId: parsed.payload,
+      players: game.players,
+    });
     if (game.players.length === gameServices[game.type].maxPlayers) {
       sendViewUpdates(io, parsed.payload, await startGame(parsed.payload, user));
     }
