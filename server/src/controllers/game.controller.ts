@@ -29,10 +29,7 @@ const zSocketPayload = <T extends z.ZodType>(zT: T) => z.object({ token: z.strin
 
 const zGameWatchBody = z.object({
   token: z.string(),
-  payload: z.union([
-    z.string(),
-    z.object({ gameId: z.string(), watchId: z.number().optional() }),
-  ]),
+  payload: z.union([z.string(), z.object({ gameId: z.string(), watchId: z.number().optional() })]),
 });
 
 /**
@@ -125,9 +122,7 @@ export const socketWatch: SocketAPI = (socket) => async (body) => {
     const gameId = typeof parsed.payload === "string" ? parsed.payload : parsed.payload.gameId;
     const watchId = typeof parsed.payload === "object" ? parsed.payload.watchId : undefined;
     const { isPlayer, view, players, yourPlayerIndex } = await viewGame(gameId, user);
-    const roomsToJoin = isPlayer
-      ? [gameId, userRoom(gameId, user.userId)]
-      : [gameId];
+    const roomsToJoin = isPlayer ? [gameId, userRoom(gameId, user.userId)] : [gameId];
 
     for (const room of roomsToJoin) {
       if (!socket.rooms.has(room)) {

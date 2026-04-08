@@ -7,11 +7,7 @@ import {
 } from "./chat.types.ts";
 import { type NewMessagePayload } from "./message.types.ts";
 import { type WithToken } from "./auth.types.ts";
-import {
-  type GameMakeMovePayload,
-  type GamePlayInfo,
-  type TaggedGameView,
-} from "./game.types.ts";
+import { type GameMakeMovePayload, type GamePlayInfo, type TaggedGameView } from "./game.types.ts";
 import { type SafeUserInfo } from "./user.types.ts";
 import { type League } from "./league.ts";
 
