@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ChessMove, ChessView } from "@gamenite/shared";
 import type { GameProps } from "../util/types.ts";
+import "./ChessGame.css";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const RANKS = ["8", "7", "6", "5", "4", "3", "2", "1"];
@@ -29,8 +30,7 @@ function parseFen(fen: string): Record<string, string> {
       if (isNaN(Number(ch))) {
         const color = ch === ch.toUpperCase() ? "w" : "b";
         const type = ch.toUpperCase();
-        const square = FILES[fileIndex] + RANKS[rankIndex];
-        pieces[square] = color + type;
+        pieces[FILES[fileIndex] + RANKS[rankIndex]] = color + type;
         fileIndex++;
       } else {
         fileIndex += Number(ch);
@@ -61,7 +61,6 @@ export default function ChessGame({
 
   function handleSquareClick(square: string) {
     if (!isMyTurn || isDone) return;
-
     if (selected === null) {
       if (pieces[square]) setSelected(square);
     } else if (selected === square) {
@@ -71,7 +70,6 @@ export default function ChessGame({
       const isPawn = piece?.endsWith("P");
       const toRank = square[1];
       const isPromotion = isPawn && (toRank === "8" || toRank === "1");
-
       if (isPromotion) {
         setPromotionPending({ from: selected, to: square });
         setSelected(null);
@@ -102,115 +100,71 @@ export default function ChessGame({
     return "Your turn";
   }
 
+  const statusClass =
+    view.status !== "active" ? "done" : view.inCheck ? "check" : isMyTurn ? "myturn" : "";
+
   return (
-    <div className="content spacedSection">
-      <h2>Chess</h2>
-
-      {/* Player info */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-        <span>⬜ White: {players[0]?.display ?? "Player 1"}</span>
-        <span>⬛ Black: {players[1]?.display ?? "Player 2"}</span>
+    <div className="chess-wrapper">
+      <div className="chess-players">
+        <div className={`chess-player ${view.nextPlayer === 0 && !isDone ? "active" : ""}`}>
+          <div className="chess-player-dot white" />
+          {players[0]?.display ?? "Player 1"}
+        </div>
+        <div className={`chess-player ${view.nextPlayer === 1 && !isDone ? "active" : ""}`}>
+          <div className="chess-player-dot black" />
+          {players[1]?.display ?? "Player 2"}
+        </div>
       </div>
 
-      {/* Status */}
-      <div
-        style={{
-          marginBottom: "0.5rem",
-          fontWeight: 500,
-          color: view.inCheck ? "#a32d2d" : view.status !== "active" ? "#0f6e56" : undefined,
-        }}
-      >
-        {statusMessage()}
-      </div>
+      <div className={`chess-status ${statusClass}`}>{statusMessage()}</div>
 
-      {/* Promotion dialog */}
       {promotionPending && (
-        <div
-          style={{ marginBottom: "0.5rem", display: "flex", gap: "0.5rem", alignItems: "center" }}
-        >
-          <span>Promote pawn to:</span>
+        <div className="chess-promotion">
+          <span>Promote to:</span>
           {["q", "r", "b", "n"].map((p) => (
-            <button key={p} className="secondary narrow" onClick={() => handlePromotion(p)}>
+            <button key={p} onClick={() => handlePromotion(p)}>
               {pieceSymbols[isWhite ? `w${p.toUpperCase()}` : `b${p.toUpperCase()}`]}
             </button>
           ))}
         </div>
       )}
 
-      {/* Board */}
-      <div
-        style={{
-          display: "inline-block",
-          border: "2px solid #444",
-          borderRadius: "4px",
-          overflow: "hidden",
-        }}
-      >
-        {ranks.map((rank) => (
-          <div key={rank} style={{ display: "flex" }}>
-            {/* Rank label */}
-            <div
-              style={{
-                width: "20px",
-                height: "56px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                background: "#b58863",
-                color: "#fff",
-              }}
-            >
-              {rank}
-            </div>
-            {files.map((file) => {
-              const square = file + rank;
-              const piece = pieces[square];
-              const isLight = (FILES.indexOf(file) + RANKS.indexOf(rank)) % 2 === 0;
-              const isSelected = selected === square;
-              const bg = isSelected ? "#f6f669" : isLight ? "#f0d9b5" : "#b58863";
-
-              return (
-                <div
-                  key={square}
-                  onClick={() => handleSquareClick(square)}
-                  style={{
-                    width: "56px",
-                    height: "56px",
-                    background: bg,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "36px",
-                    cursor: isMyTurn && !isDone ? "pointer" : "default",
-                    userSelect: "none",
-                  }}
-                >
-                  {piece && pieceSymbols[piece]}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-        {/* File labels */}
-        <div style={{ display: "flex", background: "#b58863" }}>
-          <div style={{ width: "20px" }} />
-          {files.map((file) => (
-            <div
-              key={file}
-              style={{
-                width: "56px",
-                height: "20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                color: "#fff",
-              }}
-            >
-              {file}
+      <div className="chess-board-wrap">
+        <div className="chess-board">
+          {ranks.map((rank) => (
+            <div key={rank} className="chess-row">
+              <div className="chess-rank-label">{rank}</div>
+              {files.map((file) => {
+                const square = file + rank;
+                const piece = pieces[square];
+                const isLight = (FILES.indexOf(file) + RANKS.indexOf(rank)) % 2 === 0;
+                const isSelected = selected === square;
+                const squareClass = [
+                  "chess-square",
+                  isLight ? "light" : "dark",
+                  isSelected ? "selected" : "",
+                  isMyTurn && !isDone ? "clickable" : "",
+                ].join(" ");
+                return (
+                  <div
+                    key={square}
+                    className={squareClass}
+                    onClick={() => handleSquareClick(square)}
+                  >
+                    {piece && pieceSymbols[piece]}
+                  </div>
+                );
+              })}
             </div>
           ))}
+          <div className="chess-file-labels">
+            <div className="chess-file-label-spacer" />
+            {files.map((file) => (
+              <div key={file} className="chess-file-label">
+                {file}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
