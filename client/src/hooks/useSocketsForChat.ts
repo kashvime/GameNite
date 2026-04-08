@@ -44,6 +44,7 @@ function mergeByTime(a: ChatMessage[], b: ChatMessage[]): ChatMessage[] {
  */
 export default function useSocketsForChat(chatId: string) {
   const { user, socket, pass: token } = useLoginContext();
+  const username = user.username;
   const [messages, setMessages] = useState<ChatMessage[] | null>(null);
   const joinedChatRef = useRef(false);
 
@@ -128,7 +129,7 @@ export default function useSocketsForChat(chatId: string) {
         socket.emit("chatLeave", { token, payload: chatId });
       }
     };
-  }, [socket, token, chatId, user.username]);
+  }, [socket, token, chatId, username, user]);
 
   function handleMessageCreation(text: string) {
     socket.emit("chatSendMessage", { token, payload: { chatId, text } });

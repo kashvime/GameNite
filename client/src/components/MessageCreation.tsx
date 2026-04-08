@@ -12,7 +12,7 @@ export default function MessageCreation({ handleMessageCreation }: MessageCreati
 
   // This stays intentionally small since we currently send images as data URLs
   // in the existing websocket `text` field.
-  const MAX_ATTACHMENT_BYTES = 800_000; // ~0.8MB
+  const maxAttachmentBytes = 800_000; // ~0.8MB
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.code === "Enter" && !e.shiftKey) {
@@ -34,7 +34,14 @@ export default function MessageCreation({ handleMessageCreation }: MessageCreati
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.onload = () => resolve(String(reader.result));
+      reader.onload = () => {
+        const { result } = reader;
+        if (typeof result !== "string") {
+          reject(new Error("Unexpected file reader result"));
+          return;
+        }
+        resolve(result);
+      };
       reader.readAsDataURL(file);
     });
   }
@@ -51,7 +58,7 @@ export default function MessageCreation({ handleMessageCreation }: MessageCreati
       return;
     }
 
-    if (file.size > MAX_ATTACHMENT_BYTES) {
+    if (file.size > maxAttachmentBytes) {
       setSendError("That image is too large. Please choose something under ~0.8MB.");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
