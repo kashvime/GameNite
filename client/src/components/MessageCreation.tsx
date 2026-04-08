@@ -109,7 +109,9 @@ export default function MessageCreation({ handleMessageCreation }: MessageCreati
           {sendError}
         </p>
       )}
-      <button className="visuallyHidden">Submit</button>
+      <button type="submit" className="visuallyHidden">
+        Submit
+      </button>
     </form>
   );
 }
