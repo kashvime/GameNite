@@ -53,6 +53,7 @@ export async function createGame(
   type: GameKey,
   createdAt: Date,
   visibility: "public" | "private" = "public",
+  timeControl?: 5 | 10 | 30 | null,
 ): Promise<GameInfo> {
   const chat = await createChat(createdAt);
   const inviteCode =
@@ -66,6 +67,7 @@ export async function createGame(
     players: [user.userId],
     visibility,
     inviteCode,
+    timeControl,
   });
   return populateGameInfo(gameId);
 }
@@ -135,7 +137,8 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
   if (!game.players.some((userId) => userId === user.userId)) {
     throw new Error(`user ${user.username} starting game they're not in`);
   }
-  const { state, views } = gameServices[key].create(game.players);
+  const options = game.timeControl ? { timeControl: game.timeControl } : undefined;
+  const { state, views } = gameServices[key].create(game.players, options);
 
   game.state = state;
   await GameRepo.set(gameId, game);

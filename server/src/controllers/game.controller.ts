@@ -41,6 +41,10 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     .object({
       gameKey: zGameKey,
       visibility: z.enum(["public", "private"]).default("public"),
+      timeControl: z
+        .union([z.literal(5), z.literal(10), z.literal(30)])
+        .nullable()
+        .optional(),
     })
     .safeParse(req.body);
   if (body.error) {
@@ -57,7 +61,13 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     res.status(403).send({ error: "User not found" });
     return;
   }
-  const game = await createGame(user, body.data.gameKey, new Date(), body.data.visibility);
+  const game = await createGame(
+    user,
+    body.data.gameKey,
+    new Date(),
+    body.data.visibility,
+    body.data.timeControl ?? null,
+  );
   res.send(game);
 };
 

@@ -8,6 +8,7 @@ export default function useNewGameForm() {
   const { user, pass } = useLoginContext();
   const [gameKey, setGameKey] = useState<GameKey | "">("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [timeControl, setTimeControl] = useState<5 | 10 | 30 | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -24,7 +25,7 @@ export default function useNewGameForm() {
     }
     setErr(null);
     const auth = { username: user.username, password: pass };
-    const game = await createGame(auth, gameKey, visibility);
+    const game = await createGame(auth, gameKey, visibility, timeControl);
     if ("error" in game) {
       setErr(game.error);
       return;
@@ -32,5 +33,14 @@ export default function useNewGameForm() {
     navigate(`/game/${game.gameId}`);
   };
 
-  return { gameKey, visibility, setVisibility, err, handleInputChange, handleSubmit };
+  return {
+    gameKey,
+    visibility,
+    setVisibility,
+    timeControl,
+    setTimeControl,
+    err,
+    handleInputChange,
+    handleSubmit,
+  };
 }

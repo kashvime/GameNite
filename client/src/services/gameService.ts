@@ -11,11 +11,13 @@ export const createGame = async (
   auth: UserAuth,
   gameKey: GameKey,
   visibility: "public" | "private" = "public",
+  timeControl?: 5 | 10 | 30 | null,
 ): APIResponse<GameInfo> => {
   try {
     const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, {
       gameKey,
       visibility,
+      timeControl,
     });
     return res.data;
   } catch (error) {

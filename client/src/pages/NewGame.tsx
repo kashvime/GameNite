@@ -3,8 +3,16 @@ import { gameNames } from "../util/consts.ts";
 import "./NewGame.css";
 
 export default function NewGame() {
-  const { gameKey, visibility, setVisibility, handleInputChange, err, handleSubmit } =
-    useNewGameForm();
+  const {
+    gameKey,
+    visibility,
+    setVisibility,
+    timeControl,
+    setTimeControl,
+    handleInputChange,
+    err,
+    handleSubmit,
+  } = useNewGameForm();
   return (
     <div className="new-game-page">
       <form className="new-game-card" onSubmit={handleSubmit}>
@@ -61,6 +69,30 @@ export default function NewGame() {
             </div>
           </div>
 
+          {gameKey === "chess" && (
+            <div className="new-game-field">
+              <label>Time control</label>
+              <div className="visibility-options">
+                {([null, 5, 10, 30] as (5 | 10 | 30 | null)[]).map((t) => (
+                  <label
+                    key={String(t)}
+                    className={`visibility-option ${timeControl === t ? "selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="timeControl"
+                      checked={timeControl === t}
+                      onChange={() => setTimeControl(t)}
+                    />
+                    <div className="visibility-option-text">
+                      <strong>{t === null ? "⏳ No timer" : `⏱ ${t} minutes`}</strong>
+                      <span>{t === null ? "Untimed game" : `Each player gets ${t} minutes`}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           {err && <p className="error-message">{err}</p>}
         </div>
 

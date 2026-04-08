@@ -1,5 +1,10 @@
 import { Chess } from "chess.js";
-import { type ChessState, type ChessView, zChessMove } from "@gamenite/shared";
+import {
+  type ChessState,
+  type ChessView,
+  type ChessTimeControl,
+  zChessMove,
+} from "@gamenite/shared";
 import { type GameLogic } from "./gameLogic.ts";
 import { GameService } from "./gameServiceManager.ts";
 
@@ -7,20 +12,40 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
   minPlayers: 2,
   maxPlayers: 2,
 
-  start: () => {
-    const chess = new Chess();
+  start: (numPlayers, options?: { timeControl?: ChessTimeControl }) => {
+    const timeControl = options?.timeControl ?? null;
+    const timeMs = timeControl ? timeControl * 60 * 1000 : Infinity;
     return {
-      fen: chess.fen(),
-      pgn: chess.pgn(),
+      fen: new Chess().fen(),
+      pgn: new Chess().pgn(),
       nextPlayer: 0,
       status: "active",
       inCheck: false,
+      timeControl,
+      timeRemaining: [timeMs, timeMs],
+      lastMoveAt: Date.now(),
     };
   },
 
   update: (state, payload, playerIndex) => {
     if (playerIndex !== state.nextPlayer) return null;
     if (state.status !== "active") return null;
+
+    const now = Date.now();
+    const elapsed = state.lastMoveAt ? now - state.lastMoveAt : 0;
+    const newTimeRemaining: [number, number] = [...state.timeRemaining];
+    if (state.timeControl !== null) {
+      newTimeRemaining[playerIndex] = Math.max(0, newTimeRemaining[playerIndex] - elapsed);
+      if (newTimeRemaining[playerIndex] <= 0) {
+        return {
+          ...state,
+          status: "timeout",
+          timeRemaining: newTimeRemaining,
+          lastMoveAt: now,
+          nextPlayer: playerIndex === 0 ? 1 : 0,
+        };
+      }
+    }
 
     const move = zChessMove.safeParse(payload);
     if (move.error) return null;
@@ -44,21 +69,21 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
       nextPlayer,
       status,
       inCheck: chess.inCheck(),
+      timeControl: state.timeControl,
+      timeRemaining: newTimeRemaining,
+      lastMoveAt: now,
     };
   },
 
   isDone: (state) => state.status !== "active",
 
   winner: (state) => {
-    if (state.status === "checkmate") {
-      // The player who just moved won — that's the opposite of nextPlayer
-      return state.nextPlayer === 0 ? 1 : 0;
-    }
-    return null; // draw or stalemate
+    if (state.status === "checkmate") return state.nextPlayer === 0 ? 1 : 0;
+    if (state.status === "timeout") return state.nextPlayer;
+    return null;
   },
 
   viewAs: (state) => state,
-
   tagView: (view) => ({ type: "chess", view }),
 
   describeMove: (prevState, _newState, payload) => {

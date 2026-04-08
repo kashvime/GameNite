@@ -83,6 +83,7 @@ export interface GameRecord {
   createdBy: RecordId; // References User records
   visibility: "public" | "private";
   inviteCode?: string;
+  timeControl?: 5 | 10 | 30 | null;
 }
 
 /**
