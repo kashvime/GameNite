@@ -1,4 +1,40 @@
+form.messageCreation {
+  display: flex;
+  flex-direction: column;
+}
+
+.messageInputWrap {
+  position: relative;
+}
+
 form.messageCreation textarea {
   width: calc(100% - 2rem);
   margin: 1rem;
+  padding-right: 2.75rem; /* room for attach button */
+}
+
+.messageFileInput {
+  display: none;
+}
+
+.messageAttachBtn {
+  position: absolute;
+  right: 1.4rem;
+  top: 1.4rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text);
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.messageAttachBtn:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }

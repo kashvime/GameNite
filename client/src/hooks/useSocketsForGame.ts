@@ -18,6 +18,7 @@ import { viewerSeat } from "../util/viewerSeat.ts";
  */
 export default function useSocketsForGame(gameId: string, initialPlayers: SafeUserInfo[]) {
   const { user, socket, pass: token } = useLoginContext();
+  const username = user.username;
   const [view, setView] = useState<null | TaggedGameView>(null);
   const [hasWatched, setHasWatched] = useState<boolean>(false);
   const [players, setPlayers] = useState<SafeUserInfo[]>(initialPlayers);
@@ -69,7 +70,7 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
       socket.off("gamePlayersUpdated", handlePlayersUpdated);
       socket.off("gameStateUpdated", handleStateUpdated);
     };
-  }, [gameId, socket, token, user.userId, user.username]);
+  }, [gameId, socket, token, username, user]);
 
   function joinGame() {
     socket.emit("gameJoinAsPlayer", { token, payload: gameId });
