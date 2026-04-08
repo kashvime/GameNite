@@ -10,8 +10,8 @@ import { z } from "zod";
 import { checkAuth, getUserByUsername } from "../services/auth.service.ts";
 import jwt from "jsonwebtoken";
 
-function issueToken(username: string): string {
-  return jwt.sign({ username }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+function issueToken(username: string, userId: string): string {
+  return jwt.sign({ username, userId }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
 }
 
 /**
@@ -33,7 +33,7 @@ export const postLogin: RestAPI<SafeUserInfo & { token: string }> = async (req, 
   }
 
   const userInfo = await populateSafeUserInfo(user.userId);
-  const token = issueToken(user.username);
+  const token = issueToken(user.username, user.userId);
   res.send({ ...userInfo, token });
 };
 
@@ -81,7 +81,7 @@ export const postSignup: RestAPI<SafeUserInfo & { token: string }> = async (req,
     res.send(userInfo); // return error without token
     return;
   }
-  const token = issueToken(userAuth.data.username);
+  const token = issueToken(userAuth.data.username, userInfo.userId);
   res.send({ ...userInfo, token });
 };
 

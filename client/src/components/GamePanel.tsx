@@ -6,6 +6,7 @@ import GameDispatch from "../games/GameDispatch.tsx";
 import useSocketsForGame from "../hooks/useSocketsForGame.ts";
 import useTimeSince from "../hooks/useTimeSince.ts";
 import UserLink from "./UserLink.tsx";
+import { isSameUser } from "../util/viewerSeat.ts";
 
 /**
  * A game panel allows viewing the status and players of a live game
@@ -33,7 +34,7 @@ export default function GamePanel({
         <div className="dottedList" role="list">
           {players.map((player, index) => (
             <div className="dottedListItem" role="listitem" key={player.username}>
-              {player.username === user.username ? (
+              {isSameUser(player, user) ? (
                 `you are player #${index + 1}`
               ) : (
                 <span>
