@@ -18,15 +18,15 @@ export const createGame = async (
   auth: UserAuth,
   gameKey: GameKey,
   visibility: "public" | "private" = "public",
-  gameMode: GameMode = "human", // NEW
-  aiDifficulty?: AIDifficulty, // NEW
+  gameMode: GameMode = "human",
+  aiDifficulty?: AIDifficulty,
 ): APIResponse<GameInfo> => {
   try {
     const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, {
       gameKey,
       visibility,
-      gameMode, // NEW
-      ...(aiDifficulty ? { aiDifficulty } : {}), // NEW — only send if set
+      gameMode,
+      ...(aiDifficulty ? { aiDifficulty } : {}),
     });
     return res.data;
   } catch (error) {

@@ -63,6 +63,7 @@ describe("POST /api/game/create", () => {
       minPlayers: 2,
       players: [{ ...userShape, username: "user3", display: "Frau Drei" }],
       visibility: "public",
+      gameMode: "human", // NEW
     });
   });
 });

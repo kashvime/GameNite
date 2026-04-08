@@ -8,8 +8,8 @@ export default function useNewGameForm() {
   const { user, pass } = useLoginContext();
   const [gameKey, setGameKey] = useState<GameKey | "">("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
-  const [gameMode, setGameMode] = useState<"human" | "ai">("human"); // NEW
-  const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>("medium"); // NEW
+  const [gameMode, setGameMode] = useState<"human" | "ai">("human");
+  const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>("medium");
   const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -32,8 +32,8 @@ export default function useNewGameForm() {
       auth,
       gameKey,
       visibility,
-      gameMode, // NEW
-      gameMode === "ai" ? aiDifficulty : undefined, // NEW — only send for AI games
+      gameMode,
+      gameMode === "ai" ? aiDifficulty : undefined,
     );
     if ("error" in game) {
       setErr(game.error);
@@ -47,9 +47,9 @@ export default function useNewGameForm() {
     visibility,
     setVisibility,
     gameMode,
-    setGameMode, // NEW
+    setGameMode,
     aiDifficulty,
-    setAiDifficulty, // NEW
+    setAiDifficulty,
     err,
     handleInputChange,
     handleSubmit,

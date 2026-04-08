@@ -106,7 +106,7 @@ const DEPTH: Record<AIDifficulty, number> = {
 
 /**
  * Given a FEN string, return the best move the AI can find.
- * Returns a ChessMove ({ from, to, promotion? }) matching your existing move format.
+ * Returns a ChessMove ({ from, to, promotion? }) matching existing move format.
  */
 export function getAIMove(fen: string, difficulty: AIDifficulty): ChessMove {
   const chess = new Chess(fen);
@@ -114,7 +114,7 @@ export function getAIMove(fen: string, difficulty: AIDifficulty): ChessMove {
 
   if (!moves.length) throw new Error("getAIMove called with no legal moves");
 
-  // Easy: pick a random legal move
+  // Easy, pick a random legal move
   if (difficulty === "easy") {
     const m = moves[Math.floor(Math.random() * moves.length)];
     return { from: m.from, to: m.to, promotion: m.promotion };

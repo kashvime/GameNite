@@ -239,7 +239,7 @@ async function scheduleAIMove(
   difficulty: AIDifficulty,
   io: GameServer,
 ): Promise<void> {
-  // Small delay so the move doesn't feel instant
+  // delay so the move doesn't feel instant
   await new Promise<void>((res) => setTimeout(res, 400 + Math.random() * 400));
 
   const game = await GameRepo.find(gameId);
@@ -254,14 +254,14 @@ async function scheduleAIMove(
   game.done = game.done || result.done;
   await GameRepo.set(gameId, game);
 
-  // Broadcast the AI move to all watching clients
+  // Broadcast the AI move to watchers and the human player
   io.to(gameId).emit("gameStateUpdated", { ...result.views.watchers, forPlayer: false });
   for (const { userId, view } of result.views.players) {
     if (userId === "AI_OPPONENT") continue;
     io.to(`${gameId}-${userId}`).emit("gameStateUpdated", { ...view, forPlayer: true });
   }
 
-  // Add AI move to chat log — write directly to avoid UserRepo lookup for AI_OPPONENT
+  // Add AI move to chat log and broadcast to chat participants
   const now = new Date();
   const chat = await ChatRepo.find(game.chat);
   if (chat) {
