@@ -9,10 +9,15 @@ export default function NewGame() {
     setVisibility,
     timeControl,
     setTimeControl,
-    handleInputChange,
+    gameMode,
+    setGameMode,
+    aiDifficulty,
+    setAiDifficulty,
     err,
+    handleInputChange,
     handleSubmit,
   } = useNewGameForm();
+
   return (
     <div className="new-game-page">
       <form className="new-game-card" onSubmit={handleSubmit}>
@@ -71,6 +76,56 @@ export default function NewGame() {
 
           {gameKey === "chess" && (
             <div className="new-game-field">
+              <label>Opponent</label>
+              <div className="visibility-options">
+                <label className={`visibility-option ${gameMode === "human" ? "selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="gameMode"
+                    value="human"
+                    checked={gameMode === "human"}
+                    onChange={() => setGameMode("human")}
+                  />
+                  <div className="visibility-option-text">
+                    <strong>👤 Human</strong>
+                    <span>Wait for another player to join</span>
+                  </div>
+                </label>
+                <label className={`visibility-option ${gameMode === "ai" ? "selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="gameMode"
+                    value="ai"
+                    checked={gameMode === "ai"}
+                    onChange={() => setGameMode("ai")}
+                  />
+                  <div className="visibility-option-text">
+                    <strong>🤖 Computer</strong>
+                    <span>Play immediately against the AI</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {gameKey === "chess" && gameMode === "ai" && (
+            <div className="new-game-field">
+              <label htmlFor="difficulty-select">Difficulty</label>
+              <select
+                id="difficulty-select"
+                value={aiDifficulty}
+                aria-label="AI difficulty"
+                onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard")}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          )}
+
+          {gameKey === "chess" && (
+            <div className="new-game-field">
               <label>Time control</label>
               <div className="visibility-options">
                 {([null, 5, 10, 30] as (5 | 10 | 30 | null)[]).map((t) => (
@@ -85,14 +140,17 @@ export default function NewGame() {
                       onChange={() => setTimeControl(t)}
                     />
                     <div className="visibility-option-text">
-                      <strong>{t === null ? "⏳ No timer" : `⏱ ${t} minutes`}</strong>
-                      <span>{t === null ? "Untimed game" : `Each player gets ${t} minutes`}</span>
+                      <strong>{t === null ? "⏳ No timer" : "⏱ " + t + " minutes"}</strong>
+                      <span>
+                        {t === null ? "Untimed game" : "Each player gets " + t + " minutes"}
+                      </span>
                     </div>
                   </label>
                 ))}
               </div>
             </div>
           )}
+
           {err && <p className="error-message">{err}</p>}
         </div>
 

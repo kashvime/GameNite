@@ -1,4 +1,11 @@
-import { type GameInfo, type League, zGameKey, zGameMakeMovePayload } from "@gamenite/shared";
+import {
+  type GameInfo,
+  type League,
+  zGameKey,
+  zGameMakeMovePayload,
+  zGameMode,
+  zAIDifficulty,
+} from "@gamenite/shared";
 import { type RestAPI, type GameViewUpdates, type SocketAPI, type GameServer } from "../types.ts";
 import {
   createGame,
@@ -45,6 +52,8 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
         .union([z.literal(5), z.literal(10), z.literal(30)])
         .nullable()
         .optional(),
+      gameMode: zGameMode.default("human"),
+      aiDifficulty: zAIDifficulty.optional(),
     })
     .safeParse(req.body);
   if (body.error) {
@@ -61,14 +70,21 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     res.status(403).send({ error: "User not found" });
     return;
   }
+  const { gameKey, visibility, gameMode, aiDifficulty } = body.data;
   const game = await createGame(
     user,
-    body.data.gameKey,
+    gameKey,
     new Date(),
-    body.data.visibility,
+    visibility,
+    gameMode,
+    aiDifficulty,
     body.data.timeControl ?? null,
   );
-  res.send(game);
+  if (gameMode === "ai") {
+    await joinGame(game.gameId, { userId: "AI_OPPONENT", username: "AI" });
+    await startGame(game.gameId, user);
+  }
+  res.send((await getGameById(game.gameId)) ?? game);
 };
 
 export const postJoinByCode: RestAPI<GameInfo> = async (req, res) => {
@@ -190,7 +206,12 @@ export const socketMakeMove: SocketAPI = (socket, io) => async (body) => {
     const user = await getUserByUsername(jwtUser.username);
     if (!user) throw new Error("User not found");
     const { gameId, move } = parsed.payload;
-    const { views, moveDescription, chatId, leagueChanges } = await updateGame(gameId, user, move);
+    const { views, moveDescription, chatId, leagueChanges } = await updateGame(
+      gameId,
+      user,
+      move,
+      io,
+    );
     sendViewUpdates(io, gameId, views);
     for (const change of (leagueChanges ?? []) as {
       userId: string;
