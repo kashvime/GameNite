@@ -1,4 +1,11 @@
-import type { ErrorMsg, GameInfo, GameKey, UserAuth } from "@gamenite/shared";
+import type {
+  AIDifficulty,
+  ErrorMsg,
+  GameInfo,
+  GameMode,
+  GameKey,
+  UserAuth,
+} from "@gamenite/shared";
 import { api, exceptionToErrorMsg } from "./api.ts";
 import type { APIResponse } from "../util/types.ts";
 
@@ -11,11 +18,15 @@ export const createGame = async (
   auth: UserAuth,
   gameKey: GameKey,
   visibility: "public" | "private" = "public",
+  gameMode: GameMode = "human", // NEW
+  aiDifficulty?: AIDifficulty, // NEW
 ): APIResponse<GameInfo> => {
   try {
     const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, {
       gameKey,
       visibility,
+      gameMode, // NEW
+      ...(aiDifficulty ? { aiDifficulty } : {}), // NEW — only send if set
     });
     return res.data;
   } catch (error) {
