@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { ChessMove, ChessView } from "@gamenite/shared";
 import type { GameProps } from "../util/types.ts";
 import "./ChessGame.css";
@@ -62,23 +62,21 @@ export default function ChessGame({
   const isDone = view.status !== "active";
 
   const [displayTime, setDisplayTime] = useState<[number, number]>(view.timeRemaining);
-  const prevFen = useRef(view.fen);
-  if (prevFen.current !== view.fen) {
-    prevFen.current = view.fen;
-    setDisplayTime(view.timeRemaining);
-  }
 
   useEffect(() => {
     if (view.timeControl === null || isDone) return;
+    const startTime = performance.now();
+    const startRemaining: [number, number] = [view.timeRemaining[0], view.timeRemaining[1]];
     const interval = setInterval(() => {
-      setDisplayTime((prev) => {
-        const next: [number, number] = [prev[0], prev[1]];
-        next[view.nextPlayer] = Math.max(0, next[view.nextPlayer] - 100);
+      const elapsed = performance.now() - startTime;
+      setDisplayTime(() => {
+        const next: [number, number] = [startRemaining[0], startRemaining[1]];
+        next[view.nextPlayer] = Math.max(0, next[view.nextPlayer] - elapsed);
         return next;
       });
     }, 100);
     return () => clearInterval(interval);
-  }, [view.nextPlayer, view.timeControl, isDone]);
+  }, [view.fen, view.timeControl, view.nextPlayer, view.timeRemaining, isDone]);
 
   const pieces = parseFen(view.fen);
   const ranks = isWhite ? RANKS : [...RANKS].reverse();
