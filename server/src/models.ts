@@ -1,4 +1,4 @@
-import type { GameKey } from "@gamenite/shared";
+import type { AIDifficulty, GameKey, GameMode } from "@gamenite/shared";
 
 /**
  * Record identifiers used to look up keys in a database. This type
@@ -83,6 +83,8 @@ export interface GameRecord {
   createdBy: RecordId; // References User records
   visibility: "public" | "private";
   inviteCode?: string;
+  gameMode?: GameMode; //optional so existing records default to "human"
+  aiDifficulty?: AIDifficulty;
 }
 
 /**

@@ -1,4 +1,12 @@
-import { type GameInfo, type GameKey, type League, type TaggedGameView } from "@gamenite/shared";
+import {
+  type GameInfo,
+  type GameKey,
+  type League,
+  type TaggedGameView,
+  type AIDifficulty,
+  type GameMode,
+  type ChessState,
+} from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
 import { populateSafeUserInfo, updateRating } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
@@ -6,8 +14,9 @@ import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
 import { chessGameService } from "../games/chess.ts";
 import { type GameServer, type GameViewUpdates, type UserWithId } from "../types.ts";
-import { GameRepo, UserRepo } from "../repository.ts";
+import { GameRepo, UserRepo, ChatRepo } from "../repository.ts";
 import { saveMatchRecords } from "./score.service.ts";
+import { getAIMove } from "../games/chessAI.ts";
 
 /**
  * The service interface for individual games
@@ -31,12 +40,18 @@ async function populateGameInfo(gameId: string): Promise<GameInfo> {
     createdBy: await populateSafeUserInfo(game.createdBy),
     chat: game.chat,
     createdAt: new Date(game.createdAt),
-    players: await Promise.all(game.players.map(populateSafeUserInfo)),
+    players: await Promise.all(
+      game.players
+        .filter((id) => game.gameMode !== "ai" || id !== "AI_OPPONENT")
+        .map(populateSafeUserInfo),
+    ),
     type: game.type,
     status: !game.state ? "waiting" : game.done ? "done" : "active",
     minPlayers: gameServices[game.type].minPlayers,
     visibility: game.visibility ?? "public",
     inviteCode: game.inviteCode,
+    gameMode: game.gameMode ?? "human",
+    aiDifficulty: game.aiDifficulty,
   };
 }
 
@@ -46,6 +61,9 @@ async function populateGameInfo(gameId: string): Promise<GameInfo> {
  * @param user - Initial player in the game's waiting room
  * @param type - Game key
  * @param createdAt - Creation time for this game
+ * @param visibility - Whether the game is public or private
+ * @param gameMode - Whether the opponent is human or AI
+ * @param aiDifficulty - Skill level of the AI opponent (only used when gameMode is 'ai')
  * @returns the new game's info object
  */
 export async function createGame(
@@ -53,6 +71,8 @@ export async function createGame(
   type: GameKey,
   createdAt: Date,
   visibility: "public" | "private" = "public",
+  gameMode: GameMode = "human",
+  aiDifficulty?: AIDifficulty,
 ): Promise<GameInfo> {
   const chat = await createChat(createdAt);
   const inviteCode =
@@ -66,6 +86,8 @@ export async function createGame(
     players: [user.userId],
     visibility,
     inviteCode,
+    gameMode,
+    aiDifficulty,
   });
   return populateGameInfo(gameId);
 }
@@ -95,19 +117,14 @@ export async function getGameById(gameId: string): Promise<GameInfo | null> {
 export async function joinGame(gameId: string, user: UserWithId): Promise<GameInfo> {
   const game = await GameRepo.find(gameId);
   if (!game) throw new Error(`user ${user.username} joining invalid game`);
-  if (game.state) {
-    throw new Error(`user ${user.username} joining game that started`);
-  }
-  if (game.players.some((userId) => userId === user.userId)) {
+  if (game.state) throw new Error(`user ${user.username} joining game that started`);
+  if (game.players.some((userId) => userId === user.userId))
     throw new Error(`user ${user.username} joining game they are in already`);
-  }
-  if (game.players.length === gameServices[game.type].maxPlayers) {
+  if (game.players.length === gameServices[game.type].maxPlayers)
     throw new Error(`user ${user.username} joining full`);
-  }
 
   game.players = [...game.players, user.userId];
   await GameRepo.set(gameId, game);
-
   return populateGameInfo(gameId);
 }
 
@@ -123,23 +140,17 @@ export async function joinGame(gameId: string, user: UserWithId): Promise<GameIn
 export async function startGame(gameId: string, user: UserWithId): Promise<GameViewUpdates> {
   const game = await GameRepo.find(gameId);
   if (!game) throw new Error(`user ${user.username} starting invalid game`);
-  if (game.state) {
-    throw new Error(`user ${user.username} starting game that started`);
-  }
+  if (game.state) throw new Error(`user ${user.username} starting game that started`);
 
   const key: GameKey = game.type;
-
-  if (game.players.length < gameServices[key].minPlayers) {
+  if (game.players.length < gameServices[key].minPlayers)
     throw new Error(`user ${user.username} starting underpopulated game`);
-  }
-  if (!game.players.some((userId) => userId === user.userId)) {
+  if (!game.players.some((userId) => userId === user.userId))
     throw new Error(`user ${user.username} starting game they're not in`);
-  }
-  const { state, views } = gameServices[key].create(game.players);
 
+  const { state, views } = gameServices[key].create(game.players);
   game.state = state;
   await GameRepo.set(gameId, game);
-
   return Promise.resolve(views);
 }
 
@@ -185,13 +196,12 @@ export async function updateGame(
   const leagueChanges: { userId: string; oldLeague: League; newLeague: League }[] = [];
   const game = await GameRepo.find(gameId);
   if (!game) throw new Error(`user ${user.username} acted on an invalid game`);
-  if (!game.state) {
-    throw new Error(`user ${user.username} made a move in game of that hadn't started`);
-  }
+  if (!game.state) throw new Error(`user ${user.username} made a move in game that hadn't started`);
+
   const playerIndex = game.players.findIndex((userId) => userId === user.userId);
-  if (playerIndex < 0) {
+  if (playerIndex < 0)
     throw new Error(`user ${user.username} made a move in a game they weren't playing`);
-  }
+
   const result = gameServices[game.type].update(game.state, move, playerIndex, game.players);
   if (!result) throw new Error(`user ${user.username} made an invalid move in ${game.type}`);
 
@@ -200,32 +210,10 @@ export async function updateGame(
   await GameRepo.set(gameId, game);
 
   if (result.done) {
-    await saveMatchRecords(
-      game.players,
-      game.type,
-      gameId,
-      result.winner,
-      new Date(),
-      undefined,
-      io,
-      game.visibility ?? "public",
-    );
-    if (game.players.length === 2) {
-      const [player0, player1] = await Promise.all([
-        UserRepo.get(game.players[0]),
-        UserRepo.get(game.players[1]),
-      ]);
-      const rating0 = player0.ratings?.[game.type] ?? 1000;
-      const rating1 = player1.ratings?.[game.type] ?? 1000;
-      const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
-      const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
-      const [change0, change1] = await Promise.all([
-        updateRating(game.players[0], game.type, rating1, result0),
-        updateRating(game.players[1], game.type, rating0, result1),
-      ]);
-      if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
-      if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });
-    }
+    await handleGameOver(game, gameId, result, leagueChanges, io);
+  } else if (game.gameMode === "ai" && game.type === "chess" && io) {
+    // Fire-and-forget: don't await so the human's move response isn't delayed
+    void scheduleAIMove(gameId, game.state as ChessState, game.aiDifficulty ?? "medium", io);
   }
 
   return {
@@ -234,6 +222,120 @@ export async function updateGame(
     chatId: game.chat,
     leagueChanges,
   };
+}
+
+/**
+ * Waits a brief moment then computes and applies the AI's move,
+ * broadcasting the result to all clients via Socket.IO.
+ *
+ * @param gameId - The game to update
+ * @param stateAfterHuman - The chess state immediately after the human's move
+ * @param difficulty - AI skill level
+ * @param io - Socket.IO server instance for broadcasting
+ */
+async function scheduleAIMove(
+  gameId: string,
+  stateAfterHuman: ChessState,
+  difficulty: AIDifficulty,
+  io: GameServer,
+): Promise<void> {
+  // delay so the move doesn't feel instant
+  await new Promise<void>((res) => setTimeout(res, 400 + Math.random() * 400));
+
+  const game = await GameRepo.find(gameId);
+  if (!game?.state || game.done) return;
+
+  const aiMove = getAIMove(stateAfterHuman.fen, difficulty);
+  // AI is always player index 1 (black) — human created the game and is index 0
+  const result = gameServices.chess.update(game.state, aiMove, 1, game.players);
+  if (!result) return;
+
+  game.state = result.state;
+  game.done = game.done || result.done;
+  await GameRepo.set(gameId, game);
+
+  // Broadcast the AI move to watchers and the human player
+  io.to(gameId).emit("gameStateUpdated", { ...result.views.watchers, forPlayer: false });
+  for (const { userId, view } of result.views.players) {
+    if (userId === "AI_OPPONENT") continue;
+    io.to(`${gameId}-${userId}`).emit("gameStateUpdated", { ...view, forPlayer: true });
+  }
+
+  // Add AI move to chat log and broadcast to chat participants
+  const now = new Date();
+  const chat = await ChatRepo.find(game.chat);
+  if (chat) {
+    chat.moveLog = [
+      ...chat.moveLog,
+      {
+        moveDescription: result.moveDescription,
+        userId: "AI_OPPONENT",
+        createdAt: now.toISOString(),
+      },
+    ];
+    await ChatRepo.set(game.chat, chat);
+    io.to(game.chat).emit("chatMoveLog", {
+      chatId: game.chat,
+      moveDescription: result.moveDescription,
+      user: {
+        userId: "AI_OPPONENT",
+        username: "Computer",
+        display: "Computer",
+        createdAt: new Date(0),
+        onlineStatus: "online",
+        totalGamesPlayed: 0,
+        winRate: 0,
+        favoriteGame: "chess",
+        bio: null,
+        avatarUrl: null,
+        ratings: {},
+      },
+      createdAt: now,
+    });
+  }
+
+  if (result.done) {
+    await handleGameOver(game, gameId, result, [], io);
+  }
+}
+
+/**
+ * Handles end-of-game logic: saving match records and updating ratings.
+ * Extracted to avoid duplication between the human move path and AI move path.
+ */
+async function handleGameOver(
+  game: Awaited<ReturnType<typeof GameRepo.find>> & object,
+  gameId: string,
+  result: NonNullable<ReturnType<typeof gameServices.chess.update>>,
+  leagueChanges: { userId: string; oldLeague: League; newLeague: League }[],
+  io?: GameServer,
+) {
+  await saveMatchRecords(
+    game.players,
+    game.type,
+    gameId,
+    result.winner,
+    new Date(),
+    undefined,
+    io,
+    game.visibility ?? "public",
+  );
+  if (game.players.length === 2) {
+    const [player0, player1] = await Promise.all([
+      UserRepo.get(game.players[0]),
+      UserRepo.get(game.players[1]),
+    ]);
+    const rating0 = player0.ratings?.[game.type] ?? 1000;
+    const rating1 = player1.ratings?.[game.type] ?? 1000;
+    const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
+    const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
+    const [change0, change1] = await Promise.all([
+      updateRating(game.players[0], game.type, rating1, result0),
+      updateRating(game.players[1], game.type, rating0, result1),
+    ]);
+    if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
+    if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });
+  }
 }
 
 /**
@@ -253,7 +355,11 @@ export async function viewGame(gameId: string, user: UserWithId) {
   return {
     isPlayer: playerIndex >= 0,
     view,
-    players: await Promise.all(game.players.map(populateSafeUserInfo)),
+    players: await Promise.all(
+      game.players
+        .filter((id) => game.gameMode !== "ai" || id !== "AI_OPPONENT")
+        .map(populateSafeUserInfo),
+    ),
     yourPlayerIndex: playerIndex,
   };
 }
