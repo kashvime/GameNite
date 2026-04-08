@@ -83,7 +83,8 @@ export interface GameRecord {
   createdBy: RecordId; // References User records
   visibility: "public" | "private";
   inviteCode?: string;
-  gameMode?: GameMode; //optional so existing records default to "human"
+  timeControl?: 5 | 10 | 30 | null;
+  gameMode?: GameMode;
   aiDifficulty?: AIDifficulty;
 }
 

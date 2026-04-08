@@ -20,6 +20,7 @@ export const createGame = async (
   visibility: "public" | "private" = "public",
   gameMode: GameMode = "human",
   aiDifficulty?: AIDifficulty,
+  timeControl?: 5 | 10 | 30 | null,
 ): APIResponse<GameInfo> => {
   try {
     const res = await api.post<GameInfo | ErrorMsg>(`${GAME_API_URL}/create`, {
@@ -27,6 +28,7 @@ export const createGame = async (
       visibility,
       gameMode,
       ...(aiDifficulty ? { aiDifficulty } : {}),
+      timeControl,
     });
     return res.data;
   } catch (error) {

@@ -73,6 +73,7 @@ export async function createGame(
   visibility: "public" | "private" = "public",
   gameMode: GameMode = "human",
   aiDifficulty?: AIDifficulty,
+  timeControl?: 5 | 10 | 30 | null,
 ): Promise<GameInfo> {
   const chat = await createChat(createdAt);
   const inviteCode =
@@ -88,6 +89,7 @@ export async function createGame(
     inviteCode,
     gameMode,
     aiDifficulty,
+    timeControl,
   });
   return populateGameInfo(gameId);
 }
@@ -147,8 +149,8 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
     throw new Error(`user ${user.username} starting underpopulated game`);
   if (!game.players.some((userId) => userId === user.userId))
     throw new Error(`user ${user.username} starting game they're not in`);
-
-  const { state, views } = gameServices[key].create(game.players);
+  const options = game.timeControl ? { timeControl: game.timeControl } : undefined;
+  const { state, views } = gameServices[key].create(game.players, options);
   game.state = state;
   await GameRepo.set(gameId, game);
   return Promise.resolve(views);
