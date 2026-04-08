@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ChessMove, ChessView } from "@gamenite/shared";
 import type { GameProps } from "../util/types.ts";
 import "./ChessGame.css";
@@ -40,6 +40,13 @@ function parseFen(fen: string): Record<string, string> {
   return pieces;
 }
 
+function formatTime(ms: number) {
+  const total = Math.ceil(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m + ":" + s.toString().padStart(2, "0");
+}
+
 export default function ChessGame({
   view,
   players,
@@ -50,12 +57,30 @@ export default function ChessGame({
   const [promotionPending, setPromotionPending] = useState<{ from: string; to: string } | null>(
     null,
   );
-
-  const pieces = parseFen(view.fen);
   const isMyTurn = userPlayerIndex === view.nextPlayer;
   const isWhite = userPlayerIndex === 0;
   const isDone = view.status !== "active";
 
+  const [displayTime, setDisplayTime] = useState<[number, number]>(view.timeRemaining);
+  const prevTimeRemaining = useState(view.timeRemaining)[0];
+
+  if (prevTimeRemaining !== view.timeRemaining) {
+    setDisplayTime(view.timeRemaining);
+  }
+
+  useEffect(() => {
+    if (view.timeControl === null || isDone) return;
+    const interval = setInterval(() => {
+      setDisplayTime((prev) => {
+        const next: [number, number] = [prev[0], prev[1]];
+        next[view.nextPlayer] = Math.max(0, next[view.nextPlayer] - 100);
+        return next;
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, [view.nextPlayer, view.timeControl, isDone]);
+
+  const pieces = parseFen(view.fen);
   const ranks = isWhite ? RANKS : [...RANKS].reverse();
   const files = isWhite ? FILES : [...FILES].reverse();
 
@@ -90,13 +115,18 @@ export default function ChessGame({
   function statusMessage() {
     if (view.status === "checkmate") {
       const winner = view.nextPlayer === 0 ? 1 : 0;
-      return `Checkmate! ${players[winner]?.display ?? `Player ${winner + 1}`} wins!`;
+      return "Checkmate! " + (players[winner]?.display ?? "Player " + (winner + 1)) + " wins!";
+    }
+    if (view.status === "timeout") {
+      const winner = view.nextPlayer;
+      return (players[winner]?.display ?? "Player " + (winner + 1)) + " wins on time!";
     }
     if (view.status === "stalemate") return "Stalemate — draw!";
     if (view.status === "draw") return "Draw!";
     if (view.inCheck)
-      return `${players[view.nextPlayer]?.display ?? "Current player"} is in check!`;
-    if (!isMyTurn) return `Waiting for ${players[view.nextPlayer]?.display ?? "opponent"}...`;
+      return (players[view.nextPlayer]?.display ?? "Current player") + " is in check!";
+    if (!isMyTurn)
+      return "Waiting for " + (players[view.nextPlayer]?.display ?? "opponent") + "...";
     return "Your turn";
   }
 
@@ -106,24 +136,46 @@ export default function ChessGame({
   return (
     <div className="chess-wrapper">
       <div className="chess-players">
-        <div className={`chess-player ${view.nextPlayer === 0 && !isDone ? "active" : ""}`}>
+        <div className={"chess-player" + (view.nextPlayer === 0 && !isDone ? " active" : "")}>
           <div className="chess-player-dot white" />
           {players[0]?.display ?? "Player 1"}
+          {view.timeControl !== null && (
+            <span
+              className={
+                "chess-clock" +
+                (view.nextPlayer === 0 && !isDone ? " active" : "") +
+                (displayTime[0] < 30000 ? " low" : "")
+              }
+            >
+              {formatTime(displayTime[0])}
+            </span>
+          )}
         </div>
-        <div className={`chess-player ${view.nextPlayer === 1 && !isDone ? "active" : ""}`}>
+        <div className={"chess-player" + (view.nextPlayer === 1 && !isDone ? " active" : "")}>
           <div className="chess-player-dot black" />
           {players[1]?.display ?? "Player 2"}
+          {view.timeControl !== null && (
+            <span
+              className={
+                "chess-clock" +
+                (view.nextPlayer === 1 && !isDone ? " active" : "") +
+                (displayTime[1] < 30000 ? " low" : "")
+              }
+            >
+              {formatTime(displayTime[1])}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className={`chess-status ${statusClass}`}>{statusMessage()}</div>
+      <div className={"chess-status " + statusClass}>{statusMessage()}</div>
 
       {promotionPending && (
         <div className="chess-promotion">
           <span>Promote to:</span>
           {["q", "r", "b", "n"].map((p) => (
             <button key={p} onClick={() => handlePromotion(p)}>
-              {pieceSymbols[isWhite ? `w${p.toUpperCase()}` : `b${p.toUpperCase()}`]}
+              {pieceSymbols[isWhite ? "w" + p.toUpperCase() : "b" + p.toUpperCase()]}
             </button>
           ))}
         </div>
