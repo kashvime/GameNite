@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ChessMove, ChessView } from "@gamenite/shared";
 import type { GameProps } from "../util/types.ts";
 import "./ChessGame.css";
@@ -62,9 +62,9 @@ export default function ChessGame({
   const isDone = view.status !== "active";
 
   const [displayTime, setDisplayTime] = useState<[number, number]>(view.timeRemaining);
-  const prevTimeRemaining = useState(view.timeRemaining)[0];
-
-  if (prevTimeRemaining !== view.timeRemaining) {
+  const prevFen = useRef(view.fen);
+  if (prevFen.current !== view.fen) {
+    prevFen.current = view.fen;
     setDisplayTime(view.timeRemaining);
   }
 
