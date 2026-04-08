@@ -23,6 +23,7 @@ import Friends from "./pages/Friends.tsx";
 import MatchHistory from "./pages/MatchHistory.tsx";
 import Leaderboard from "./pages/Leaderboard.tsx";
 import AuthSuccess from "./pages/AuthSuccess";
+import Messages from "./pages/Messages.tsx";
 import { jwtDecode } from "jwt-decode";
 import type { SafeUserInfo } from "@gamenite/shared";
 import { clearStoredAuthToken, getStoredAuthToken } from "./util/authToken.ts";
@@ -65,7 +66,7 @@ export default function App() {
         const decoded = jwtDecode<SafeUserInfo>(token);
 
         // Fetch full user data to get avatarUrl and other fields
-        fetch(`http://localhost:8000/api/user/${encodeURIComponent(decoded.username)}`)
+        fetch(`/api/user/${encodeURIComponent(decoded.username)}`)
           .then((res) => res.json())
           .then((user: SafeUserInfo) => {
             queueMicrotask(() => {
@@ -118,6 +119,7 @@ export default function App() {
             <Route path="/game/:gameId" element={<Game />} />
             <Route path="/profile/:username" element={<Profile />} />
             <Route path="/friends" element={<Friends />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/matches" element={<MatchHistory />} />
             <Route path="/*" element={<NoSuchRoute />} />
             <Route path="/leaderboard" element={<Leaderboard />} />

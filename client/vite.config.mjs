@@ -12,6 +12,8 @@ export default defineConfig({
     port: 4530,
     proxy: {
       "/api": `http://localhost:${DEV_BACKEND_PORT}`,
+      // Google OAuth lives on Express; without this, /auth/google hits Vite and never starts OAuth
+      "/auth": `http://localhost:${DEV_BACKEND_PORT}`,
       "/socket.io": {
         target: `ws://localhost:${DEV_BACKEND_PORT}`,
         ws: true,

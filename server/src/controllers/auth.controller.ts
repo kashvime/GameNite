@@ -31,7 +31,13 @@ export const googleCallback: RequestHandler[] = [
         { expiresIn: "1h" },
       );
 
-      return res.redirect(`${process.env.CLIENT_URL}/auth-success?token=${token}`);
+      const clientBase =
+        process.env.CLIENT_URL ??
+        (process.env.NODE_ENV === "production" ? "" : "http://localhost:4530");
+      if (!clientBase) {
+        return res.status(500).json({ message: "CLIENT_URL is not configured" });
+      }
+      return res.redirect(`${clientBase}/auth-success?token=${token}`);
     } catch {
       return res.status(500).json({ message: "Google auth failed" });
     }

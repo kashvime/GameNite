@@ -1,5 +1,6 @@
 div.chatContainer {
   display: grid;
   grid-template-rows: 1fr min-content;
-  height: var(--content-vh);
+  height: min(78vh, var(--content-vh));
+  max-height: 78vh;
 }

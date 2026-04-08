@@ -14,8 +14,12 @@ const handleErr = (err: AxiosError) => {
   return Promise.reject(err);
 };
 
+/**
+ * Empty baseURL: in dev, Vite proxies `/api` to the backend; in production, the API is served
+ * from the same host as the SPA (see server `MODE=production`).
+ */
 export const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "",
   withCredentials: true,
 });
 /**

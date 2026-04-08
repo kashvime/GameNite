@@ -52,7 +52,20 @@ export async function createChat(createdAt: Date): Promise<ChatInfo> {
  */
 export async function forceChatById(chatId: string, user: UserWithId): Promise<ChatInfo> {
   const chat = await ChatRepo.find(chatId);
-  if (!chat) throw new Error(`user ${user.username} accessed invalid chat id`);
+  if (!chat) {
+    // Direct-message chats are addressed by a deterministic room id generated
+    // from two usernames; create the room on first join.
+    if (chatId.startsWith("dm:")) {
+      await ChatRepo.set(chatId, {
+        createdAt: new Date().toISOString(),
+        messages: [],
+        moveLog: [],
+      });
+      return populateChatInfo(chatId);
+    }
+
+    throw new Error(`user ${user.username} accessed invalid chat id`);
+  }
 
   return populateChatInfo(chatId);
 }

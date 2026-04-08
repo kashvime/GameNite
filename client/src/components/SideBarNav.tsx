@@ -36,6 +36,9 @@ export default function SideBarNav() {
       <NavLink to="/friends" className={navClass}>
         Friends
       </NavLink>
+      <NavLink to="/messages" className={navClass}>
+        Messages
+      </NavLink>
       <NavLink to="/matches" className={navClass}>
         Match History
       </NavLink>

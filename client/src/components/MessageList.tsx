@@ -5,6 +5,22 @@ import { useEffect, useRef } from "react";
 import useTimeSince from "../hooks/useTimeSince.ts";
 import UserLink from "./UserLink.tsx";
 
+function renderMessageContent(text: string) {
+  // Easiest "images/GIFs" support without changing the backend schema:
+  // store small data URLs in the existing `text` field.
+  if (text.startsWith("data:image/")) {
+    return (
+      <img
+        src={text}
+        alt="attachment"
+        style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "0.5rem", display: "block" }}
+      />
+    );
+  }
+
+  return text;
+}
+
 interface MessageListProps {
   messages: ChatMessage[];
 }
@@ -43,7 +59,7 @@ export default function MessageList({ messages }: MessageListProps) {
             return (
               <div key={message.messageId} className="chatMe">
                 <div className="chatSender">{timeSince(message.createdAt)}</div>
-                <div className="chatContent">{message.text}</div>
+                <div className="chatContent">{renderMessageContent(message.text)}</div>
               </div>
             );
           }
@@ -52,7 +68,7 @@ export default function MessageList({ messages }: MessageListProps) {
               <div className="chatSender">
                 <UserLink user={message.createdBy} /> {timeSince(message.createdAt)}
               </div>
-              <div className="chatContent">{message.text}</div>
+              <div className="chatContent">{renderMessageContent(message.text)}</div>
             </div>
           );
         })}
