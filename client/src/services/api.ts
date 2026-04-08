@@ -1,5 +1,6 @@
 import type { ErrorMsg } from "@gamenite/shared";
 import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
+import { getStoredAuthToken } from "../util/authToken.ts";
 
 /**
  * Function to handle successful responses
@@ -22,7 +23,7 @@ export const api = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
+    const token = getStoredAuthToken();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

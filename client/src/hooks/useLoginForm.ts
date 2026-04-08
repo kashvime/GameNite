@@ -3,6 +3,7 @@ import { loginUser, signupUser } from "../services/userService.ts";
 import { type AuthContext } from "../contexts/LoginContext.ts";
 import { useNavigate } from "react-router-dom";
 import type { ErrorMsg, SafeUserInfo } from "@gamenite/shared";
+import { clearStoredAuthToken, setStoredAuthToken } from "../util/authToken.ts";
 
 /**
  * Custom hook to manage login page logic.
@@ -89,13 +90,13 @@ export default function useLoginForm(setAuth: (auth: AuthContext | null) => void
       setErr(user.error);
     } else {
       const { token, ...userInfo } = user as SafeUserInfo & { token: string };
-      localStorage.setItem("token", token);
+      setStoredAuthToken(token);
       setAuth({
         user: userInfo,
         pass: token,
         reset: () => {
           setAuth(null);
-          localStorage.removeItem("token");
+          clearStoredAuthToken();
         },
         updateUser: (newUser: SafeUserInfo) => {
           setAuth({
@@ -103,7 +104,7 @@ export default function useLoginForm(setAuth: (auth: AuthContext | null) => void
             pass: token,
             reset: () => {
               setAuth(null);
-              localStorage.removeItem("token");
+              clearStoredAuthToken();
             },
             updateUser: () => {},
           });

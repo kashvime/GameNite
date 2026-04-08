@@ -254,6 +254,7 @@ export async function viewGame(gameId: string, user: UserWithId) {
     isPlayer: playerIndex >= 0,
     view,
     players: await Promise.all(game.players.map(populateSafeUserInfo)),
+    yourPlayerIndex: playerIndex,
   };
 }
 

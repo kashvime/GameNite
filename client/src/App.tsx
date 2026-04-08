@@ -25,6 +25,7 @@ import Leaderboard from "./pages/Leaderboard.tsx";
 import AuthSuccess from "./pages/AuthSuccess";
 import { jwtDecode } from "jwt-decode";
 import type { SafeUserInfo } from "@gamenite/shared";
+import { clearStoredAuthToken, getStoredAuthToken } from "./util/authToken.ts";
 
 /** If `true`, all incoming socket messages will be logged */
 const DEBUG_SOCKETS = false;
@@ -57,7 +58,7 @@ export default function App() {
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getStoredAuthToken();
 
     if (token) {
       try {
@@ -73,7 +74,7 @@ export default function App() {
                 pass: token,
                 reset: () => {
                   setAuth(null);
-                  localStorage.removeItem("token");
+                  clearStoredAuthToken();
                 },
                 updateUser: (newUser) => {
                   setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
@@ -82,7 +83,7 @@ export default function App() {
             });
           });
       } catch {
-        localStorage.removeItem("token");
+        clearStoredAuthToken();
       }
     }
     queueMicrotask(() => setLoading(false));

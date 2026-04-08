@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useLoginContext from "./useLoginContext.ts";
 import type {
   ChatInfo,
@@ -43,13 +43,15 @@ function mergeByTime(a: ChatMessage[], b: ChatMessage[]): ChatMessage[] {
  * - `handleMessageCreation`: Sends a new message to the chat
  */
 export default function useSocketsForChat(chatId: string) {
-  const { user, socket } = useLoginContext();
-  const token = localStorage.getItem("token") ?? "";
+  const { user, socket, pass: token } = useLoginContext();
   const [messages, setMessages] = useState<ChatMessage[] | null>(null);
+  const joinedChatRef = useRef(false);
 
   useEffect(() => {
+    joinedChatRef.current = false;
     const handleChatJoined = (chat: ChatInfo) => {
       if (chat.chatId !== chatId) return;
+      joinedChatRef.current = true;
       socket.off("chatJoined", handleChatJoined);
 
       const chatMessages: ChatMessage[] = chat.messages;
@@ -122,9 +124,11 @@ export default function useSocketsForChat(chatId: string) {
       socket.off("chatUserJoined", handleUserJoined);
       socket.off("chatJoined", handleChatJoined);
       socket.off("chatMoveLog", handleMoveLog);
-      socket.emit("chatLeave", { token, payload: chatId });
+      if (joinedChatRef.current) {
+        socket.emit("chatLeave", { token, payload: chatId });
+      }
     };
-  }, [socket, token, chatId, user]);
+  }, [socket, token, chatId, user.username]);
 
   function handleMessageCreation(text: string) {
     socket.emit("chatSendMessage", { token, payload: { chatId, text } });

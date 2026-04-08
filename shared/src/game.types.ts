@@ -34,11 +34,15 @@ export interface GameInfo {
  * - `view`: null if the game is still in a waiting-room state, or the game
  *   view object
  * - `players`: currently active players for the game
+ * - `yourPlayerIndex`: this viewer's seat in `players`, or -1 if not a player
  */
 export interface GamePlayInfo {
   gameId: string;
   view: TaggedGameView | null;
   players: SafeUserInfo[];
+  yourPlayerIndex: number;
+  /** Echoed from the client when present; used to ignore stale gameWatch responses */
+  watchId?: number;
 }
 
 /*** TYPES USED IN THE GAMES API ***/

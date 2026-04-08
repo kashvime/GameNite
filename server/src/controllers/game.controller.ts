@@ -27,6 +27,11 @@ function verifySocketToken(token: unknown): JwtUser {
 
 const zSocketPayload = <T extends z.ZodType>(zT: T) => z.object({ token: z.string(), payload: zT });
 
+const zGameWatchBody = z.object({
+  token: z.string(),
+  payload: z.union([z.string(), z.object({ gameId: z.string(), watchId: z.number().optional() })]),
+});
+
 /**
  * Handle POST requests to `/api/game/create` by creating a game. The game
  * starts with one player, the user who made the POST request.
@@ -110,14 +115,14 @@ function sendViewUpdates(io: GameServer, gameId: string, updates: GameViewUpdate
 
 export const socketWatch: SocketAPI = (socket) => async (body) => {
   try {
-    const parsed = zSocketPayload(z.string()).parse(body);
+    const parsed = zGameWatchBody.parse(body);
     const jwtUser = verifySocketToken(parsed.token);
     const user = await getUserByUsername(jwtUser.username);
     if (!user) throw new Error("User not found");
-    const { isPlayer, view, players } = await viewGame(parsed.payload, user);
-    const roomsToJoin = isPlayer
-      ? [parsed.payload, userRoom(parsed.payload, user.userId)]
-      : [parsed.payload];
+    const gameId = typeof parsed.payload === "string" ? parsed.payload : parsed.payload.gameId;
+    const watchId = typeof parsed.payload === "object" ? parsed.payload.watchId : undefined;
+    const { isPlayer, view, players, yourPlayerIndex } = await viewGame(gameId, user);
+    const roomsToJoin = isPlayer ? [gameId, userRoom(gameId, user.userId)] : [gameId];
 
     for (const room of roomsToJoin) {
       if (!socket.rooms.has(room)) {
@@ -125,7 +130,13 @@ export const socketWatch: SocketAPI = (socket) => async (body) => {
       }
     }
     await socket.join(roomsToJoin);
-    socket.emit("gameWatched", { gameId: parsed.payload, view, players });
+    socket.emit("gameWatched", {
+      gameId,
+      view,
+      players,
+      yourPlayerIndex,
+      ...(watchId !== undefined ? { watchId } : {}),
+    });
   } catch (err) {
     logSocketError(socket, err);
   }
