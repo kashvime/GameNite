@@ -257,8 +257,7 @@ export default function UpdateProfile() {
       {err && <p className="error-message">{err}</p>}
       <div>
         <button className="primary narrow">Submit</button>
-      </div>
-      <div className="smallAndGray">After updating your profile, you will be logged out</div>
+      </div>{" "}
     </form>
   );
 }
