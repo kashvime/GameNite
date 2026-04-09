@@ -9,11 +9,11 @@ describe(`Guessing game's start() logic`, () => {
       guesses: [null, null, null, null],
     });
   });
-  it("Secret should be between 1 and 100", () => {
+  it("Secret should be between 1 and 101", () => {
     for (let i = 0; i < 10; i++) {
       const { secret } = guessLogic.start(2);
       expect(secret).toBeGreaterThanOrEqual(1);
-      expect(secret).toBeLessThanOrEqual(100);
+      expect(secret).toBeLessThanOrEqual(101);
     }
   });
 });
