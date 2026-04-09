@@ -1,130 +1,99 @@
-/* ── Filter bar ── */
 .filterBar {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
   flex-wrap: wrap;
-}
-
-.filterBar select {
-  appearance: none;
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
   border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    color 0.15s ease;
-  min-height: unset;
-  font-family: inherit;
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
 }
 
-.filterBar select:hover,
-.filterBar select:focus {
-  border-color: var(--color-primary);
+.filterBar select,
+.filterBar input[type="date"] {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   color: var(--color-text);
-  outline: none;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  padding-right: 2rem;
 }
 
-/* ── Date inputs ── */
+.filterBar select:focus,
+.filterBar input[type="date"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
 .dateInputs {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.dateInputs label {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.8rem;
+  gap: 0.4rem;
+  font-size: 0.875rem;
   color: var(--color-text-muted);
-  font-weight: 500;
 }
 
 .dateInputs input[type="date"] {
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-size: 0.8rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-  min-height: unset;
+  background-image: none;
+  padding-right: 0.75rem;
 }
 
-.dateInputs input[type="date"]:focus {
-  border-color: var(--color-primary);
-  outline: none;
-}
-
-/* ── Date error ── */
-.dateError {
-  font-size: 0.8rem;
-  color: var(--color-danger, #ef4444);
-}
-
-/* ── Active filter chips ── */
 .filterChips {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
   flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .filterChip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.1);
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(99, 102, 241, 0.08);
   color: var(--color-primary);
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  font-size: 0.78rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
 .filterChip button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   background: none;
   border: none;
   color: var(--color-primary);
   cursor: pointer;
   font-size: 0.7rem;
   padding: 0;
-  opacity: 0.7;
-  transition: opacity 0.12s ease;
-  min-height: unset;
+  line-height: 1;
 }
 
-.filterChip button:hover {
-  opacity: 1;
-}
-
-/* ── Clear all ── */
 .clearAll {
   background: none;
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 500;
-  padding: 0 0.25rem;
-  text-decoration: none;
-  transition: color 0.12s ease;
-  min-height: unset;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  padding: 0;
 }
 
 .clearAll:hover {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger);
+}
+
+.dateError {
+  font-size: 0.8rem;
+  color: var(--color-danger);
 }
