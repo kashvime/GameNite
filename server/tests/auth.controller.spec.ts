@@ -6,8 +6,6 @@ import type { SafeUserInfo } from "@gamenite/shared";
 
 process.env.JWT_SECRET = "test";
 
-// The googleCallback export is [passportMiddleware, handlerFn]
-// We test the handler function directly (index 1)
 const handler = googleCallback[1] as (req: Request, res: Response) => void;
 
 function mockRes() {
@@ -65,6 +63,17 @@ describe("googleCallback handler", () => {
     expect(decoded.username).toBe("testuser");
   });
 
+  it("redirects with token when CLIENT_URL is not set but NODE_ENV is development", () => {
+    delete process.env.CLIENT_URL;
+    process.env.NODE_ENV = "development";
+    const req = mockReq(fakeUser);
+    const res = mockRes();
+    handler(req, res);
+    expect(res.redirect).toHaveBeenCalledOnce();
+    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+    expect(redirectUrl).toContain("http://localhost:4530/auth-success?token=");
+    process.env.NODE_ENV = "test";
+  });
   it("returns 500 when CLIENT_URL is not set and not in development", () => {
     process.env.CLIENT_URL = "";
     process.env.NODE_ENV = "production";

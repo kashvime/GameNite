@@ -48,18 +48,18 @@ describe("chessLogic.update", () => {
     expect(result!.status).toBe("active");
   });
 
-  it("handles resignation", () => {
+  it("handles resignation by player 0", () => {
     const result = chessLogic.update(baseState(), { resign: true }, 0);
     expect(result).not.toBeNull();
     expect(result!.status).toBe("resigned");
-    expect(result!.nextPlayer).toBe(1); // winner is player 1
+    expect(result!.nextPlayer).toBe(1);
   });
 
   it("handles resignation by player 1", () => {
     const s1 = chessLogic.update(baseState(), { from: "e2", to: "e4" }, 0)!;
     const result = chessLogic.update(s1, { resign: true }, 1);
     expect(result!.status).toBe("resigned");
-    expect(result!.nextPlayer).toBe(0); // winner is player 0
+    expect(result!.nextPlayer).toBe(0);
   });
 
   it("detects checkmate (fool's mate)", () => {
@@ -74,16 +74,30 @@ describe("chessLogic.update", () => {
     const state: ChessState = {
       ...baseState(),
       timeControl: 5,
-      timeRemaining: [1, 300000], // player 0 has 1ms left
-      lastMoveAt: Date.now() - 5000, // 5 seconds ago
+      timeRemaining: [1, 300000],
+      lastMoveAt: Date.now() - 5000,
     };
     const result = chessLogic.update(state, { from: "e2", to: "e4" }, 0);
     expect(result).not.toBeNull();
     expect(result!.status).toBe("timeout");
   });
 
+  it("handles loadPgn failure by falling back to fen", () => {
+    const state: ChessState = {
+      fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+      pgn: "INVALID_PGN_STRING",
+      nextPlayer: 1,
+      status: "active",
+      inCheck: false,
+      timeControl: null,
+      timeRemaining: [Infinity, Infinity],
+      lastMoveAt: null,
+    };
+    const result = chessLogic.update(state, { from: "e7", to: "e5" }, 1);
+    expect(result).not.toBeNull();
+  });
+
   it("handles pawn promotion via normal game progression", () => {
-    // Just verify a normal move works — promotion edge case is covered by chess.js
     const result = chessLogic.update(baseState(), { from: "e2", to: "e4" }, 0);
     expect(result).not.toBeNull();
     expect(result!.status).toBe("active");
@@ -138,7 +152,6 @@ describe("chessLogic.winner", () => {
   });
 
   it("returns winner on timeout", () => {
-    // nextPlayer after timeout is the winner
     expect(chessLogic.winner({ ...baseState(), status: "timeout", nextPlayer: 1 })).toBe(1);
   });
 
@@ -169,5 +182,20 @@ describe("chessLogic.describeMove", () => {
   it("returns resign description", () => {
     const state = baseState();
     expect(chessLogic.describeMove(state, state, { resign: true }, 0)).toBe(" resigned");
+  });
+
+  it("falls back to fen when pgn is invalid", () => {
+    const state: ChessState = {
+      fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+      pgn: "INVALID_PGN",
+      nextPlayer: 1,
+      status: "active",
+      inCheck: false,
+      timeControl: null,
+      timeRemaining: [Infinity, Infinity],
+      lastMoveAt: null,
+    };
+    const desc = chessLogic.describeMove(state, state, { from: "e7", to: "e5" }, 1);
+    expect(typeof desc).toBe("string");
   });
 });
