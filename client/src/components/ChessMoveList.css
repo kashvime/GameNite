@@ -1,0 +1,56 @@
+.chess-move-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.chess-move-toggle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.chess-move-toggle:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.chess-move-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.chess-move-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chess-move-num {
+  color: var(--color-text-muted);
+  width: 1.5rem;
+  flex-shrink: 0;
+}
+
+.chess-move-white {
+  width: 3.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.chess-move-black {
+  color: var(--color-text-muted);
+}
