@@ -24,6 +24,8 @@ export default function UpdateProfile() {
     setConfirm,
     bio,
     setBio,
+    hideFromGlobalLeaderboard,
+    setHideFromGlobalLeaderboard,
     err,
     info,
     handleSubmit,
@@ -271,6 +273,26 @@ export default function UpdateProfile() {
                 Reset
               </button>
             </div>
+          </div>
+
+          {/* Privacy */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            <label style={{ fontWeight: 600, fontSize: "0.85rem" }}>Leaderboard Privacy</label>
+            <label
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "0.9rem",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={hideFromGlobalLeaderboard}
+                onChange={(e) => setHideFromGlobalLeaderboard(e.target.checked)}
+              />
+              Hide me from global leaderboard (still visible on friends-only leaderboard)
+            </label>
           </div>
 
           {/* Password */}
