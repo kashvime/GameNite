@@ -213,3 +213,142 @@
   color: #dc2626;
   background: rgba(239, 68, 68, 0.1);
 }
+
+.chess-stats {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+.chess-stats-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chess-stats-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.85rem;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.chess-stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.chess-stat {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.chess-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.chess-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.chess-stats {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+.chess-stats-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chess-stats-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.85rem;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.chess-stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.chess-stat {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.chess-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.chess-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.chess-resign-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(239, 68, 68, 0.4);
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chess-resign-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #dc2626;
+}

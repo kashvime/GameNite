@@ -28,8 +28,20 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
   },
 
   update: (state, payload, playerIndex) => {
-    if (playerIndex !== state.nextPlayer) return null;
     if (state.status !== "active") return null;
+    const move = zChessMove.safeParse(payload);
+    if (move.error) return null;
+    if ("resign" in move.data) {
+      const winner: 0 | 1 = playerIndex === 0 ? 1 : 0;
+      const now2 = Date.now();
+      return {
+        ...state,
+        status: "resigned",
+        nextPlayer: winner,
+        lastMoveAt: now2,
+      };
+    }
+    if (playerIndex !== state.nextPlayer) return null;
 
     const now = Date.now();
     const elapsed = state.lastMoveAt ? now - state.lastMoveAt : 0;
@@ -46,9 +58,6 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
         };
       }
     }
-
-    const move = zChessMove.safeParse(payload);
-    if (move.error) return null;
 
     const chess = new Chess(state.fen);
     try {
@@ -80,6 +89,7 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
   winner: (state) => {
     if (state.status === "checkmate") return state.nextPlayer === 0 ? 1 : 0;
     if (state.status === "timeout") return state.nextPlayer;
+    if (state.status === "resigned") return state.nextPlayer;
     return null;
   },
 
@@ -89,6 +99,7 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
   describeMove: (prevState, _newState, payload) => {
     const move = zChessMove.safeParse(payload);
     if (move.error) return " made a move";
+    if ("resign" in move.data) return " resigned";
     const chess = new Chess(prevState.fen);
     try {
       const result = chess.move({

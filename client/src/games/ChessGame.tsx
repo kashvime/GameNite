@@ -47,6 +47,30 @@ function formatTime(ms: number) {
   return m + ":" + s.toString().padStart(2, "0");
 }
 
+function getGameStats(pgn: string, timeControl: number | null, timeRemaining: [number, number]) {
+  const moves = pgn
+    .replace(/\[.*?\]/g, "")
+    .trim()
+    .split(/\s+/)
+    .filter((t) => !t.match(/^\d+\./) && t !== "*" && t.length > 0);
+  const totalMoves = Math.ceil(moves.length / 2);
+  let whiteCaps = 0;
+  let blackCaps = 0;
+  moves.forEach((move, i) => {
+    if (move.includes("x")) {
+      if (i % 2 === 0) whiteCaps++;
+      else blackCaps++;
+    }
+  });
+  const timeUsed: [string, string] | null = timeControl
+    ? [
+        formatTime(timeControl * 60 * 1000 - timeRemaining[0]),
+        formatTime(timeControl * 60 * 1000 - timeRemaining[1]),
+      ]
+    : null;
+  return { totalMoves, whiteCaps, blackCaps, timeUsed };
+}
+
 export default function ChessGame({
   view,
   players,
@@ -115,6 +139,10 @@ export default function ChessGame({
       const winner = view.nextPlayer === 0 ? 1 : 0;
       return "Checkmate! " + (players[winner]?.display ?? "Player " + (winner + 1)) + " wins!";
     }
+    if (view.status === "resigned") {
+      const winner = view.nextPlayer;
+      return (players[winner]?.display ?? "Player " + (winner + 1)) + " wins by resignation!";
+    }
     if (view.status === "timeout") {
       const winner = view.nextPlayer;
       return (players[winner]?.display ?? "Player " + (winner + 1)) + " wins on time!";
@@ -130,6 +158,8 @@ export default function ChessGame({
 
   const statusClass =
     view.status !== "active" ? "done" : view.inCheck ? "check" : isMyTurn ? "myturn" : "";
+
+  const stats = isDone ? getGameStats(view.pgn, view.timeControl, view.timeRemaining) : null;
 
   return (
     <div className="chess-wrapper">
@@ -167,6 +197,18 @@ export default function ChessGame({
       </div>
 
       <div className={"chess-status " + statusClass}>{statusMessage()}</div>
+      {!isDone && userPlayerIndex >= 0 && (
+        <button
+          className="chess-resign-btn"
+          onClick={() => {
+            if (window.confirm("Are you sure you want to resign?")) {
+              makeMove({ resign: true });
+            }
+          }}
+        >
+          Resign
+        </button>
+      )}
 
       {promotionPending && (
         <div className="chess-promotion">
@@ -217,6 +259,38 @@ export default function ChessGame({
           </div>
         </div>
       </div>
+
+      {stats && (
+        <div className="chess-stats">
+          <div className="chess-stats-title">Game Summary</div>
+          <div className="chess-stats-grid">
+            <div className="chess-stat">
+              <div className="chess-stat-value">{stats.totalMoves}</div>
+              <div className="chess-stat-label">Total Moves</div>
+            </div>
+            <div className="chess-stat">
+              <div className="chess-stat-value">{stats.whiteCaps}</div>
+              <div className="chess-stat-label">White Captures</div>
+            </div>
+            <div className="chess-stat">
+              <div className="chess-stat-value">{stats.blackCaps}</div>
+              <div className="chess-stat-label">Black Captures</div>
+            </div>
+            {stats.timeUsed && (
+              <>
+                <div className="chess-stat">
+                  <div className="chess-stat-value">{stats.timeUsed[0]}</div>
+                  <div className="chess-stat-label">Time used (White)</div>
+                </div>
+                <div className="chess-stat">
+                  <div className="chess-stat-value">{stats.timeUsed[1]}</div>
+                  <div className="chess-stat-label">Time used (Black)</div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
