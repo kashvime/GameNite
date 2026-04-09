@@ -17,7 +17,7 @@ describe("GET /api/scores/leaderboard", () => {
     response = await supertest(app).get("/api/scores/leaderboard?gameType=chess");
     expect(response.status).toBe(200);
 
-    expect(response.body.length).toBe(10);
+    expect(response.body.length).toBe(15);
     expect(response.body[0].user.username).toBe("stewiegrififfin");
     expect(response.body[0].rating).toBe(1900);
     expect(response.body[1].user.username).toBe("briangriffin");
@@ -90,7 +90,7 @@ describe("POST /api/scores/myrank", () => {
       .set("Authorization", `Bearer ${makeToken("meggriffin")}`);
     expect(response.status).toBe(200);
 
-    expect(response.body).toStrictEqual({});
+    expect(response.body).toStrictEqual({ rank: expect.any(Number), rating: 1000 });
   });
 
   it("should return empty object when filtering to friends with none", async () => {

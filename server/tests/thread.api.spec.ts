@@ -23,7 +23,7 @@ const userShape = {
   favoriteGame: null,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 
 describe("GET /api/thread/list", () => {

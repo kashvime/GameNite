@@ -22,7 +22,7 @@ const user1 = {
   favoriteGame: null,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 const user2 = {
   userId: expect.any(String),
@@ -34,7 +34,7 @@ const user2 = {
   favoriteGame: null,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 
 describe("GET /api/user/:id", () => {
@@ -167,7 +167,7 @@ describe("POST /api/user/signup", () => {
       favoriteGame: null,
       bio: null,
       avatarUrl: null,
-      ratings: {},
+      ratings: { chess: 1000, nim: 1000, guess: 1000 },
       token: expect.any(String),
     });
   });
