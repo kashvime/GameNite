@@ -74,7 +74,6 @@ function parseMoves(pgn: string): string[] {
 }
 
 export default function ChessMoveList({ pgn }: ChessMoveListProps) {
-  console.log("PGN received:", pgn);
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<number | null>(null);
 
