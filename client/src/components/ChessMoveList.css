@@ -1,0 +1,140 @@
+.chess-move-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.chess-move-toggle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.chess-move-toggle:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.chess-replay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.chess-replay-board {
+  display: inline-block;
+  border: 2px solid #8b6914;
+  border-radius: 4px;
+  overflow: hidden;
+  align-self: center;
+}
+
+.chess-replay-row {
+  display: flex;
+}
+
+.chess-replay-sq {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  user-select: none;
+}
+
+.chess-replay-sq.light {
+  background: #f0d9b5;
+}
+.chess-replay-sq.dark {
+  background: #b58863;
+}
+
+.chess-replay-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.chess-replay-controls button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.chess-replay-controls button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.chess-replay-controls button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.chess-move-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.8rem;
+}
+
+.chess-move-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chess-move-num {
+  color: var(--color-text-muted);
+  width: 1.5rem;
+  flex-shrink: 0;
+}
+
+.chess-move-white {
+  width: 3.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.chess-move-black {
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.chess-move-white:hover,
+.chess-move-black:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
+}
+
+.chess-move-white.active,
+.chess-move-black.active {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary);
+}

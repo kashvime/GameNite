@@ -48,6 +48,10 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     .object({
       gameKey: zGameKey,
       visibility: z.enum(["public", "private"]).default("public"),
+      timeControl: z
+        .union([z.literal(5), z.literal(10), z.literal(30)])
+        .nullable()
+        .optional(),
       gameMode: zGameMode.default("human"),
       aiDifficulty: zAIDifficulty.optional(),
     })
@@ -67,14 +71,19 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     return;
   }
   const { gameKey, visibility, gameMode, aiDifficulty } = body.data;
-  const game = await createGame(user, gameKey, new Date(), visibility, gameMode, aiDifficulty); // NEW params
-
-  // no waiting room needed since there's no second human to join.
+  const game = await createGame(
+    user,
+    gameKey,
+    new Date(),
+    visibility,
+    gameMode,
+    aiDifficulty,
+    body.data.timeControl ?? null,
+  );
   if (gameMode === "ai") {
     await joinGame(game.gameId, { userId: "AI_OPPONENT", username: "AI" });
     await startGame(game.gameId, user);
   }
-
   res.send((await getGameById(game.gameId)) ?? game);
 };
 

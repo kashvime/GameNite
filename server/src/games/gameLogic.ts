@@ -22,7 +22,7 @@ import { type TaggedGameView } from "@gamenite/shared";
 export interface GameLogic<GameState, GameView> {
   minPlayers: number;
   maxPlayers: number | null;
-  start: (numPlayers: number) => GameState;
+  start: (numPlayers: number, options?: Record<string, unknown>) => GameState;
   update: (state: GameState, movePayload: unknown, playerIndex: number) => GameState | null;
   isDone: (state: GameState) => boolean;
   winner: (state: GameState) => number | null;

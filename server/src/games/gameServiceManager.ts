@@ -24,7 +24,10 @@ export interface GameServicer {
    * @param players - All game players' user IDs (needed to prepare updates)
    * @returns the game ID and initial views for all players
    */
-  create: (players: string[]) => { state: unknown; views: GameViewUpdates };
+  create: (
+    players: string[],
+    options?: Record<string, unknown>,
+  ) => { state: unknown; views: GameViewUpdates };
 
   /**
    * Generate a view of the game
@@ -85,8 +88,8 @@ export class GameService<State, View> implements GameServicer {
     };
   }
 
-  create(players: string[]) {
-    const state = this._logic.start(players.length);
+  create(players: string[], options?: Record<string, unknown>) {
+    const state = this._logic.start(players.length, options);
     return { state: state, views: this._makePlayerViews(players, state) };
   }
 

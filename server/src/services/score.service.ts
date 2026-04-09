@@ -1,4 +1,4 @@
-import { ScoreRepo, UserRepo } from "../repository.ts";
+import { ScoreRepo, UserRepo, GameRepo } from "../repository.ts";
 import type { ScoreRecord, RecordId } from "../models.ts";
 import {
   computeLeague,
@@ -80,12 +80,20 @@ export async function getMatchesByUserId(
     if (filter?.result && record.result !== filter.result) continue;
     const opponent = record.opponentId ? await populateSafeUserInfo(record.opponentId) : undefined;
     if (filter?.opponentUsername && opponent?.username !== filter.opponentUsername) continue;
+    let pgn: string | undefined;
+    if (record.gameType === "chess" && record.gameId) {
+      const game = await GameRepo.find(record.gameId);
+      const state = game?.state as { pgn?: string } | undefined;
+      pgn = state?.pgn;
+    }
     matches.push({
       gameType: record.gameType,
       result: record.result,
       opponent,
       score: record.score,
       createdAt: new Date(record.createdAt),
+      gameId: record.gameId,
+      pgn,
     });
   }
   // Sort by selected order; default to newest first

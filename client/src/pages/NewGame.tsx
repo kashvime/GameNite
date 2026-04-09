@@ -7,6 +7,8 @@ export default function NewGame() {
     gameKey,
     visibility,
     setVisibility,
+    timeControl,
+    setTimeControl,
     gameMode,
     setGameMode,
     aiDifficulty,
@@ -72,7 +74,6 @@ export default function NewGame() {
             </div>
           </div>
 
-          {/* Opponent selection — chess only */}
           {gameKey === "chess" && (
             <div className="new-game-field">
               <label>Opponent</label>
@@ -107,7 +108,6 @@ export default function NewGame() {
             </div>
           )}
 
-          {/* Difficulty picker — AI games only */}
           {gameKey === "chess" && gameMode === "ai" && (
             <div className="new-game-field">
               <label htmlFor="difficulty-select">Difficulty</label>
@@ -121,6 +121,33 @@ export default function NewGame() {
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
+            </div>
+          )}
+
+          {gameKey === "chess" && (
+            <div className="new-game-field">
+              <label>Time control</label>
+              <div className="visibility-options">
+                {([null, 5, 10, 30] as (5 | 10 | 30 | null)[]).map((t) => (
+                  <label
+                    key={String(t)}
+                    className={`visibility-option ${timeControl === t ? "selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="timeControl"
+                      checked={timeControl === t}
+                      onChange={() => setTimeControl(t)}
+                    />
+                    <div className="visibility-option-text">
+                      <strong>{t === null ? "⏳ No timer" : "⏱ " + t + " minutes"}</strong>
+                      <span>
+                        {t === null ? "Untimed game" : "Each player gets " + t + " minutes"}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
             </div>
           )}
 

@@ -8,6 +8,7 @@ export default function useNewGameForm() {
   const { user, pass } = useLoginContext();
   const [gameKey, setGameKey] = useState<GameKey | "">("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [timeControl, setTimeControl] = useState<5 | 10 | 30 | null>(null);
   const [gameMode, setGameMode] = useState<"human" | "ai">("human");
   const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>("medium");
   const [err, setErr] = useState<string | null>(null);
@@ -17,7 +18,7 @@ export default function useNewGameForm() {
     setErr(null);
     const newKey = e.target.value as GameKey | "";
     setGameKey(newKey);
-    if (newKey !== "chess") setGameMode("human"); // reset if not chess
+    if (newKey !== "chess") setGameMode("human");
   };
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
@@ -34,6 +35,7 @@ export default function useNewGameForm() {
       visibility,
       gameMode,
       gameMode === "ai" ? aiDifficulty : undefined,
+      timeControl,
     );
     if ("error" in game) {
       setErr(game.error);
@@ -46,6 +48,8 @@ export default function useNewGameForm() {
     gameKey,
     visibility,
     setVisibility,
+    timeControl,
+    setTimeControl,
     gameMode,
     setGameMode,
     aiDifficulty,

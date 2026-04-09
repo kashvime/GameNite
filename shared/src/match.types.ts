@@ -15,6 +15,8 @@ export interface MatchInfo {
   opponent?: SafeUserInfo;
   score?: number;
   createdAt: Date;
+  gameId?: string;
+  pgn?: string;
 }
 
 /*** TYPES USED IN THE MATCH API ***/

@@ -6,6 +6,7 @@ import type { MatchFilter, MatchInfo } from "@gamenite/shared";
 import { NavLink } from "react-router-dom";
 import MatchFilterBar from "../components/MatchFilterBar.tsx";
 import "./MatchHistory.css";
+import ChessMoveList from "../components/ChessMoveList.tsx";
 
 /**
  * Displays the authenticated user's match history in a table, with
@@ -47,6 +48,7 @@ export default function MatchHistory() {
                 <th>Opponent</th>
                 <th>Result</th>
                 <th>Date</th>
+                <th>Moves</th>
               </tr>
             </thead>
 
@@ -68,6 +70,9 @@ export default function MatchHistory() {
                   <td className={`result-${match.result}`}>{match.result}</td>
 
                   <td>{new Date(match.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    {match.gameType === "chess" && match.pgn && <ChessMoveList pgn={match.pgn} />}
+                  </td>
                 </tr>
               ))}
             </tbody>
