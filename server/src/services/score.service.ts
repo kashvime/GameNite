@@ -144,10 +144,12 @@ export async function getLeaderboard(
 
   rated.sort((a, b) => b.rating - a.rating);
 
-  const entries = [];
-  for (const { userId, rating } of rated.slice(0, limit)) {
-    entries.push({ user: await populateSafeUserInfo(userId), rating });
-  }
+  const entries = await Promise.all(
+    rated.slice(0, limit).map(async ({ userId, rating }) => ({
+      user: await populateSafeUserInfo(userId),
+      rating,
+    })),
+  );
   return entries;
 }
 
