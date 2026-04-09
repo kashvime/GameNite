@@ -35,8 +35,8 @@ export default function GamePanel({
             const change: RatingChange | undefined = ratingChanges?.find(
               (c: RatingChange) => c.username === player.username,
             );
-            const displayRating = change ? change.newRating : player.ratings[type];
-            const league = displayRating !== undefined ? computeLeague(displayRating) : null;
+            const displayRating = change ? change.newRating : (player.ratings[type] ?? 1000);
+            const league = computeLeague(displayRating);
             return (
               <div className="dottedListItem playerRow" role="listitem" key={player.username}>
                 <span className="playerLabel">
@@ -49,23 +49,19 @@ export default function GamePanel({
                   )}
                 </span>
                 <span className="playerRating">
-                  {league !== null ? (
-                    <>
-                      <span className="ratingNumber">{displayRating}</span>
-                      {change && (
-                        <span
-                          className="ratingDelta"
-                          style={{ color: change.delta >= 0 ? "#22c55e" : "#ef4444" }}
-                        >
-                          {change.delta >= 0 ? "+" : ""}
-                          {change.delta}
-                        </span>
-                      )}
-                      <span className={`league-badge league-${league}`}>{league}</span>
-                    </>
-                  ) : (
-                    <span className="smallAndGray">unrated</span>
-                  )}
+                  <>
+                    <span className="ratingNumber">{displayRating}</span>
+                    {change && (
+                      <span
+                        className="ratingDelta"
+                        style={{ color: change.delta >= 0 ? "#22c55e" : "#ef4444" }}
+                      >
+                        {change.delta >= 0 ? "+" : ""}
+                        {change.delta}
+                      </span>
+                    )}
+                    <span className={`league-badge league-${league}`}>{league}</span>
+                  </>
                 </span>
               </div>
             );

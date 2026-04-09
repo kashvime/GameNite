@@ -99,15 +99,7 @@ export default function useLoginForm(setAuth: (auth: AuthContext | null) => void
           clearStoredAuthToken();
         },
         updateUser: (newUser: SafeUserInfo) => {
-          setAuth({
-            user: newUser,
-            pass: token,
-            reset: () => {
-              setAuth(null);
-              clearStoredAuthToken();
-            },
-            updateUser: () => {},
-          });
+          setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
         },
       });
       navigate("/");

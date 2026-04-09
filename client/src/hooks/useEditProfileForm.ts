@@ -81,6 +81,7 @@ export default function useEditProfileForm() {
     }
 
     updateUserContext(response);
+    setInfo("Profile saved successfully");
   };
 
   return {
