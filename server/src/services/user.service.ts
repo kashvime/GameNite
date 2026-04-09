@@ -49,6 +49,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
       bio: null,
       avatarUrl: null,
       ratings: {},
+      hideFromGlobalLeaderboard: false,
     };
   }
   return {
@@ -63,6 +64,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     bio: record.bio ?? null,
     avatarUrl: record.avatarUrl ?? null,
     ratings: record.ratings ?? {},
+    hideFromGlobalLeaderboard: record.hideFromGlobalLeaderboard ?? false,
   };
 }
 
@@ -93,6 +95,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
+    hideFromGlobalLeaderboard: false,
     ratings: defaultRatings,
   });
   await updateAuth(username, password, id);
@@ -107,6 +110,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
+    hideFromGlobalLeaderboard: false,
     ratings: defaultRatings,
   });
 }
@@ -140,7 +144,7 @@ export async function getUsersByUsername(usernames: string[]): Promise<SafeUserI
  */
 export async function updateUser(
   username: string,
-  { display, password, bio, avatarUrl }: UserUpdateRequest,
+  { display, password, bio, avatarUrl, hideFromGlobalLeaderboard }: UserUpdateRequest,
 ): Promise<SafeUserInfo> {
   const user = await getUserByUsername(username);
   if (!user) throw new Error(`No user ${username}`);
@@ -149,6 +153,8 @@ export async function updateUser(
   if (display !== undefined) newUser.display = display;
   if (bio !== undefined) newUser.bio = bio;
   if (avatarUrl !== undefined) newUser.avatarUrl = avatarUrl;
+  if (hideFromGlobalLeaderboard !== undefined)
+    newUser.hideFromGlobalLeaderboard = hideFromGlobalLeaderboard;
   await UserRepo.set(user.userId, newUser);
   return populateSafeUserInfo(user.userId);
 }

@@ -135,6 +135,8 @@ export async function getLeaderboard(
     const record = records[i];
     const rating = record.ratings?.[gameType];
     if (rating === undefined) continue;
+    const isGlobalView = !userIds;
+    if (isGlobalView && record.hideFromGlobalLeaderboard) continue;
     if (userIds && !userIds.includes(keys[i])) continue;
     if (league && computeLeague(rating) !== league) continue;
     rated.push({ userId: keys[i], rating });
@@ -174,6 +176,8 @@ export async function getUserRank(
     const record = records[i];
     const rating = record.ratings?.[gameType];
     if (rating === undefined) continue;
+    const isGlobalView = !userIds;
+    if (isGlobalView && record.hideFromGlobalLeaderboard) continue;
     if (userIds && !userIds.includes(keys[i])) continue;
     if (league && computeLeague(rating) !== league && keys[i] !== userId) continue;
     rated.push({ userId: keys[i], rating });
