@@ -9,6 +9,13 @@ describe(`Guessing game's start() logic`, () => {
       guesses: [null, null, null, null],
     });
   });
+  it("Secret should be between 1 and 100", () => {
+    for (let i = 0; i < 10; i++) {
+      const { secret } = guessLogic.start(2);
+      expect(secret).toBeGreaterThanOrEqual(1);
+      expect(secret).toBeLessThanOrEqual(100);
+    }
+  });
 });
 
 describe(`Guessing game's update() logic`, () => {
@@ -39,6 +46,10 @@ describe(`Guessing game's update() logic`, () => {
       guesses: [99, 98, 20],
     });
   });
+  it("Should reject non-integer or non-number move values", () => {
+    expect(guessLogic.update({ secret: 44, guesses: [null, null] }, "50", 0)).toBeNull();
+    expect(guessLogic.update({ secret: 44, guesses: [null, null] }, 50.5, 0)).toBeNull();
+  });
 });
 
 describe(`Guessing game's isDone() logic`, () => {
@@ -48,6 +59,27 @@ describe(`Guessing game's isDone() logic`, () => {
     expect(guessLogic.isDone({ secret: 44, guesses: [30, null, null] })).toBe(false);
     expect(guessLogic.isDone({ secret: 44, guesses: [null, 99, 4] })).toBe(false);
     expect(guessLogic.isDone({ secret: 44, guesses: [3, 99, 4] })).toBe(true);
+  });
+});
+
+describe(`Guessing game's winner() logic`, () => {
+  it("Returns the player whose guess is closest to the secret", () => {
+    // secret=44: player0 guesses 40 (distance 4), player1 guesses 46 (distance 2) → player1 wins
+    expect(guessLogic.winner({ secret: 44, guesses: [40, 46] })).toBe(1);
+    // secret=44: player0 guesses 40 (distance 4), player1 guesses 43 (distance 1) → player1 wins
+    expect(guessLogic.winner({ secret: 44, guesses: [40, 43] })).toBe(1);
+    // secret=44: player0 guesses 45 (distance 1), player1 guesses 50 (distance 6) → player0 wins
+    expect(guessLogic.winner({ secret: 44, guesses: [45, 50] })).toBe(0);
+  });
+  it("Returns null on a tie", () => {
+    expect(guessLogic.winner({ secret: 44, guesses: [42, 46] })).toBeNull();
+  });
+  it("Returns the winner when one player guesses exactly right", () => {
+    expect(guessLogic.winner({ secret: 44, guesses: [44, 20] })).toBe(0);
+    expect(guessLogic.winner({ secret: 44, guesses: [20, 44] })).toBe(1);
+  });
+  it("Returns null when not all players have guessed", () => {
+    expect(guessLogic.winner({ secret: 44, guesses: [null, 46] })).toBeNull();
   });
 });
 
@@ -79,6 +111,10 @@ describe(`Guessing game's viewAs() logic`, () => {
       guesses: [7, 6, 33],
     });
   });
+  it("Should not include myGuess if player has not guessed yet", () => {
+    const view = guessLogic.viewAs({ secret: 44, guesses: [null, 50] }, 0);
+    expect(view).not.toHaveProperty("myGuess");
+  });
 });
 
 describe(`Guessing game's tagView() logic`, () => {
@@ -87,5 +123,15 @@ describe(`Guessing game's tagView() logic`, () => {
       type: "guess",
       view: { finished: true, secret: 12, guesses: [1, 2, 3] },
     });
+  });
+});
+
+describe(`Guessing game's describeMove() logic`, () => {
+  it("Should describe a guess move", () => {
+    const state = guessLogic.start(2);
+    const newState = guessLogic.update(state, 42, 0)!;
+    const desc = guessLogic.describeMove(state, newState, 42, 0);
+    expect(typeof desc).toBe("string");
+    expect(desc.length).toBeGreaterThan(0);
   });
 });

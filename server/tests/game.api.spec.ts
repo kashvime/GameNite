@@ -63,8 +63,68 @@ describe("POST /api/game/create", () => {
       minPlayers: 2,
       players: [{ ...userShape, username: "user3", display: "Frau Drei" }],
       visibility: "public",
-      gameMode: "human", // NEW
+      gameMode: "human",
     });
+  });
+
+  it("should create an AI chess game with status active and no AI player visible", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "medium" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      type: "chess",
+      status: "active",
+      gameMode: "ai",
+      aiDifficulty: "medium",
+      players: [{ username: "user3" }], // AI_OPPONENT filtered out
+    });
+    // AI player should not be exposed to the client
+    const usernames = (response.body.players as { username: string }[]).map((p) => p.username);
+    expect(usernames).not.toContain("AI_OPPONENT");
+    expect(usernames).not.toContain("Computer");
+  });
+
+  it("should create an AI chess game with easy difficulty", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "easy" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ gameMode: "ai", aiDifficulty: "easy", status: "active" });
+  });
+
+  it("should default to human gameMode when not specified", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess" });
+    expect(response.status).toBe(200);
+    expect(response.body.gameMode).toBe("human");
+    expect(response.body.status).toBe("waiting");
+  });
+
+  it("should return 400 for invalid aiDifficulty", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "impossible" });
+    expect(response.status).toBe(400);
+  });
+
+  it("should create a private AI chess game", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "hard", visibility: "private" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      gameMode: "ai",
+      visibility: "private",
+      status: "active",
+    });
+    expect(response.body.inviteCode).toBeDefined();
   });
 });
 
@@ -85,6 +145,18 @@ describe("GET /api/game/:id", () => {
     response = await supertest(app).get(`/api/game/${gameInfo.gameId}`);
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual(gameInfo);
+  });
+
+  it("should return AI chess game with correct fields", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "hard" });
+    const { gameId } = response.body;
+
+    response = await supertest(app).get(`/api/game/${gameId}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ gameMode: "ai", aiDifficulty: "hard", status: "active" });
   });
 });
 
