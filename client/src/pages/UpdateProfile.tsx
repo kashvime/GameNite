@@ -19,9 +19,18 @@ import type { MatchInfo } from "@gamenite/shared";
 export default function UpdateProfile() {
   const { user, pass } = useLoginContext();
   const [showPass, setShowPass] = useState(false);
-  const { display, setDisplay, password, setPassword, confirm, setConfirm, err, handleSubmit } =
-    useEditProfileForm();
-  const [bio, setBio] = useState(user.bio ?? "");
+  const {
+    display,
+    setDisplay,
+    password,
+    setPassword,
+    confirm,
+    setConfirm,
+    bio,
+    setBio,
+    err,
+    handleSubmit,
+  } = useEditProfileForm();
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatarUrl ?? null);
 
@@ -51,7 +60,7 @@ export default function UpdateProfile() {
     <form
       className="content spacedSection"
       onSubmit={(e) => {
-        handleSubmit(e, avatarPreview);
+        handleSubmit(e, avatarPreview, bio);
       }}
     >
       {" "}
