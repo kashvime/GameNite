@@ -1,29 +1,99 @@
+/* ── Page ── */
+.leaderboard-page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Pill tabs ── */
+.leaderboard-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+}
+
+.leaderboard-tab {
+  padding: 0.45rem 1.6rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.leaderboard-tab:hover {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.leaderboard-tab.active {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+}
+
+/* ── Filters ── */
 .leaderboard-filters {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
   flex-wrap: wrap;
+}
+
+.leaderboard-toggle {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: unset;
+}
+
+.leaderboard-toggle.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .leaderboard-league-filters {
   display: flex;
-  flex-direction: row;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .leaderboard-league-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
   background: var(--color-bg);
   color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  opacity: 0.8;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: unset;
 }
 
-.leaderboard-league-btn.active,
 .leaderboard-league-btn:hover {
-  opacity: 1;
   border-color: currentColor;
+  opacity: 1;
 }
 
 .league-btn-bronze {
@@ -32,6 +102,7 @@
 .league-btn-bronze.active {
   background: #cd7f32;
   color: white;
+  border-color: #cd7f32;
 }
 
 .league-btn-silver {
@@ -40,6 +111,7 @@
 .league-btn-silver.active {
   background: #9ca3af;
   color: white;
+  border-color: #9ca3af;
 }
 
 .league-btn-gold {
@@ -48,124 +120,188 @@
 .league-btn-gold.active {
   background: #f59e0b;
   color: white;
+  border-color: #f59e0b;
+}
+
+/* ── Subtitle + rating row ── */
+.leaderboard-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .leaderboard-subtitle {
   margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 }
 
+.leaderboard-my-rank {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.leaderboard-my-rank strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* ── Empty state ── */
+.leaderboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+}
+
+.leaderboard-empty-title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.leaderboard-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  background: #fce7f3;
+  color: #db2777;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.12s ease;
+  min-height: unset;
+}
+
+.leaderboard-back-btn:hover {
+  background: #fbcfe8;
+  transform: translateX(-2px);
+}
+
+/* ── Card ── */
+.leaderboard-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* Card for when "You" are outside the visible top list */
+.leaderboard-you-card {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.2),
+    0 0 24px rgba(99, 102, 241, 0.18),
+    var(--shadow-sm);
+}
+
+/* ── Table ── */
 .leaderboard-table {
   width: 100%;
   border-collapse: collapse;
 }
 
 .leaderboard-table thead tr {
-  border-bottom: 2px solid var(--color-border);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .leaderboard-table th {
   text-align: left;
-  padding: 0.5rem 0.75rem;
-  font-weight: 600;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--color-text-muted);
-  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .leaderboard-table td {
-  padding: 0.6rem 0.75rem;
-  border-top: 1px solid var(--color-border);
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+  color: var(--color-text);
 }
 
-.leaderboard-table tr.leaderboard-you td {
-  font-weight: 600;
-  background-color: rgba(99, 102, 241, 0.12);
-  color: var(--color-primary);
+.leaderboard-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.leaderboard-rank {
-  width: 4rem;
-  text-align: center;
-  color: var(--color-text-muted);
+.leaderboard-table tbody tr:not(.row-you):hover td {
+  background: #f7f8ff;
+  transition: background 0.12s ease;
 }
 
-.leaderboard-rating {
+/* ── Columns ── */
+.col-rank {
   width: 5rem;
   text-align: center;
-  font-weight: 600;
 }
 
-.leaderboard-me td {
-  border-top: 2px dashed var(--color-primary);
-  font-style: italic;
-  color: var(--color-primary);
-}
-
-.leaderboard-select {
-  border-radius: var(--radius);
-  border: 1px solid var(--color-border);
-  padding-inline: 0.5rem;
-  min-height: 2.5rem;
+.col-rating {
+  width: 6rem;
+  text-align: center;
+  font-weight: 700;
   font-size: 1rem;
-  background-color: var(--color-surface);
-  cursor: pointer;
+  color: var(--color-text);
 }
 
-.leaderboard-tabs {
-  display: flex;
-  border-bottom: 2px solid var(--color-border);
-  margin-bottom: 1rem;
+/* ── Rank display ── */
+.lb-medal {
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
-.leaderboard-tab {
-  padding: 0.5rem 1.4rem;
-  border: 1px solid var(--color-border);
-  border-bottom: none;
-  background: var(--color-bg);
-  cursor: pointer;
-  margin-right: 0.25rem;
-  margin-bottom: -2px;
-  font-size: 0.95rem;
-  font-weight: 500;
+.lb-rank-num {
+  font-size: 0.85rem;
   color: var(--color-text-muted);
-  border-radius: var(--radius) var(--radius) 0 0;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-}
-
-.leaderboard-tab:hover {
-  color: var(--color-primary);
-  background: var(--color-surface);
-}
-
-.leaderboard-tab.active {
-  background: var(--color-surface);
-  font-weight: 600;
-  color: var(--color-primary);
-  border-color: var(--color-border);
-  border-bottom: 2px solid var(--color-surface);
-}
-
-.league-badge {
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius);
-  font-size: 0.75rem;
   font-weight: 600;
 }
 
-.league-bronze {
-  background: #cd7f32;
-  color: white;
+/* ── Player name ── */
+.lb-display {
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-.league-silver {
-  background: #9ca3af;
-  color: white;
+.lb-username {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
-.league-gold {
-  background: #f59e0b;
-  color: white;
+/* ── Top row ── */
+.leaderboard-table tr.row-top td {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.07) 0%, transparent 60%);
+}
+
+/* ── Your row — glow ── */
+.leaderboard-table tr.row-you td {
+  background: rgba(99, 102, 241, 0.07);
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(99, 102, 241, 0.2),
+    inset 0 -1px 0 rgba(99, 102, 241, 0.2);
+}
+
+.leaderboard-table tr.row-you td:first-child {
+  box-shadow:
+    inset 4px 0 0 var(--color-primary),
+    inset 0 1px 0 rgba(99, 102, 241, 0.2),
+    inset 0 -1px 0 rgba(99, 102, 241, 0.2);
 }

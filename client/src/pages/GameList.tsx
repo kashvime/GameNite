@@ -26,7 +26,7 @@ export default function GameList() {
     <div className="content">
       <div className="spacedSection">
         <h2>All games</h2>
-        <div className="spacedSection">
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button className="primary narrow" onClick={() => navigate("/game/new")}>
               Create New Game

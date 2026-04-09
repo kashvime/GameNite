@@ -158,6 +158,7 @@ export interface ScoreRecord {
   gameId: RecordId;
   score?: number;
   result: "win" | "loss" | "draw";
+  ratingDelta?: number;
   durationSeconds?: number;
   createdAt: DateISO;
 }

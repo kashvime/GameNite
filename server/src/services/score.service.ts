@@ -33,6 +33,7 @@ export async function saveMatchRecords(
   scores?: number[],
   io?: GameServer,
   visibility: "public" | "private" = "public",
+  ratingDeltas?: Record<string, number>,
 ): Promise<void> {
   await Promise.all(
     players.map((userId, playerIndex) => {
@@ -44,6 +45,7 @@ export async function saveMatchRecords(
         gameId,
         score: scores && scores[playerIndex],
         result: winner === null ? "draw" : winner === playerIndex ? "win" : "loss",
+        ratingDelta: ratingDeltas?.[userId],
         createdAt: playedAt.toISOString(),
       };
       return ScoreRepo.add(record);
@@ -94,6 +96,7 @@ export async function getMatchesByUserId(
       createdAt: new Date(record.createdAt),
       gameId: record.gameId,
       pgn,
+      ratingDelta: record.ratingDelta,
     });
   }
   // Sort by selected order; default to newest first

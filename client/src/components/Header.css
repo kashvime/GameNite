@@ -26,3 +26,10 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.875rem;
 }
+
+.header button {
+  height: 2rem;
+  min-height: unset;
+  font-size: 0.85rem;
+  padding-inline: 0.875rem;
+}

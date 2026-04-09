@@ -1,5 +1,6 @@
+import "./ViewProfile.css";
 import type { SafeUserInfo, MatchInfo } from "@gamenite/shared";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserById } from "../services/userService";
 import {
@@ -8,10 +9,10 @@ import {
   respondToFriendRequest,
 } from "../services/friendService";
 import type { FriendshipStatus } from "../services/friendService";
-import { getMatchHistory } from "../services/matchService";
 import { createGame } from "../services/gameService";
 import useLoginContext from "../hooks/useLoginContext";
 import { computeLeague } from "@gamenite/shared";
+import useMatchHistory from "../hooks/useMatchHistory";
 
 interface ViewProfileProps {
   username: string;
@@ -26,7 +27,6 @@ export default function ViewProfile({ username }: ViewProfileProps) {
   >({ type: "waiting" });
   const [friendStatus, setFriendStatus] = useState<FriendshipStatus | null>(null);
   const [friendError, setFriendError] = useState<string | null>(null);
-  const [matches, setMatches] = useState<MatchInfo[] | null>(null);
   const [challengeError, setChallengeError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,46 +62,29 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     };
   }, [username, loggedInUser.username, pass]);
 
-  useEffect(() => {
-    let cancel = false;
-    const auth = { username: loggedInUser.username, password: pass };
-    getMatchHistory(auth).then((res) => {
-      if (cancel) return;
-      if (!res || "error" in res) return;
-      setMatches(res);
-    });
-    return () => {
-      cancel = true;
-    };
-  }, [username, loggedInUser.username, pass]);
+  const isOwnProfile = loggedInUser.username === username;
+  const h2hFilter = useMemo(() => ({ opponentUsername: username }), [username]);
+  const h2hState = useMatchHistory(isOwnProfile ? undefined : h2hFilter);
 
   const handleAddFriend = async () => {
     setFriendError(null);
     const auth = { username: loggedInUser.username, password: pass };
     const res = await sendFriendRequest(auth, username);
-    if (res && "error" in res) {
-      setFriendError(res.error);
-    } else {
-      setFriendStatus({ status: "pending_sent" });
-    }
+    if (res && "error" in res) setFriendError(res.error);
+    else setFriendStatus({ status: "pending_sent" });
   };
 
   const handleRespond = async (requestId: string, accept: boolean) => {
     setFriendError(null);
     const auth = { username: loggedInUser.username, password: pass };
-
     const res = await respondToFriendRequest(auth, requestId, accept);
-    if (res && "error" in res) {
-      setFriendError(res.error);
-    } else {
-      setFriendStatus(accept ? { status: "friends" } : { status: "not_connected" });
-    }
+    if (res && "error" in res) setFriendError(res.error);
+    else setFriendStatus(accept ? { status: "friends" } : { status: "not_connected" });
   };
 
   const handleChallenge = async () => {
     setChallengeError(null);
     const auth = { username: loggedInUser.username, password: pass };
-
     const game = await createGame(auth, "chess");
     if ("error" in game) {
       setChallengeError(game.error);
@@ -110,17 +93,25 @@ export default function ViewProfile({ username }: ViewProfileProps) {
     navigate(`/game/${game.gameId}`);
   };
 
-  const renderFriendStatus = () => {
+  const renderFriendAction = () => {
     if (!friendStatus) return null;
     switch (friendStatus.status) {
       case "friends":
-        return <span style={{ color: "#22c55e", fontWeight: 500 }}>✓ Friends</span>;
+        return (
+          <span style={{ color: "#22c55e", fontWeight: 600, fontSize: "0.9rem" }}>✓ Friends</span>
+        );
       case "pending_sent":
-        return <span style={{ color: "#f59e0b", fontWeight: 500 }}>Pending — request sent</span>;
+        return (
+          <span style={{ color: "#f59e0b", fontWeight: 500, fontSize: "0.9rem" }}>
+            Request sent
+          </span>
+        );
       case "pending_received":
         return (
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <span style={{ color: "#f59e0b", fontWeight: 500 }}>Friend request received</span>
+            <span style={{ color: "#f59e0b", fontWeight: 500, fontSize: "0.9rem" }}>
+              Friend request
+            </span>
             <button
               className="primary narrow"
               onClick={() => handleRespond(friendStatus.requestId, true)}
@@ -131,7 +122,7 @@ export default function ViewProfile({ username }: ViewProfileProps) {
               className="secondary narrow"
               onClick={() => handleRespond(friendStatus.requestId, false)}
             >
-              Reject
+              Decline
             </button>
           </div>
         );
@@ -146,11 +137,12 @@ export default function ViewProfile({ username }: ViewProfileProps) {
 
   switch (componentState.type) {
     case "error":
-      return <div style={{ color: "#f00" }}>{componentState.msg}</div>;
+      return <div className="content error-message">{componentState.msg}</div>;
     case "waiting":
-      return <div className="smallAndGray">Loading profile...</div>;
+      return <div className="content smallAndGray">Loading profile...</div>;
     case "profile": {
       const { user } = componentState;
+
       const statusColor =
         user.onlineStatus === "online"
           ? "#22c55e"
@@ -163,132 +155,207 @@ export default function ViewProfile({ username }: ViewProfileProps) {
           : user.onlineStatus === "in_match"
             ? "In Match"
             : "Offline";
+      const initials = user.display
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
 
       return (
-        <div className="content spacedSection">
-          <h2>Profile</h2>
-
-          {/* Avatar + online status */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.5rem",
-              width: "fit-content",
-            }}
-          >
+        <div className="profile-page">
+          {/* ── Hero ── */}
+          <div className="profile-hero">
             {user.avatarUrl ? (
               <img
+                className="profile-avatar"
                 src={user.avatarUrl}
                 alt={`${user.display}'s avatar`}
-                style={{ width: "120px", height: "120px", objectFit: "cover" }}
               />
             ) : (
-              <div
-                style={{
-                  width: "120px",
-                  height: "120px",
-                  background: "#d1d5db",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                }}
-              >
-                No Photo
-              </div>
+              <div className="profile-avatar-initials">{initials}</div>
             )}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <span
-                style={{
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "50%",
-                  background: statusColor,
-                  display: "inline-block",
-                }}
-              />
-              <span>{statusLabel}</span>
+            <div className="profile-identity">
+              <span className="profile-display-name">{user.display}</span>
+              <span className="profile-username">@{user.username}</span>
+              <div className="profile-status">
+                <span className="profile-status-dot" style={{ background: statusColor }} />
+                <span className="profile-status-label">{statusLabel}</span>
+              </div>
+              <div className="profile-meta">
+                <span className="profile-meta-item">
+                  Joined {new Date(user.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              {user.bio && <p className="profile-bio">{user.bio}</p>}
             </div>
           </div>
 
-          <hr />
-
-          {/* Friend status + Challenge */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            {renderFriendStatus()}
-            {friendError && <span style={{ color: "#f00" }}>{friendError}</span>}
+          {/* ── Actions ── */}
+          <div className="profile-actions">
+            {renderFriendAction()}
+            {friendError && <span className="error-message">{friendError}</span>}
             <button className="secondary narrow" onClick={handleChallenge}>
               Challenge to Chess
             </button>
-            {challengeError && <span style={{ color: "#f00" }}>{challengeError}</span>}
+            {challengeError && <span className="error-message">{challengeError}</span>}
           </div>
 
-          <hr />
-
-          {/* General information */}
-          <div>
-            <h3>General Information</h3>
-            <ul>
-              <li>Name: {user.display}</li>
-              <li>Join Date: {new Date(user.createdAt).toLocaleDateString()}</li>
-              {user.bio ? <li>Bio: {user.bio}</li> : <li className="smallAndGray">No bio yet.</li>}
-            </ul>
+          {/* ── Statistics ── */}
+          <div className="profile-section">
+            <div className="profile-section-header">
+              <h3>Statistics</h3>
+            </div>
+            <div className="profile-section-body">
+              {user.totalGamesPlayed === 0 ? (
+                <p className="smallAndGray" style={{ margin: 0 }}>
+                  No games played yet.
+                </p>
+              ) : (
+                <div className="profile-stats-grid">
+                  <div className="profile-stat-chip">
+                    <div className="profile-stat-value">{user.totalGamesPlayed}</div>
+                    <div className="profile-stat-label">Games Played</div>
+                  </div>
+                  <div className="profile-stat-chip">
+                    <div className="profile-stat-value">{user.winRate}%</div>
+                    <div className="profile-stat-label">Win Rate</div>
+                  </div>
+                  {user.favoriteGame && (
+                    <div className="profile-stat-chip">
+                      <div
+                        className="profile-stat-value"
+                        style={{ fontSize: "1.35rem", textTransform: "capitalize" }}
+                      >
+                        {user.favoriteGame}
+                      </div>
+                      <div className="profile-stat-label">Favorite Game</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          <hr />
-
-          {/* Stats */}
-          <div>
-            <h3>Chess Statistic</h3>
-            {user.totalGamesPlayed === 0 ? (
-              <p className="smallAndGray">No games played yet.</p>
-            ) : (
-              <ul>
-                <li>Total Games Played: {user.totalGamesPlayed}</li>
-                <li>Win Rate: {user.winRate}%</li>
-                {user.favoriteGame && <li>Favorite Game: {user.favoriteGame}</li>}
-              </ul>
-            )}
-
-            <h4>Ratings</h4>
-            {Object.keys(user.ratings ?? {}).length === 0 ? (
-              <p className="smallAndGray">No rated games played yet.</p>
-            ) : (
-              <ul>
-                {Object.entries(user.ratings ?? {}).map(([gameType, rating]) => (
-                  <li key={gameType}>
-                    {gameType}: {rating} — {computeLeague(rating)}
-                  </li>
-                ))}
-              </ul>
-            )}
+          {/* ── Ratings ── */}
+          <div className="profile-section">
+            <div className="profile-section-header">
+              <h3>Ratings</h3>
+            </div>
+            <div className="profile-section-body">
+              {(["chess", "nim", "guess"] as const).map((gameType) => {
+                const rating = user.ratings?.[gameType] ?? 1000;
+                const league = computeLeague(rating);
+                const pointsToPromote =
+                  league === "bronze" ? 1200 - rating : league === "silver" ? 1800 - rating : null;
+                const pointsToDemote =
+                  league === "gold" ? rating - 1799 : league === "silver" ? rating - 1199 : null;
+                return (
+                  <div key={gameType} className="profile-rating-row">
+                    <div>
+                      <div className="profile-rating-game">{gameType}</div>
+                      <div className="profile-rating-sub">
+                        {league === "gold"
+                          ? "Top league"
+                          : pointsToPromote !== null
+                            ? `${pointsToPromote} pts to next league`
+                            : ""}
+                        {pointsToDemote !== null && league !== "gold"
+                          ? ` · ${pointsToDemote} pts above demotion`
+                          : ""}
+                      </div>
+                    </div>
+                    <div className="profile-rating-right">
+                      <span className="profile-rating-number">{rating}</span>
+                      <span className={`league-badge league-${league}`}>{league}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <hr />
-
-          {/* Recent matches */}
-          <div>
-            <h3>Recent Matches</h3>
-            {matches === null ? (
-              <p className="smallAndGray">Loading matches...</p>
-            ) : matches.length === 0 ? (
-              <p className="smallAndGray">No matches played yet.</p>
-            ) : (
-              <ul>
-                {matches.slice(0, 5).map((match, i) => (
-                  <li key={i}>
-                    {match.gameType} — {match.result}
-                    {match.opponent && ` vs ${match.opponent.display}`}
-                    {match.score !== undefined && ` — Score: ${match.score}`}
-                    {" — "}
-                    {new Date(match.createdAt).toLocaleDateString()}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          {/* ── Head to Head (only on other people's profiles) ── */}
+          {!isOwnProfile && (
+            <div className="profile-section">
+              <div className="profile-section-header">
+                <h3>Your Stats vs This Player</h3>
+              </div>
+              <div className="profile-section-body">
+                {h2hState.type === "loading" && (
+                  <p className="smallAndGray" style={{ margin: 0 }}>
+                    Loading...
+                  </p>
+                )}
+                {h2hState.type === "error" && (
+                  <p className="error-message" style={{ margin: 0 }}>
+                    {h2hState.message}
+                  </p>
+                )}
+                {h2hState.type === "empty" && (
+                  <p className="smallAndGray" style={{ margin: 0 }}>
+                    No matches against this player yet.
+                  </p>
+                )}
+                {h2hState.type === "loaded" &&
+                  (() => {
+                    const wins = h2hState.matches.filter(
+                      (m: MatchInfo) => m.result === "win",
+                    ).length;
+                    const losses = h2hState.matches.filter(
+                      (m: MatchInfo) => m.result === "loss",
+                    ).length;
+                    const total = h2hState.matches.length;
+                    const winRate = Math.round((wins / total) * 100);
+                    return (
+                      <>
+                        <div className="profile-stats-grid" style={{ marginBottom: "1rem" }}>
+                          <div className="profile-stat-chip">
+                            <div className="profile-stat-value" style={{ color: "#22c55e" }}>
+                              {wins}
+                            </div>
+                            <div className="profile-stat-label">Wins</div>
+                          </div>
+                          <div className="profile-stat-chip">
+                            <div className="profile-stat-value" style={{ color: "#ef4444" }}>
+                              {losses}
+                            </div>
+                            <div className="profile-stat-label">Losses</div>
+                          </div>
+                          <div className="profile-stat-chip">
+                            <div className="profile-stat-value">{total}</div>
+                            <div className="profile-stat-label">Games</div>
+                          </div>
+                          <div className="profile-stat-chip">
+                            <div className="profile-stat-value">{winRate}%</div>
+                            <div className="profile-stat-label">Win Rate</div>
+                          </div>
+                        </div>
+                        {h2hState.matches.slice(0, 5).map((match: MatchInfo, i: number) => {
+                          const resultColor =
+                            match.result === "win"
+                              ? "#22c55e"
+                              : match.result === "loss"
+                                ? "#ef4444"
+                                : "#9ca3af";
+                          return (
+                            <div key={i} className="profile-match-row">
+                              <span className="profile-match-game">{match.gameType}</span>
+                              <span className="profile-match-result" style={{ color: resultColor }}>
+                                {match.result}
+                              </span>
+                              <span className="profile-match-date">
+                                {new Date(match.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    );
+                  })()}
+              </div>
+            </div>
+          )}
         </div>
       );
     }

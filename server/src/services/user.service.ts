@@ -83,6 +83,7 @@ export async function createUser(
   if (disallowedUsernames.has(username)) {
     return { error: "That is not a permitted username" };
   }
+  const defaultRatings = { chess: 1000, nim: 1000, guess: 1000 };
   const id = await UserRepo.add({
     username,
     createdAt: createdAt.toISOString(),
@@ -92,7 +93,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
-    ratings: {},
+    ratings: defaultRatings,
   });
   await updateAuth(username, password, id);
   return Promise.resolve({
@@ -106,7 +107,7 @@ export async function createUser(
     favoriteGame: null,
     bio: null,
     avatarUrl: null,
-    ratings: {},
+    ratings: defaultRatings,
   });
 }
 
@@ -166,15 +167,15 @@ export async function updateRating(
   gameType: GameKey,
   opponentRating: number,
   result: "win" | "loss" | "draw",
-): Promise<{ oldLeague: League; newLeague: League } | null> {
+): Promise<{ oldRating: number; newRating: number; oldLeague: League; newLeague: League }> {
   const record = await UserRepo.get(userId);
-  const playerRating = record.ratings?.[gameType] ?? 1000;
+  const oldRating = record.ratings?.[gameType] ?? 1000;
   const actualScore = result === "win" ? 1 : result === "draw" ? 0.5 : 0;
-  const expectedScore = 1 / (1 + 10 ** ((opponentRating - playerRating) / 400));
-  const newRating = Math.round(playerRating + 32 * (actualScore - expectedScore));
-  const oldLeague = computeLeague(playerRating);
+  const expectedScore = 1 / (1 + 10 ** ((opponentRating - oldRating) / 400));
+  const newRating = Math.round(oldRating + 32 * (actualScore - expectedScore));
+  const oldLeague = computeLeague(oldRating);
   const newLeague = computeLeague(newRating);
   record.ratings = { ...record.ratings, [gameType]: newRating };
   await UserRepo.set(userId, record);
-  return oldLeague !== newLeague ? { oldLeague, newLeague } : null;
+  return { oldRating, newRating, oldLeague, newLeague };
 }

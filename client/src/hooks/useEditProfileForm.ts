@@ -19,6 +19,7 @@ export default function useEditProfileForm() {
   const [confirm, setConfirm] = useState("");
   const [bio, setBio] = useState(user.bio ?? "");
   const [err, setErr] = useState<null | string>(null);
+  const [info, setInfo] = useState<null | string>(null);
   const auth = useAuth();
 
   const handleSubmit = async (
@@ -27,6 +28,8 @@ export default function useEditProfileForm() {
     bio?: string,
   ) => {
     e.preventDefault();
+    setInfo(null);
+    setErr(null);
 
     if (
       user.display === display &&
@@ -35,7 +38,7 @@ export default function useEditProfileForm() {
       avatarUrl === (user.avatarUrl ?? null) &&
       bio === (user.bio ?? "")
     ) {
-      setErr("No changes to submit");
+      setInfo("No changes to save");
       return;
     }
 
@@ -83,6 +86,7 @@ export default function useEditProfileForm() {
     bio,
     setBio,
     err,
+    info,
     handleSubmit,
   };
 }
