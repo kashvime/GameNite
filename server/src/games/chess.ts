@@ -59,7 +59,12 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
       }
     }
 
-    const chess = new Chess(state.fen);
+    const chess = new Chess();
+    try {
+      chess.loadPgn(state.pgn || "");
+    } catch {
+      chess.load(state.fen);
+    }
     try {
       chess.move({ from: move.data.from, to: move.data.to, promotion: move.data.promotion ?? "q" });
     } catch {
@@ -100,7 +105,12 @@ export const chessLogic: GameLogic<ChessState, ChessView> = {
     const move = zChessMove.safeParse(payload);
     if (move.error) return " made a move";
     if ("resign" in move.data) return " resigned";
-    const chess = new Chess(prevState.fen);
+    const chess = new Chess();
+    try {
+      chess.loadPgn(prevState.pgn || "");
+    } catch {
+      chess.load(prevState.fen);
+    }
     try {
       const result = chess.move({
         from: move.data.from,
