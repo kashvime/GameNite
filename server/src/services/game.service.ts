@@ -291,6 +291,7 @@ async function scheduleAIMove(
         bio: null,
         avatarUrl: null,
         ratings: {},
+        hideFromGlobalLeaderboard: false,
       },
       createdAt: now,
     });

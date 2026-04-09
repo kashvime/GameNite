@@ -171,3 +171,129 @@ describe("chessLogic.describeMove", () => {
     expect(chessLogic.describeMove(state, state, { resign: true }, 0)).toBe(" resigned");
   });
 });
+
+describe("chessLogic.update - PGN fallback", () => {
+  it("falls back to FEN when PGN is invalid", () => {
+    const state: ChessState = {
+      ...baseState(),
+      pgn: "invalid pgn string!!!",
+    };
+    const result = chessLogic.update(state, { from: "e2", to: "e4" }, 0);
+    expect(result).not.toBeNull();
+    expect(result!.nextPlayer).toBe(1);
+  });
+
+  it("detects stalemate", () => {
+    const stalemateState: ChessState = {
+      ...baseState(),
+      fen: "k1K5/8/2Q5/8/8/8/8/8 w - - 0 1",
+      pgn: '[SetUp "1"][FEN "k1K5/8/2Q5/8/8/8/8/8 w - - 0 1"]',
+      nextPlayer: 0,
+    };
+    const result = chessLogic.update(stalemateState, { from: "c6", to: "b6" }, 0);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("stalemate");
+  });
+
+  it("detects draw by fifty-move rule", () => {
+    const drawState: ChessState = {
+      ...baseState(),
+      fen: "k7/8/1K6/8/8/8/8/8 w - - 99 1",
+      pgn: '[SetUp "1"][FEN "k7/8/1K6/8/8/8/8/8 w - - 99 1"]',
+      nextPlayer: 0,
+    };
+    const result = chessLogic.update(drawState, { from: "b6", to: "b5" }, 0);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("draw");
+  });
+});
+
+describe("chessLogic.describeMove - fallback", () => {
+  it("falls back to FEN when PGN is invalid in describeMove", () => {
+    const state: ChessState = {
+      ...baseState(),
+      pgn: "invalid pgn!!!",
+    };
+    const result = chessLogic.describeMove(state, state, { from: "e2", to: "e4" }, 0);
+    expect(result).toBe(" played e4");
+  });
+
+  it("returns fallback when move is illegal in describeMove", () => {
+    const state = baseState();
+    const result = chessLogic.describeMove(state, state, { from: "e2", to: "e1" }, 0);
+    expect(result).toBe(" made a move");
+  });
+});
+
+describe("chessLogic.update - additional branches", () => {
+  it("handles null lastMoveAt gracefully", () => {
+    const state: ChessState = {
+      ...baseState(),
+      lastMoveAt: null,
+    };
+    const result = chessLogic.update(state, { from: "e2", to: "e4" }, 0);
+    expect(result).not.toBeNull();
+  });
+
+  it("deducts time but does not timeout when time remains", () => {
+    const state: ChessState = {
+      ...baseState(),
+      timeControl: 5,
+      timeRemaining: [300000, 300000],
+      lastMoveAt: Date.now() - 1000, // 1 second ago
+    };
+    const result = chessLogic.update(state, { from: "e2", to: "e4" }, 0);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("active");
+    expect(result!.timeRemaining[0]).toBeLessThan(300000);
+  });
+});
+
+describe("chessLogic.winner - additional branches", () => {
+  it("returns player 0 as winner when player 1 is checkmated", () => {
+    // nextPlayer after checkmate is the player who just got mated (loser)
+    // so winner = opposite of nextPlayer
+    const state = { ...baseState(), status: "checkmate" as const, nextPlayer: 1 as const };
+    expect(chessLogic.winner(state)).toBe(0);
+  });
+});
+
+describe("chessLogic.describeMove - empty pgn", () => {
+  it("handles empty pgn string in describeMove", () => {
+    const state: ChessState = {
+      ...baseState(),
+      pgn: "",
+    };
+    const result = chessLogic.describeMove(state, state, { from: "e2", to: "e4" }, 0);
+    expect(result).toBe(" played e4");
+  });
+});
+
+describe("chessLogic.update - timeout for player 1", () => {
+  it("handles timeout for player 1 (black)", () => {
+    const s1 = chessLogic.update(baseState(), { from: "e2", to: "e4" }, 0)!;
+    const state: ChessState = {
+      ...s1,
+      timeControl: 5,
+      timeRemaining: [300000, 1],
+      lastMoveAt: Date.now() - 5000,
+    };
+    const result = chessLogic.update(state, { from: "e7", to: "e5" }, 1);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("timeout");
+    expect(result!.nextPlayer).toBe(0);
+  });
+});
+
+describe("chessLogic.update - loadPgn catch branch", () => {
+  it("falls back to FEN load when pgn causes chess.js to throw", () => {
+    const state: ChessState = {
+      ...baseState(),
+      pgn: "1. INVALID !!!! @@@",
+      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    };
+    const result = chessLogic.update(state, { from: "e2", to: "e4" }, 0);
+    expect(result).not.toBeNull();
+    expect(result!.nextPlayer).toBe(1);
+  });
+});

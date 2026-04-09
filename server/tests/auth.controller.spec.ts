@@ -36,6 +36,7 @@ const fakeUser: SafeUserInfo = {
   bio: null,
   avatarUrl: null,
   ratings: {},
+  hideFromGlobalLeaderboard: false,
 };
 
 afterEach(() => {
