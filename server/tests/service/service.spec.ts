@@ -326,3 +326,18 @@ describe("populateSafeUserInfo - user with no games", () => {
     expect(result.totalGamesPlayed).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe("populateSafeUserInfo - winRate zero branch", () => {
+  it("returns 0 winRate and null favoriteGame for user with no matches", async () => {
+    const repo = await import("../../src/repository.ts");
+    const newUserId = "test-no-games-user";
+    await repo.UserRepo.set(newUserId, {
+      username: "testnosgames",
+      passwordHash: "x",
+      createdAt: new Date().toISOString(),
+    });
+    const result = await populateSafeUserInfo(newUserId);
+    expect(result.winRate).toBe(0);
+    expect(result.favoriteGame).toBeNull();
+  });
+});
