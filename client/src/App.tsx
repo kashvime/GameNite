@@ -27,6 +27,7 @@ import Messages from "./pages/Messages.tsx";
 import { jwtDecode } from "jwt-decode";
 import type { SafeUserInfo } from "@gamenite/shared";
 import { clearStoredAuthToken, getStoredAuthToken } from "./util/authToken.ts";
+import { getUserById } from "./services/userService.ts";
 
 /** If `true`, all incoming socket messages will be logged */
 const DEBUG_SOCKETS = false;
@@ -59,35 +60,51 @@ export default function App() {
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
+    let cancelled = false;
+
+    const finishLoading = () => {
+      if (!cancelled) setLoading(false);
+    };
+
     const token = getStoredAuthToken();
-
-    if (token) {
-      try {
-        const decoded = jwtDecode<SafeUserInfo>(token);
-
-        // Fetch full user data to get avatarUrl and other fields
-        fetch(`/api/user/${encodeURIComponent(decoded.username)}`)
-          .then((res) => res.json())
-          .then((user: SafeUserInfo) => {
-            queueMicrotask(() => {
-              setAuth({
-                user,
-                pass: token,
-                reset: () => {
-                  setAuth(null);
-                  clearStoredAuthToken();
-                },
-                updateUser: (newUser) => {
-                  setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
-                },
-              });
-            });
-          });
-      } catch {
-        clearStoredAuthToken();
-      }
+    if (!token) {
+      finishLoading();
+      return () => {
+        cancelled = true;
+      };
     }
-    queueMicrotask(() => setLoading(false));
+
+    try {
+      const decoded = jwtDecode<{ username: string }>(token);
+      void (async () => {
+        const loaded = await getUserById(decoded.username);
+        if (cancelled) return;
+        if ("error" in loaded) {
+          clearStoredAuthToken();
+          finishLoading();
+          return;
+        }
+        setAuth({
+          user: loaded,
+          pass: token,
+          reset: () => {
+            setAuth(null);
+            clearStoredAuthToken();
+          },
+          updateUser: (newUser) => {
+            setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
+          },
+        });
+        finishLoading();
+      })();
+    } catch {
+      clearStoredAuthToken();
+      finishLoading();
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {
