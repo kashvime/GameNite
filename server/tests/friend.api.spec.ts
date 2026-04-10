@@ -27,6 +27,15 @@ describe("POST /api/friend/request", () => {
     expect(response.status).toBe(401);
   });
 
+  it("returns 400 when user is not found in db", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ toUsername: "user2" });
+    expect(response.status).toBe(400);
+  });
+
   it("succeeds when sending a valid friend request", async () => {
     response = await supertest(app)
       .post("/api/friend/request")
@@ -72,6 +81,15 @@ describe("POST /api/friend/respond", () => {
     expect(response.status).toBe(401);
   });
 
+  it("returns 400 when user is not found in db", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post("/api/friend/respond")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ requestId: "someid", accept: true });
+    expect(response.status).toBe(400);
+  });
+
   it("returns 400 for invalid request id", async () => {
     response = await supertest(app)
       .post("/api/friend/respond")
@@ -108,6 +126,15 @@ describe("POST /api/friend/pending", () => {
     expect(response.status).toBe(401);
   });
 
+  it("returns 400 when user is not found in db", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post("/api/friend/pending")
+      .set("Authorization", `Bearer ${token}`)
+      .send({});
+    expect(response.status).toBe(400);
+  });
+
   it("returns pending requests for authenticated user", async () => {
     response = await supertest(app)
       .post("/api/friend/pending")
@@ -122,6 +149,15 @@ describe("POST /api/friend/list", () => {
   it("returns 401 with no auth", async () => {
     response = await supertest(app).post("/api/friend/list").send({});
     expect(response.status).toBe(401);
+  });
+
+  it("returns 400 when user is not found in db", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post("/api/friend/list")
+      .set("Authorization", `Bearer ${token}`)
+      .send({});
+    expect(response.status).toBe(400);
   });
 
   it("returns friends list for authenticated user", async () => {
@@ -146,6 +182,15 @@ describe("POST /api/friend/status", () => {
   it("returns 401 with no auth", async () => {
     response = await supertest(app).post("/api/friend/status").send({ toUsername: "user2" });
     expect(response.status).toBe(401);
+  });
+
+  it("returns 400 when user is not found in db", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post("/api/friend/status")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ toUsername: "user2" });
+    expect(response.status).toBe(400);
   });
 
   it("returns 404 for nonexistent user", async () => {

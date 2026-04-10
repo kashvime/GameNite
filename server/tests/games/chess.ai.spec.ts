@@ -89,6 +89,13 @@ describe("getAIMove", () => {
     }
   });
 
+  it("returns 0 evaluation for a drawn position", () => {
+    // Insufficient material — just two kings
+    const drawFen = "4k3/8/8/8/8/8/8/4K3 w - - 0 1";
+    const move = getAIMove(drawFen, "medium");
+    expect(isRegularMove(move)).toBe(true);
+  });
+
   it("finds a strong move on medium/hard (should not hang pieces)", () => {
     const fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
     const move = getAIMove(fen, "medium");
