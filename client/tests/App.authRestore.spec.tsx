@@ -79,26 +79,26 @@ describe("App session restore", () => {
     sessionStorage.setItem("token", fakeJwtForUsername("user1"));
     const view = render(<App />);
 
-    expect(view.getByText("Loading...")).toBeInTheDocument();
-    expect(view.queryByText(/Welcome back!/i)).not.toBeInTheDocument();
+    expect(view.getByText("Loading...")).not.toBeNull();
+    expect(view.queryByText(/Welcome back!/i)).toBeNull();
 
     resolveUser(mockUser);
 
     await waitFor(() => {
-      expect(view.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(view.queryByText("Loading...")).toBeNull();
     });
 
-    expect(view.queryByText(/Welcome back!/i)).not.toBeInTheDocument();
-    expect(view.getByText(/Recent games/i)).toBeInTheDocument();
+    expect(view.queryByText(/Welcome back!/i)).toBeNull();
+    expect(view.getByText(/Recent games/i)).not.toBeNull();
   });
 
   it("shows login when there is no stored token", async () => {
     const view = render(<App />);
 
     await waitFor(() => {
-      expect(view.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(view.queryByText("Loading...")).toBeNull();
     });
 
-    expect(view.getByText(/Welcome back!/i)).toBeInTheDocument();
+    expect(view.getByText(/Welcome back!/i)).not.toBeNull();
   });
 });
