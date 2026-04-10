@@ -20,7 +20,9 @@ function getJwtUser(req: Request): JwtUser | undefined {
  * chronological order by creation.
  */
 export const getList: RestAPI<ThreadSummary[]> = async (req, res) => {
-  res.send(await getThreadSummaries());
+  const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+  const threads = await getThreadSummaries();
+  res.send(limit ? threads.slice(0, limit) : threads);
 };
 
 /**

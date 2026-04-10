@@ -79,13 +79,13 @@ export async function getThreadById(possibleThreadId: string): Promise<ThreadInf
  *
  * @returns a list of thread summaries, ordered reverse chronologically by creation date
  */
-export async function getThreadSummaries(): Promise<ThreadSummary[]> {
+export async function getThreadSummaries(limit?: number): Promise<ThreadSummary[]> {
   const keys = await ThreadRepo.getAllKeys();
   const unsorted = await Promise.all(keys.map(populateThreadSummary));
-
-  return unsorted.toSorted(
+  const sorted = unsorted.toSorted(
     (thread1, thread2) => thread2.createdAt.getTime() - thread1.createdAt.getTime(),
   );
+  return limit ? sorted.slice(0, limit) : sorted;
 }
 
 /**

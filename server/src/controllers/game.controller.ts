@@ -125,7 +125,9 @@ export const getById: RestAPI<GameInfo, { id: string }> = async (req, res) => {
 };
 
 export const getList: RestAPI<GameInfo[]> = async (req, res) => {
-  res.send(await getGames());
+  const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+  const games = await getGames();
+  res.send(limit ? games.slice(0, limit) : games);
 };
 
 function userRoom(gameId: string, user: string) {

@@ -13,9 +13,11 @@ const THREAD_API_URL = `/api/thread`;
 /**
  * Sends a GET request to get all threads
  */
-export const threadList = async (): APIResponse<ThreadSummary[]> => {
+export const threadList = async (limit?: number): APIResponse<ThreadSummary[]> => {
   try {
-    const res = await api.get<ThreadSummary[] | ErrorMsg>(`${THREAD_API_URL}/list`);
+    const res = await api.get<ThreadSummary[] | ErrorMsg>(`${THREAD_API_URL}/list`, {
+      params: limit ? { limit } : {},
+    });
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);

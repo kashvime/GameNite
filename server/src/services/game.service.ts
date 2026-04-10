@@ -149,7 +149,7 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
     throw new Error(`user ${user.username} starting underpopulated game`);
   if (!game.players.some((userId) => userId === user.userId))
     throw new Error(`user ${user.username} starting game they're not in`);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   const options = game.timeControl ? { timeControl: game.timeControl } : undefined;
   const { state, views } = gameServices[key].create(game.players, options);
   game.state = state;
@@ -164,12 +164,13 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
  *
  * @returns a list of game summaries, ordered reverse chronologically
  */
-export async function getGames(): Promise<GameInfo[]> {
+export async function getGames(limit?: number): Promise<GameInfo[]> {
   const keys = await GameRepo.getAllKeys();
   const unsorted = await Promise.all(keys.map(populateGameInfo));
-  return unsorted
+  const sorted = unsorted
     .filter((game) => game.visibility === "public")
     .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  return limit ? sorted.slice(0, limit) : sorted;
 }
 
 /**

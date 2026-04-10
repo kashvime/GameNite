@@ -51,9 +51,11 @@ export const getGameById = async (gameId: string): APIResponse<GameInfo> => {
 /**
  * Sends a GET request for all games
  */
-export const gameList = async (): APIResponse<GameInfo[]> => {
+export const gameList = async (limit?: number): APIResponse<GameInfo[]> => {
   try {
-    const res = await api.get<GameInfo[] | ErrorMsg>(`${GAME_API_URL}/list`);
+    const res = await api.get<GameInfo[] | ErrorMsg>(`${GAME_API_URL}/list`, {
+      params: limit ? { limit } : {},
+    });
     return res.data;
   } catch (error) {
     return exceptionToErrorMsg(error);
