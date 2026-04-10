@@ -17,8 +17,7 @@ import type { GameKey } from "./index.ts";
  */
 
 export interface SafeUserInfo {
-  userId: string; // 🔥 ADD THIS
-
+  userId: string;
   username: string;
   display: string;
   createdAt: Date;
@@ -29,6 +28,7 @@ export interface SafeUserInfo {
   bio: string | null;
   avatarUrl: string | null;
   ratings: Partial<Record<GameKey, number>>;
+  hideFromGlobalLeaderboard?: boolean;
 }
 
 /*** TYPES USED IN THE USER API ***/
