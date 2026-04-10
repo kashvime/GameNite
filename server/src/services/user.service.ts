@@ -194,7 +194,7 @@ export async function updateRating(
   gameType: GameKey,
   opponentRating: number,
   result: "win" | "loss" | "draw",
-): Promise<{ oldRating: number; newRating: number; oldLeague: League; newLeague: League }> {
+): Promise<{ oldRating: number; newRating: number; oldLeague: League; newLeague: League } | null> {
   const record = await UserRepo.get(userId);
   const oldRating = record.ratings?.[gameType] ?? 1000;
   const actualScore = result === "win" ? 1 : result === "draw" ? 0.5 : 0;
@@ -204,9 +204,9 @@ export async function updateRating(
   const newLeague = computeLeague(newRating);
   record.ratings = { ...record.ratings, [gameType]: newRating };
   await UserRepo.set(userId, record);
+  if (oldLeague === newLeague) return null; // ← add this
   return { oldRating, newRating, oldLeague, newLeague };
 }
-
 /**
  * Sets the online status for a user in the database.
  *
@@ -217,6 +217,7 @@ export async function setOnlineStatus(
   userId: string,
   status: "online" | "offline" | "in_match",
 ): Promise<void> {
+  if (userId === "AI_OPPONENT") return;
   const record = await UserRepo.get(userId);
   record.onlineStatus = status;
   await UserRepo.set(userId, record);

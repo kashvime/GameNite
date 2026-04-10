@@ -217,7 +217,7 @@ export async function updateGame(
   if (result.done) {
     await handleGameOver(game, gameId, result, leagueChanges, io);
   } else if (game.gameMode === "ai" && game.type === "chess" && io) {
-    // Fire-and-forget: don't await so the human's move response isn't delayed
+    // Fire-and-forget, don't await so the human's move response isn't delayed
     void scheduleAIMove(gameId, game.state as ChessState, game.aiDifficulty ?? "medium", io);
   }
 
@@ -333,8 +333,13 @@ async function handleGameOver(
       updateRating(humanPlayers[0], game.type, rating1, result0),
       updateRating(humanPlayers[1], game.type, rating0, result1),
     ]);
-    const delta0 = change0.newRating - change0.oldRating;
-    const delta1 = change1.newRating - change1.oldRating;
+
+    // updateRating returns null when the league didn't change; fall back to the
+    // pre-match ratings so deltas and socket payloads are still accurate.
+    const newRating0 = change0?.newRating ?? rating0;
+    const newRating1 = change1?.newRating ?? rating1;
+    const delta0 = newRating0 - rating0;
+    const delta1 = newRating1 - rating1;
 
     await saveMatchRecords(
       game.players,
@@ -348,13 +353,13 @@ async function handleGameOver(
       { [humanPlayers[0]]: delta0, [humanPlayers[1]]: delta1 },
     );
 
-    if (change0.oldLeague !== change0.newLeague)
+    if (change0 && change0.oldLeague !== change0.newLeague)
       leagueChanges.push({
         userId: humanPlayers[0],
         oldLeague: change0.oldLeague,
         newLeague: change0.newLeague,
       });
-    if (change1.oldLeague !== change1.newLeague)
+    if (change1 && change1.oldLeague !== change1.newLeague)
       leagueChanges.push({
         userId: humanPlayers[1],
         oldLeague: change1.oldLeague,
@@ -368,16 +373,16 @@ async function handleGameOver(
             userId: humanPlayers[0],
             username: player0.username,
             display: player0.display,
-            oldRating: change0.oldRating,
-            newRating: change0.newRating,
+            oldRating: rating0,
+            newRating: newRating0,
             delta: delta0,
           },
           {
             userId: humanPlayers[1],
             username: player1.username,
             display: player1.display,
-            oldRating: change1.oldRating,
-            newRating: change1.newRating,
+            oldRating: rating1,
+            newRating: newRating1,
             delta: delta1,
           },
         ],
