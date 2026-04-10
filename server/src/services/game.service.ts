@@ -8,7 +8,7 @@ import {
   type ChessState,
 } from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
-import { populateSafeUserInfo, updateRating } from "./user.service.ts";
+import { populateSafeUserInfo, updateRating, setOnlineStatus } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
 import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
@@ -153,6 +153,8 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
   const { state, views } = gameServices[key].create(game.players, options);
   game.state = state;
   await GameRepo.set(gameId, game);
+  await Promise.all(game.players.map((id) => setOnlineStatus(id, "in_match")));
+
   return Promise.resolve(views);
 }
 
@@ -392,6 +394,8 @@ async function handleGameOver(
       game.visibility ?? "public",
     );
   }
+await Promise.all(humanPlayers.map((id) => setOnlineStatus(id, "online")));
+
 }
 
 /**

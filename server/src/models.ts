@@ -140,6 +140,7 @@ export interface UserRecord {
   avatarUrl?: string | null;
   hideFromGlobalLeaderboard?: boolean;
   ratings?: Partial<Record<GameKey, number>>;
+  onlineStatus?: "online" | "offline" | "in_match";
 }
 
 /**
