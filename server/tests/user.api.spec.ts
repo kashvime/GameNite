@@ -20,9 +20,10 @@ const user1 = {
   totalGamesPlayed: 0,
   winRate: 0,
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 const user2 = {
   userId: expect.any(String),
@@ -32,9 +33,10 @@ const user2 = {
   totalGamesPlayed: 0,
   winRate: 0,
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 
 describe("GET /api/user/:id", () => {
@@ -147,6 +149,23 @@ describe("POST /api/user/:username", () => {
       createdAt: expect.anything(),
     });
   });
+
+  it("should update hideFromGlobalLeaderboard", async () => {
+    response = await supertest(app)
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ hideFromGlobalLeaderboard: true });
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      ...user1,
+      hideFromGlobalLeaderboard: true,
+      createdAt: expect.anything(),
+    });
+
+    response = await supertest(app).get("/api/user/user1");
+    expect(response.status).toBe(200);
+    expect(response.body.hideFromGlobalLeaderboard).toBe(true);
+  });
 });
 
 describe("POST /api/user/signup", () => {
@@ -165,9 +184,10 @@ describe("POST /api/user/signup", () => {
       totalGamesPlayed: 0,
       winRate: 0,
       favoriteGame: null,
+      hideFromGlobalLeaderboard: false,
       bio: null,
       avatarUrl: null,
-      ratings: {},
+      ratings: { chess: 1000, nim: 1000, guess: 1000 },
       token: expect.any(String),
     });
   });

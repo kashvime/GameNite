@@ -18,7 +18,11 @@ export default function useEditProfileForm() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [bio, setBio] = useState(user.bio ?? "");
+  const [hideFromGlobalLeaderboard, setHideFromGlobalLeaderboard] = useState(
+    user.hideFromGlobalLeaderboard ?? false,
+  );
   const [err, setErr] = useState<null | string>(null);
+  const [info, setInfo] = useState<null | string>(null);
   const auth = useAuth();
 
   const handleSubmit = async (
@@ -27,15 +31,18 @@ export default function useEditProfileForm() {
     bio?: string,
   ) => {
     e.preventDefault();
+    setInfo(null);
+    setErr(null);
 
     if (
       user.display === display &&
       password === confirm &&
       password === "" &&
       avatarUrl === (user.avatarUrl ?? null) &&
-      bio === (user.bio ?? "")
+      bio === (user.bio ?? "") &&
+      hideFromGlobalLeaderboard === (user.hideFromGlobalLeaderboard ?? false)
     ) {
-      setErr("No changes to submit");
+      setInfo("No changes to save");
       return;
     }
 
@@ -64,6 +71,9 @@ export default function useEditProfileForm() {
     if (password !== "") updates.password = password;
     if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl ?? undefined;
     if (bio !== undefined && bio !== (user.bio ?? "")) updates.bio = bio;
+    if (hideFromGlobalLeaderboard !== (user.hideFromGlobalLeaderboard ?? false)) {
+      updates.hideFromGlobalLeaderboard = hideFromGlobalLeaderboard;
+    }
     const response = await updateUser(auth, updates);
     if ("error" in response) {
       setErr(response.error);
@@ -71,6 +81,7 @@ export default function useEditProfileForm() {
     }
 
     updateUserContext(response);
+    setInfo("Profile saved successfully");
   };
 
   return {
@@ -82,7 +93,10 @@ export default function useEditProfileForm() {
     setConfirm,
     bio,
     setBio,
+    hideFromGlobalLeaderboard,
+    setHideFromGlobalLeaderboard,
     err,
+    info,
     handleSubmit,
   };
 }

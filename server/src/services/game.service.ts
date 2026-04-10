@@ -8,7 +8,7 @@ import {
   type ChessState,
 } from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
-import { populateSafeUserInfo, updateRating } from "./user.service.ts";
+import { populateSafeUserInfo, updateRating, setOnlineStatus } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
 import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
@@ -154,6 +154,8 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
   const { state, views } = gameServices[key].create(game.players, options);
   game.state = state;
   await GameRepo.set(gameId, game);
+  await Promise.all(game.players.map((id) => setOnlineStatus(id, "in_match")));
+
   return Promise.resolve(views);
 }
 
@@ -292,6 +294,7 @@ async function scheduleAIMove(
         bio: null,
         avatarUrl: null,
         ratings: {},
+        hideFromGlobalLeaderboard: false,
       },
       createdAt: now,
     });
@@ -313,32 +316,87 @@ async function handleGameOver(
   leagueChanges: { userId: string; oldLeague: League; newLeague: League }[],
   io?: GameServer,
 ) {
-  await saveMatchRecords(
-    game.players,
-    game.type,
-    gameId,
-    result.winner,
-    new Date(),
-    undefined,
-    io,
-    game.visibility ?? "public",
-  );
-  if (game.players.length === 2) {
+  const humanPlayers = game.players.filter((id) => id !== "AI_OPPONENT");
+
+  if (humanPlayers.length === 2) {
     const [player0, player1] = await Promise.all([
-      UserRepo.get(game.players[0]),
-      UserRepo.get(game.players[1]),
+      UserRepo.get(humanPlayers[0]),
+      UserRepo.get(humanPlayers[1]),
     ]);
+    const idx0 = game.players.indexOf(humanPlayers[0]);
+    const idx1 = game.players.indexOf(humanPlayers[1]);
     const rating0 = player0.ratings?.[game.type] ?? 1000;
     const rating1 = player1.ratings?.[game.type] ?? 1000;
-    const result0 = result.winner === null ? "draw" : result.winner === 0 ? "win" : "loss";
-    const result1 = result.winner === null ? "draw" : result.winner === 1 ? "win" : "loss";
+    const result0 = result.winner === null ? "draw" : result.winner === idx0 ? "win" : "loss";
+    const result1 = result.winner === null ? "draw" : result.winner === idx1 ? "win" : "loss";
     const [change0, change1] = await Promise.all([
-      updateRating(game.players[0], game.type, rating1, result0),
-      updateRating(game.players[1], game.type, rating0, result1),
+      updateRating(humanPlayers[0], game.type, rating1, result0),
+      updateRating(humanPlayers[1], game.type, rating0, result1),
     ]);
-    if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
-    if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });
+    const delta0 = change0.newRating - change0.oldRating;
+    const delta1 = change1.newRating - change1.oldRating;
+
+    await saveMatchRecords(
+      game.players,
+      game.type,
+      gameId,
+      result.winner,
+      new Date(),
+      undefined,
+      io,
+      game.visibility ?? "public",
+      { [humanPlayers[0]]: delta0, [humanPlayers[1]]: delta1 },
+    );
+
+    if (change0.oldLeague !== change0.newLeague)
+      leagueChanges.push({
+        userId: humanPlayers[0],
+        oldLeague: change0.oldLeague,
+        newLeague: change0.newLeague,
+      });
+    if (change1.oldLeague !== change1.newLeague)
+      leagueChanges.push({
+        userId: humanPlayers[1],
+        oldLeague: change1.oldLeague,
+        newLeague: change1.newLeague,
+      });
+
+    if (io) {
+      io.to(gameId).emit("gameRatingUpdated", {
+        changes: [
+          {
+            userId: humanPlayers[0],
+            username: player0.username,
+            display: player0.display,
+            oldRating: change0.oldRating,
+            newRating: change0.newRating,
+            delta: delta0,
+          },
+          {
+            userId: humanPlayers[1],
+            username: player1.username,
+            display: player1.display,
+            oldRating: change1.oldRating,
+            newRating: change1.newRating,
+            delta: delta1,
+          },
+        ],
+      });
+    }
+  } else {
+    await saveMatchRecords(
+      game.players,
+      game.type,
+      gameId,
+      result.winner,
+      new Date(),
+      undefined,
+      io,
+      game.visibility ?? "public",
+    );
   }
+await Promise.all(humanPlayers.map((id) => setOnlineStatus(id, "online")));
+
 }
 
 /**
