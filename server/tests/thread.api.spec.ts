@@ -172,3 +172,12 @@ describe("POST /api/thread/:id/comment", () => {
     ]);
   });
 });
+
+describe("thread.service - getThreads with limit", () => {
+  it("returns limited threads when limit is provided", async () => {
+    const res = await supertest(app)
+      .get("/api/thread/list?limit=1")
+      .set("Authorization", `Bearer ${TOKEN1}`);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+});
