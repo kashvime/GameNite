@@ -17,6 +17,22 @@ const disallowedUsernames = new Set(["login", "signup", "list"]);
  * @returns the found user object (without the password).
  */
 export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo> {
+  // Return a fake profile for the AI player without hitting the database
+  if (userId === "AI_OPPONENT") {
+    return {
+      userId: "AI_OPPONENT",
+      username: "Computer",
+      display: "Computer",
+      createdAt: new Date(0),
+      onlineStatus: "online",
+      totalGamesPlayed: 0,
+      winRate: 0,
+      favoriteGame: "chess",
+      bio: null,
+      avatarUrl: null,
+      ratings: {},
+    };
+  }
   const record = await UserRepo.get(userId);
 
   // Calculate real stats from match history
@@ -35,22 +51,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
   }
   const favoriteGame =
     totalGamesPlayed > 0 ? Object.entries(gameCounts).sort((a, b) => b[1] - a[1])[0][0] : null;
-  // Return a fake profile for the AI player without hitting the database
-  if (userId === "AI_OPPONENT") {
-    return {
-      userId: "AI_OPPONENT",
-      username: "Computer",
-      display: "Computer",
-      createdAt: new Date(0),
-      onlineStatus: "online",
-      totalGamesPlayed: 0,
-      winRate: 0,
-      favoriteGame: "chess",
-      bio: null,
-      avatarUrl: null,
-      ratings: {},
-    };
-  }
+
   return {
     userId,
     username: record.username,

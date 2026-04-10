@@ -149,6 +149,7 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
     throw new Error(`user ${user.username} starting underpopulated game`);
   if (!game.players.some((userId) => userId === user.userId))
     throw new Error(`user ${user.username} starting game they're not in`);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const options = game.timeControl ? { timeControl: game.timeControl } : undefined;
   const { state, views } = gameServices[key].create(game.players, options);
   game.state = state;

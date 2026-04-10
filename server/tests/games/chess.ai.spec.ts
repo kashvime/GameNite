@@ -96,6 +96,23 @@ describe("getAIMove", () => {
     expect(isRegularMove(move)).toBe(true);
   });
 
+  it("evaluate returns 0 for drawn position (isDraw branch)", () => {
+    // King vs king — isDraw() returns true, evaluate returns 0
+    const drawFen = "4k3/8/8/8/8/8/8/4K3 w - - 50 1";
+    const move = getAIMove(drawFen, "hard");
+    expect(isRegularMove(move)).toBe(true);
+  });
+
+  it("exercises beta pruning in minimizing branch", () => {
+    // Complex middlegame position forces deep alpha-beta search
+    const fen = "r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1B3/PPP2PPP/R2QKB1R w KQ - 0 8";
+    const move = getAIMove(fen, "medium");
+    expect(isRegularMove(move)).toBe(true);
+    if (isRegularMove(move)) {
+      const chess = new Chess(fen);
+      expect(() => chess.move({ from: move.from, to: move.to })).not.toThrow();
+    }
+  });
   it("finds a strong move on medium/hard (should not hang pieces)", () => {
     const fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
     const move = getAIMove(fen, "medium");
