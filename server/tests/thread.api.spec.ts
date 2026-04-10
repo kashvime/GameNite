@@ -181,3 +181,14 @@ describe("thread.service - getThreads with limit", () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 });
+
+import { getThreadSummaries } from "../src/services/thread.service.ts";
+
+describe("thread.service - direct limit test", () => {
+  it("returns sliced results when limit is provided", async () => {
+    const all = await getThreadSummaries();
+    const limited = await getThreadSummaries(1);
+    expect(limited.length).toBeLessThanOrEqual(1);
+    expect(limited.length).toBeLessThanOrEqual(all.length);
+  });
+});
