@@ -24,8 +24,18 @@ export interface SocketData {
   userId?: string;
 }
 
-export type GameServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
-export type GameServerSocket = Socket<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
+export type GameServer = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  Record<string, never>,
+  SocketData
+>;
+export type GameServerSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  Record<string, never>,
+  SocketData
+>;
 
 export interface GameViewUpdates {
   watchers: TaggedGameView;
