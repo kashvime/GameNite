@@ -52,6 +52,14 @@ describe("POST /api/friend/request", () => {
     expect(response.status).toBe(400);
   });
 
+  it("returns 400 when sending a request to yourself", async () => {
+    response = await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${TOKEN1}`)
+      .send({ toUsername: "user1" });
+    expect(response.status).toBe(400);
+  });
+
   it("returns 400 when sending duplicate request", async () => {
     await supertest(app)
       .post("/api/friend/request")
@@ -61,6 +69,18 @@ describe("POST /api/friend/request", () => {
       .post("/api/friend/request")
       .set("Authorization", `Bearer ${TOKEN1}`)
       .send({ toUsername: "user3" });
+    expect(response.status).toBe(400);
+  });
+
+  it("returns 400 when a reverse request already exists", async () => {
+    await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({ toUsername: "user1" });
+    response = await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${TOKEN1}`)
+      .send({ toUsername: "user2" });
     expect(response.status).toBe(400);
   });
 });
@@ -98,25 +118,76 @@ describe("POST /api/friend/respond", () => {
     expect(response.status).toBe(400);
   });
 
-  it("accepts a friend request successfully", async () => {
-    // Send request first
+  it("returns 400 when the responding user is not the intended recipient", async () => {
     await supertest(app)
       .post("/api/friend/request")
-      .set("Authorization", `Bearer ${TOKEN3}`)
+      .set("Authorization", `Bearer ${TOKEN1}`)
       .send({ toUsername: "user2" });
-
-    // Get pending requests to find the requestId
     const pendingRes = await supertest(app)
       .post("/api/friend/pending")
       .set("Authorization", `Bearer ${TOKEN2}`)
       .send({});
     const requestId = pendingRes.body[0]?.requestId;
+    response = await supertest(app)
+      .post("/api/friend/respond")
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ requestId, accept: true });
+    expect(response.status).toBe(400);
+  });
 
+  it("accepts a friend request successfully", async () => {
+    await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ toUsername: "user2" });
+    const pendingRes = await supertest(app)
+      .post("/api/friend/pending")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({});
+    const requestId = pendingRes.body[0]?.requestId;
     response = await supertest(app)
       .post("/api/friend/respond")
       .set("Authorization", `Bearer ${TOKEN2}`)
       .send({ requestId, accept: true });
     expect(response.status).toBe(200);
+  });
+
+  it("rejects a friend request successfully", async () => {
+    await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${TOKEN1}`)
+      .send({ toUsername: "user2" });
+    const pendingRes = await supertest(app)
+      .post("/api/friend/pending")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({});
+    const requestId = pendingRes.body[0]?.requestId;
+    response = await supertest(app)
+      .post("/api/friend/respond")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({ requestId, accept: false });
+    expect(response.status).toBe(200);
+  });
+
+  it("returns 400 when the request is no longer pending", async () => {
+    await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${TOKEN1}`)
+      .send({ toUsername: "user2" });
+    const pendingRes = await supertest(app)
+      .post("/api/friend/pending")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({});
+    const requestId = pendingRes.body[0]?.requestId;
+    await supertest(app)
+      .post("/api/friend/respond")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({ requestId, accept: true });
+    response = await supertest(app)
+      .post("/api/friend/respond")
+      .set("Authorization", `Bearer ${TOKEN2}`)
+      .send({ requestId, accept: false });
+    expect(response.status).toBe(400);
   });
 });
 
