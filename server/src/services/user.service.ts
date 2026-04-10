@@ -41,7 +41,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
     username: record.username,
     display: record.display,
     createdAt: new Date(record.createdAt),
-    onlineStatus: "online",
+    onlineStatus: record.onlineStatus ?? "offline",
     totalGamesPlayed,
     winRate,
     favoriteGame,
@@ -78,6 +78,7 @@ export async function createUser(
     bio: null,
     avatarUrl: null,
     ratings: {},
+    onlineStatus: "online",
   });
   await updateAuth(username, password, id);
   return Promise.resolve({
@@ -162,4 +163,19 @@ export async function updateRating(
   record.ratings = { ...record.ratings, [gameType]: newRating };
   await UserRepo.set(userId, record);
   return oldLeague !== newLeague ? { oldLeague, newLeague } : null;
+}
+
+/**
+ * Sets the online status for a user in the database.
+ *
+ * @param userId - The user to update
+ * @param status - The new status ("online", "offline", or "in_match")
+ */
+export async function setOnlineStatus(
+  userId: string,
+  status: "online" | "offline" | "in_match",
+): Promise<void> {
+  const record = await UserRepo.get(userId);
+  record.onlineStatus = status;
+  await UserRepo.set(userId, record);
 }

@@ -1,6 +1,6 @@
 import { type GameInfo, type GameKey, type League, type TaggedGameView } from "@gamenite/shared";
 import { createChat } from "./chat.service.ts";
-import { populateSafeUserInfo, updateRating } from "./user.service.ts";
+import { populateSafeUserInfo, updateRating, setOnlineStatus } from "./user.service.ts";
 import { type GameServicer } from "../games/gameServiceManager.ts";
 import { nimGameService } from "../games/nim.ts";
 import { guessGameService } from "../games/guess.ts";
@@ -139,6 +139,7 @@ export async function startGame(gameId: string, user: UserWithId): Promise<GameV
 
   game.state = state;
   await GameRepo.set(gameId, game);
+  await Promise.all(game.players.map((id) => setOnlineStatus(id, "in_match")));
 
   return Promise.resolve(views);
 }
@@ -226,6 +227,7 @@ export async function updateGame(
       if (change0) leagueChanges.push({ userId: game.players[0], ...change0 });
       if (change1) leagueChanges.push({ userId: game.players[1], ...change1 });
     }
+    await Promise.all(game.players.map((id) => setOnlineStatus(id, "online")));
   }
 
   return {

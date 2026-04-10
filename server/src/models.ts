@@ -135,6 +135,7 @@ export interface UserRecord {
   bio?: string | null;
   avatarUrl?: string | null;
   ratings?: Partial<Record<GameKey, number>>;
+  onlineStatus?: "online" | "offline" | "in_match";
 }
 
 /**

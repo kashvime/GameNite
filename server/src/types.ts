@@ -16,8 +16,16 @@ export type RestAPI<R = unknown, P = { [key: string]: string }> = (
   res: Response<R | { error: string }>,
 ) => Promise<void>;
 
-export type GameServer = Server<ClientToServerEvents, ServerToClientEvents>;
-export type GameServerSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
+/**
+ * Per-socket metadata attached by the auth middleware.
+ * Using socket.data (socket.io v4) avoids unsafe `any` casts.
+ */
+export interface SocketData {
+  userId?: string;
+}
+
+export type GameServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
+export type GameServerSocket = Socket<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 
 export interface GameViewUpdates {
   watchers: TaggedGameView;
