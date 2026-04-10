@@ -320,8 +320,8 @@ describe("populateSafeUserInfo - AI_OPPONENT", () => {
 
 describe("populateSafeUserInfo - user with no games", () => {
   it("returns null favoriteGame when user has no games played", async () => {
-    const { UserRepo } = await import("../../src/repository.ts");
-    const keys = await UserRepo.getAllKeys();
+    const { UserRepo: userRepo1 } = await import("../../src/repository.ts");
+    const keys = await userRepo1.getAllKeys();
     const result = await populateSafeUserInfo(keys[0]);
     expect(result.totalGamesPlayed).toBeGreaterThanOrEqual(0);
   });
@@ -329,11 +329,10 @@ describe("populateSafeUserInfo - user with no games", () => {
 
 describe("populateSafeUserInfo - winRate zero branch", () => {
   it("returns 0 winRate and null favoriteGame for user with no matches", async () => {
-    const repo = await import("../../src/repository.ts");
+    const { UserRepo: userRepo2 } = await import("../../src/repository.ts");
     const newUserId = "test-no-games-user";
-    await repo.UserRepo.set(newUserId, {
+    await userRepo2.set(newUserId, {
       username: "testnosgames",
-      passwordHash: "x",
       createdAt: new Date().toISOString(),
     });
     const result = await populateSafeUserInfo(newUserId);
