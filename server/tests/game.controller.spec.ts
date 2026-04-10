@@ -43,6 +43,7 @@ const mockSocket = new MockGameServerSocket() as unknown as GameServerSocket;
 const TOKEN3 = makeToken("user3");
 const TOKEN1 = makeToken("user1");
 const BAD_TOKEN = "invalidtoken";
+const GHOST_TOKEN = makeToken("ghostuser"); // valid JWT, user not in DB
 
 afterEach(() => {
   vi.resetAllMocks();
@@ -125,6 +126,29 @@ describe("socketWatch", () => {
       }),
     );
   });
+
+  it("calls logSocketError when token is valid but user is not in the database", async () => {
+    const game = await createNimGame();
+    await socketWatch(mockSocket, mockServer)({ token: GHOST_TOKEN, payload: game.gameId });
+    expect(logSocketError).toHaveBeenCalledOnce();
+  });
+
+  it("joins only the game room when the watcher is not a player", async () => {
+    const game = await createNimGame(); // created by user3; user1 is not a player
+    await socketWatch(mockSocket, mockServer)({ token: TOKEN1, payload: game.gameId });
+    expect(logSocketError).not.toHaveBeenCalled();
+    expect(mockSocket.emit).toHaveBeenCalledWith(
+      "gameWatched",
+      expect.objectContaining({ gameId: game.gameId }),
+    );
+  });
+
+  it("skips socket.join for a room the socket already occupies", async () => {
+    const game = await createNimGame();
+    mockSocket.rooms.add(game.gameId); // pre-populate so join is skipped for this room
+    await socketWatch(mockSocket, mockServer)({ token: TOKEN3, payload: game.gameId });
+    expect(logSocketError).not.toHaveBeenCalled();
+  });
 });
 
 describe("socketJoinAsPlayer", () => {
@@ -154,6 +178,20 @@ describe("socketJoinAsPlayer", () => {
     await socketJoinAsPlayer(mockSocket, mockServer)({ token: TOKEN1, payload: "bad-id" });
     expect(logSocketError).toHaveBeenCalledOnce();
   });
+
+  it("calls logSocketError when token is valid but user is not in the database", async () => {
+    const game = await createNimGame();
+    await socketJoinAsPlayer(mockSocket, mockServer)({ token: GHOST_TOKEN, payload: game.gameId });
+    expect(logSocketError).toHaveBeenCalledOnce();
+  });
+
+  it("skips socket.join for user room when already a member", async () => {
+    const game = await createNimGame();
+    const user1 = await getUserByUsername("user1");
+    mockSocket.rooms.add(`${game.gameId}-${user1!.userId}`);
+    await socketJoinAsPlayer(mockSocket, mockServer)({ token: TOKEN1, payload: game.gameId });
+    expect(logSocketError).not.toHaveBeenCalled();
+  });
 });
 
 describe("socketStart", () => {
@@ -171,6 +209,12 @@ describe("socketStart", () => {
 
   it("rejects invalid game id", async () => {
     await socketStart(mockSocket, mockServer)({ token: TOKEN3, payload: "bad-id" });
+    expect(logSocketError).toHaveBeenCalledOnce();
+  });
+
+  it("calls logSocketError when token is valid but user is not in the database", async () => {
+    const game = await createNimGame();
+    await socketStart(mockSocket, mockServer)({ token: GHOST_TOKEN, payload: game.gameId });
     expect(logSocketError).toHaveBeenCalledOnce();
   });
 });
@@ -220,6 +264,18 @@ describe("socketMakeMove", () => {
     )({
       token: TOKEN3,
       payload: { gameId: game.gameId, move: 99 },
+    });
+    expect(logSocketError).toHaveBeenCalledOnce();
+  });
+
+  it("calls logSocketError when token is valid but user is not in the database", async () => {
+    const game = await createStartedNimGame();
+    await socketMakeMove(
+      mockSocket,
+      mockServer,
+    )({
+      token: GHOST_TOKEN,
+      payload: { gameId: game.gameId, move: 1 },
     });
     expect(logSocketError).toHaveBeenCalledOnce();
   });

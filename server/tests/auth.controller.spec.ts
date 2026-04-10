@@ -75,8 +75,11 @@ describe("googleCallback handler", () => {
     expect(redirectUrl).toContain("http://localhost:4530/auth-success?token=");
     process.env.NODE_ENV = "test";
   });
-  it("returns 500 when CLIENT_URL is not set and not in development", () => {
-    process.env.CLIENT_URL = "";
+
+  it("returns 500 when CLIENT_URL is not set and NODE_ENV is production", () => {
+    // Delete CLIENT_URL entirely — in production the fallback is "" which is falsy
+    // This hits the !clientBase branch (line 36)
+    delete process.env.CLIENT_URL;
     process.env.NODE_ENV = "production";
     const req = mockReq(fakeUser);
     const res = mockRes();

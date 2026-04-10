@@ -264,6 +264,12 @@ describe("GET /api/game/:id", () => {
 });
 
 describe("GET /api/game/list", () => {
+  it("returns at most limit games when the limit query param is provided", async () => {
+    response = await supertest(app).get(`/api/game/list?limit=2`);
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBeLessThanOrEqual(2);
+  });
+
   it("should return created games in reverse chronological order", async () => {
     response = await supertest(app).get(`/api/game/list`);
     expect(response.status).toBe(200);

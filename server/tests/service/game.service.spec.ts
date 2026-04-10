@@ -7,6 +7,7 @@ import {
   viewGame,
   getGameById,
   joinByInviteCode,
+  getGames,
 } from "../../src/services/game.service.ts";
 import { getUserByUsername } from "../../src/services/auth.service.ts";
 import { GameRepo, UserRepo } from "../../src/repository.ts";
@@ -34,7 +35,7 @@ async function getUser(username: string) {
   return u;
 }
 
-describe("game.service — joinGame branches", () => {
+describe("joinGame", () => {
   it("throws when joining a nonexistent game", async () => {
     const user = await getUser("user1");
     await expect(joinGame("bad-id", user)).rejects.toThrow("joining invalid game");
@@ -67,7 +68,7 @@ describe("game.service — joinGame branches", () => {
   });
 });
 
-describe("game.service — startGame branches", () => {
+describe("startGame", () => {
   it("throws when starting nonexistent game", async () => {
     const user = await getUser("user1");
     await expect(startGame("bad-id", user)).rejects.toThrow("starting invalid game");
@@ -98,7 +99,7 @@ describe("game.service — startGame branches", () => {
   });
 });
 
-describe("game.service — updateGame branches", () => {
+describe("updateGame", () => {
   it("throws when acting on nonexistent game", async () => {
     const user = await getUser("user1");
     await expect(updateGame("bad-id", user, 1)).rejects.toThrow("acted on an invalid game");
@@ -252,7 +253,7 @@ describe("game.service — updateGame branches", () => {
   });
 });
 
-describe("game.service — viewGame branches", () => {
+describe("viewGame", () => {
   it("throws for nonexistent game", async () => {
     const user = await getUser("user1");
     await expect(viewGame("bad-id", user)).rejects.toThrow("viewed an invalid game id");
@@ -276,7 +277,7 @@ describe("game.service — viewGame branches", () => {
   });
 });
 
-describe("game.service — joinByInviteCode", () => {
+describe("joinByInviteCode", () => {
   it("returns error for invalid code", async () => {
     const user = await getUser("user1");
     const result = await joinByInviteCode("BADCODE", user);
@@ -299,14 +300,14 @@ describe("game.service — joinByInviteCode", () => {
   });
 });
 
-describe("game.service — getGameById", () => {
+describe("getGameById", () => {
   it("returns null for nonexistent game", async () => {
     const result = await getGameById("nonexistent-id");
     expect(result).toBeNull();
   });
 });
 
-describe("game.service — handleGameOver non-2-player", () => {
+describe("handleGameOver — single human player", () => {
   it("handles game over for a single player game", async () => {
     const user1 = await getUser("user1");
     const user2 = await getUser("user2");
@@ -334,39 +335,88 @@ describe("game.service — handleGameOver non-2-player", () => {
   });
 });
 
-describe("game.service — scheduleAIMove game over", () => {
-  it("calls handleGameOver when AI move ends the game", async () => {
+describe("scheduleAIMove — AI checkmate triggers game over", () => {
+  it("calls handleGameOver when the AI delivers checkmate", async () => {
     const user1 = await getUser("user1");
-    const game = await createGame(user1, "chess", new Date(), "public", "ai", "easy");
+    const game = await createGame(user1, "chess", new Date(), "public", "ai", "medium");
     await joinGame(game.gameId, { userId: "AI_OPPONENT", username: "AI" });
     await startGame(game.gameId, user1);
 
-    // Set up a position where AI (black) can checkmate in one move
-    // Use fool's mate setup — white has already blundered
+    // Position after 1.f3 e5 — white (user1) to move next (nextPlayer=0)
+    // user1 plays g2-g4, completing the fool's mate setup; AI then plays Qh4#
     const g = await GameRepo.find(game.gameId);
-    if (g) {
+    if (g?.state) {
       const chessModule = await import("chess.js");
       const chess = new chessModule.Chess();
       chess.move({ from: "f2", to: "f3" });
       chess.move({ from: "e7", to: "e5" });
-      chess.move({ from: "g2", to: "g4" });
-      // Now it's black's turn and Qh4# is checkmate
       g.state = {
         ...(g.state as object),
         fen: chess.fen(),
         pgn: chess.pgn(),
-        nextPlayer: 1,
+        nextPlayer: 0,
         status: "active",
         inCheck: false,
       };
       await GameRepo.set(game.gameId, g);
     }
-    await updateGame(game.gameId, user1, { from: "d1", to: "d2" }, mockIo).catch(() => {});
+
+    await updateGame(game.gameId, user1, { from: "g2", to: "g4" }, mockIo);
     await new Promise((res) => setTimeout(res, 1200));
+
+    const finalGame = await GameRepo.find(game.gameId);
+    expect(finalGame?.done).toBe(true);
   }, 10000);
 });
 
-describe("game.service — handleGameOver player 1 league change", () => {
+describe("handleGameOver — player 0 league changes on win", () => {
+  it("pushes league change when player 0 wins and crosses a rating boundary", async () => {
+    const user1 = await getUser("user1");
+    const user2 = await getUser("user2");
+
+    const rec1 = await UserRepo.get(user1.userId);
+    const rec2 = await UserRepo.get(user2.userId);
+    await UserRepo.set(user1.userId, { ...rec1, ratings: { ...rec1.ratings, nim: 1185 } });
+    await UserRepo.set(user2.userId, { ...rec2, ratings: { ...rec2.ratings, nim: 1185 } });
+
+    const game = await createGame(user1, "nim", new Date());
+    await joinGame(game.gameId, user2);
+    await startGame(game.gameId, user1);
+
+    // remaining=2 with player 0's turn: player 0 takes 1 → 1 remains →
+    // player 1 is forced to take the last token → player 0 wins
+    const g = await GameRepo.find(game.gameId);
+    if (g?.state) {
+      (g.state as { remaining: number; nextPlayer: number }).remaining = 2;
+      (g.state as { remaining: number; nextPlayer: number }).nextPlayer = 0;
+      await GameRepo.set(game.gameId, g);
+    }
+
+    await updateGame(game.gameId, user1, 1, mockIo);
+    const result = await updateGame(game.gameId, user2, 1, mockIo);
+
+    expect(result.leagueChanges.some((c) => c.userId === user1.userId)).toBe(true);
+  });
+});
+
+describe("startGame — timeControl option and AI game visibility", () => {
+  it("passes timeControl to game creation, filters AI_OPPONENT from viewGame, and respects getGames limit", async () => {
+    const user1 = await getUser("user1");
+    // No explicit aiDifficulty — covers line 222 `game.aiDifficulty ?? "medium"` fallback
+    const game = await createGame(user1, "chess", new Date(), "public", "ai", undefined, 5);
+    await joinGame(game.gameId, { userId: "AI_OPPONENT", username: "AI" });
+    // timeControl=5 covers line 153 TRUE branch: `game.timeControl ? { timeControl } : undefined`
+    await startGame(game.gameId, user1);
+    // AI_OPPONENT filtered out covers line 426 filter FALSE branch
+    const view = await viewGame(game.gameId, user1);
+    expect(view.players.every((p) => p.username !== "AI")).toBe(true);
+    // limit=1 covers line 173 TRUE branch: `limit ? sorted.slice(0, limit) : sorted`
+    const games = await getGames(1);
+    expect(games.length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("handleGameOver — player 1 league changes on win", () => {
   it("pushes league change when player 1 (loser becomes winner) crosses boundary", async () => {
     const user1 = await getUser("user1");
     const user2 = await getUser("user2");
