@@ -91,25 +91,14 @@ export default function useLoginForm(setAuth: (auth: AuthContext | null) => void
     } else {
       const { token, ...userInfo } = user as SafeUserInfo & { token: string };
       setStoredAuthToken(token);
-      setAuth({
-        user: userInfo,
-        pass: token,
-        reset: () => {
-          setAuth(null);
-          clearStoredAuthToken();
-        },
-        updateUser: (newUser: SafeUserInfo) => {
-          setAuth({
-            user: newUser,
-            pass: token,
-            reset: () => {
-              setAuth(null);
-              clearStoredAuthToken();
-            },
-            updateUser: () => {},
-          });
-        },
-      });
+      const reset = () => {
+        setAuth(null);
+        clearStoredAuthToken();
+      };
+      const updateUser = (newUser: SafeUserInfo) => {
+        setAuth({ user: newUser, pass: token, reset, updateUser });
+      };
+      setAuth({ user: userInfo, pass: token, reset, updateUser });
       navigate("/");
     }
   };

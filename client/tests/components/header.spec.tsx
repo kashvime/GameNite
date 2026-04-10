@@ -21,6 +21,7 @@ const baseUser = {
   bio: null,
   avatarUrl: null,
   ratings: {},
+  hideFromGlobalLeaderboard: false,
 };
 
 describe("Header component", () => {

@@ -1,4 +1,7 @@
 /* eslint no-console: "off" */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 import express, { Router } from "express";
 import { Server } from "socket.io";
@@ -18,6 +21,9 @@ import passport from "./config/passport.js";
 import { googleAuth, googleCallback } from "./controllers/auth.controller.js";
 
 import { type GameServer } from "./types.ts";
+import jwt from "jsonwebtoken";
+import { getUserByUsername } from "./services/auth.service.js";
+import { setOnlineStatus } from "./services/user.service.js";
 
 export const app = express();
 export const httpServer = http.createServer(app);
@@ -88,12 +94,42 @@ app.use(
 app.get("/auth/google", googleAuth);
 app.get("/auth/google/callback", ...googleCallback);
 
-io.on("connection", (socket) => {
+// Maps socket ID → userId so we can set a user offline when their socket disconnects
+const socketUserMap = new Map<string, string>();
+
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token as string | undefined;
+  if (token) {
+    try {
+      const { username } = jwt.verify(token, process.env.JWT_SECRET as string) as {
+        username: string;
+      };
+      const user = await getUserByUsername(username);
+      if (user) socket.data.userId = user.userId;
+    } catch {
+      // Unauthenticated socket connections are allowed (e.g. spectators)
+    }
+  }
+  next();
+});
+
+io.on("connection", async (socket) => {
   const socketId = socket.id;
+  const userId = socket.data.userId;
   console.log(`CONN [${socketId}] connected`);
 
-  socket.on("disconnect", () => {
+  if (userId) {
+    socketUserMap.set(socketId, userId);
+    await setOnlineStatus(userId, "online");
+  }
+
+  socket.on("disconnect", async () => {
     console.log(`CONN [${socketId}] disconnected`);
+    const uid = socketUserMap.get(socketId);
+    if (uid) {
+      socketUserMap.delete(socketId);
+      await setOnlineStatus(uid, "offline");
+    }
   });
 
   socket.on("chatJoin", chat.socketJoin(socket, io));

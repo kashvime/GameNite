@@ -1,77 +1,125 @@
-import "./FriendHeadtoHead.css";
+import "../pages/ViewProfile.css";
 import { NavLink } from "react-router-dom";
 import { useMemo } from "react";
 import type { MatchInfo, SafeUserInfo } from "@gamenite/shared";
 import useMatchHistory from "../hooks/useMatchHistory.ts";
 
 interface FriendHeadToHeadProps {
-  /** The friend whose record is being displayed. */
   friend: SafeUserInfo;
   onClose: () => void;
 }
 
-/**
- * Displays head-to-head match statistics and filtered match history between
- * the authenticated user and one friend.
- */
 export default function FriendHeadToHead({ friend, onClose }: FriendHeadToHeadProps) {
   const filter = useMemo(() => ({ opponentUsername: friend.username }), [friend.username]);
   const state = useMatchHistory(filter);
 
-  if (state.type === "loading") return <p>Loading...</p>;
-  if (state.type === "error") return <p>{state.message}</p>;
-  if (state.type === "empty")
-    return <p>You haven't played any games against {friend.display} yet.</p>;
-
-  const wins = state.matches.filter((m) => m.result === "win").length;
-  const losses = state.matches.filter((m) => m.result === "loss").length;
-  const total = state.matches.length;
-  const winRate = `${Math.round((wins / total) * 100)}%`;
+  const initials = friend.display
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
-    <div className="spacedSection">
-      <button className="secondary narrow" onClick={onClose}>
+    <div className="profile-page">
+      <button className="secondary narrow" onClick={onClose} style={{ alignSelf: "flex-start" }}>
         ← Back
       </button>
-      <h2>vs {friend.display}</h2>
-      <NavLink to={`/profile/${friend.username}`} className="smallAndGray">
-        @{friend.username}
-      </NavLink>
 
-      <div className="statTiles">
-        {(
-          [
-            ["Wins", wins],
-            ["Losses", losses],
-            ["Games", total],
-            ["Win Rate", winRate],
-          ] as [string, string | number][]
-        ).map(([label, value]) => (
-          <div key={label} className="statTile">
-            <div className="statValue">{value}</div>
-            <div className="smallAndGray">{label}</div>
-          </div>
-        ))}
+      {/* Hero */}
+      <div className="profile-hero">
+        {friend.avatarUrl ? (
+          <img
+            className="profile-avatar"
+            src={friend.avatarUrl}
+            alt={`${friend.display}'s avatar`}
+          />
+        ) : (
+          <div className="profile-avatar-initials">{initials}</div>
+        )}
+        <div className="profile-identity">
+          <span className="profile-display-name">{friend.display}</span>
+          <NavLink to={`/profile/${friend.username}`} className="profile-username">
+            @{friend.username}
+          </NavLink>
+        </div>
       </div>
 
-      <table className="matchTable">
-        <thead>
-          <tr>
-            <th>Game</th>
-            <th>Result</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {state.matches.map((match: MatchInfo, i) => (
-            <tr key={i}>
-              <td>{match.gameType}</td>
-              <td className={`result-${match.result}`}>{match.result}</td>
-              <td>{new Date(match.createdAt).toLocaleDateString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Stats */}
+      <div className="profile-section">
+        <div className="profile-section-header">
+          <h3>Your Stats vs This Player</h3>
+        </div>
+        <div className="profile-section-body">
+          {state.type === "loading" && (
+            <p className="smallAndGray" style={{ margin: 0 }}>
+              Loading...
+            </p>
+          )}
+          {state.type === "error" && (
+            <p className="error-message" style={{ margin: 0 }}>
+              {state.message}
+            </p>
+          )}
+          {state.type === "empty" && (
+            <p className="smallAndGray" style={{ margin: 0 }}>
+              No matches against this player yet.
+            </p>
+          )}
+          {state.type === "loaded" &&
+            (() => {
+              const wins = state.matches.filter((m) => m.result === "win").length;
+              const losses = state.matches.filter((m) => m.result === "loss").length;
+              const total = state.matches.length;
+              const winRate = Math.round((wins / total) * 100);
+              return (
+                <>
+                  <div className="profile-stats-grid" style={{ marginBottom: "1rem" }}>
+                    <div className="profile-stat-chip">
+                      <div className="profile-stat-value" style={{ color: "#22c55e" }}>
+                        {wins}
+                      </div>
+                      <div className="profile-stat-label">Wins</div>
+                    </div>
+                    <div className="profile-stat-chip">
+                      <div className="profile-stat-value" style={{ color: "#ef4444" }}>
+                        {losses}
+                      </div>
+                      <div className="profile-stat-label">Losses</div>
+                    </div>
+                    <div className="profile-stat-chip">
+                      <div className="profile-stat-value">{total}</div>
+                      <div className="profile-stat-label">Games</div>
+                    </div>
+                    <div className="profile-stat-chip">
+                      <div className="profile-stat-value">{winRate}%</div>
+                      <div className="profile-stat-label">Win Rate</div>
+                    </div>
+                  </div>
+                  {state.matches.slice(0, 5).map((match: MatchInfo, i: number) => {
+                    const resultColor =
+                      match.result === "win"
+                        ? "#22c55e"
+                        : match.result === "loss"
+                          ? "#ef4444"
+                          : "#9ca3af";
+                    return (
+                      <div key={i} className="profile-match-row">
+                        <span className="profile-match-game">{match.gameType}</span>
+                        <span className="profile-match-result" style={{ color: resultColor }}>
+                          {match.result}
+                        </span>
+                        <span className="profile-match-date">
+                          {new Date(match.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
+        </div>
+      </div>
     </div>
   );
 }

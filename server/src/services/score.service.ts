@@ -33,6 +33,7 @@ export async function saveMatchRecords(
   scores?: number[],
   io?: GameServer,
   visibility: "public" | "private" = "public",
+  ratingDeltas?: Record<string, number>,
 ): Promise<void> {
   await Promise.all(
     players.map((userId, playerIndex) => {
@@ -44,6 +45,7 @@ export async function saveMatchRecords(
         gameId,
         score: scores && scores[playerIndex],
         result: winner === null ? "draw" : winner === playerIndex ? "win" : "loss",
+        ratingDelta: ratingDeltas?.[userId],
         createdAt: playedAt.toISOString(),
       };
       return ScoreRepo.add(record);
@@ -94,6 +96,7 @@ export async function getMatchesByUserId(
       createdAt: new Date(record.createdAt),
       gameId: record.gameId,
       pgn,
+      ratingDelta: record.ratingDelta,
     });
   }
   // Sort by selected order; default to newest first
@@ -132,6 +135,8 @@ export async function getLeaderboard(
     const record = records[i];
     const rating = record.ratings?.[gameType];
     if (rating === undefined) continue;
+    const isGlobalView = !userIds;
+    if (isGlobalView && record.hideFromGlobalLeaderboard) continue;
     if (userIds && !userIds.includes(keys[i])) continue;
     if (league && computeLeague(rating) !== league) continue;
     rated.push({ userId: keys[i], rating });
@@ -139,10 +144,12 @@ export async function getLeaderboard(
 
   rated.sort((a, b) => b.rating - a.rating);
 
-  const entries = [];
-  for (const { userId, rating } of rated.slice(0, limit)) {
-    entries.push({ user: await populateSafeUserInfo(userId), rating });
-  }
+  const entries = await Promise.all(
+    rated.slice(0, limit).map(async ({ userId, rating }) => ({
+      user: await populateSafeUserInfo(userId),
+      rating,
+    })),
+  );
   return entries;
 }
 
@@ -171,6 +178,8 @@ export async function getUserRank(
     const record = records[i];
     const rating = record.ratings?.[gameType];
     if (rating === undefined) continue;
+    const isGlobalView = !userIds;
+    if (isGlobalView && record.hideFromGlobalLeaderboard) continue;
     if (userIds && !userIds.includes(keys[i])) continue;
     if (league && computeLeague(rating) !== league && keys[i] !== userId) continue;
     rated.push({ userId: keys[i], rating });

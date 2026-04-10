@@ -126,6 +126,7 @@ export interface ThreadRecord {
  * - `favoriteGame`: the game the user has played the most
  * - `bio`: optional short user-written bio
  * - `avatarUrl`: optional path to uploaded profile picture
+ * - `hideFromGlobalLeaderboard`: whether user opts out of global leaderboard listings
  * - `rating`: the user's current Elo rating (starts at 1000)
  */
 export interface UserRecord {
@@ -137,7 +138,9 @@ export interface UserRecord {
   favoriteGame?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+  hideFromGlobalLeaderboard?: boolean;
   ratings?: Partial<Record<GameKey, number>>;
+  onlineStatus?: "online" | "offline" | "in_match";
 }
 
 /**
@@ -158,6 +161,7 @@ export interface ScoreRecord {
   gameId: RecordId;
   score?: number;
   result: "win" | "loss" | "draw";
+  ratingDelta?: number;
   durationSeconds?: number;
   createdAt: DateISO;
 }

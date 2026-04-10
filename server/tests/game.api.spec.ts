@@ -20,6 +20,7 @@ const userShape = {
   totalGamesPlayed: expect.any(Number),
   winRate: expect.any(Number),
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
   ratings: expect.any(Object),

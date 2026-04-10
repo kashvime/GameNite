@@ -309,6 +309,30 @@ hr {
   color: var(--color-text-muted);
 }
 
+/** League badges — used across GamePanel, ViewProfile, GameSummaryView, Leaderboard **/
+.league-badge {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.league-bronze {
+  background: #cd7f32;
+  color: white;
+}
+
+.league-silver {
+  background: #9ca3af;
+  color: white;
+}
+
+.league-gold {
+  background: #f59e0b;
+  color: white;
+}
+
 #root {
   min-height: 100vh;
   width: 100%;

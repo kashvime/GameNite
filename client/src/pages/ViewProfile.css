@@ -1,0 +1,371 @@
+.profile-page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Hero card ── */
+.profile-hero {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.profile-avatar-initials {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Editable avatar wrapper (UpdateProfile only) */
+.profile-avatar-edit {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.profile-avatar-edit .profile-avatar,
+.profile-avatar-edit .profile-avatar-initials {
+  width: 72px;
+  height: 72px;
+}
+
+.profile-avatar-edit-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+
+.profile-avatar-edit:hover .profile-avatar-edit-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-edit-overlay svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  stroke: white;
+}
+
+.profile-avatar-edit-overlay span {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.profile-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-display-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.profile-username {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.profile-status {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.profile-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profile-status-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.profile-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.profile-meta-item {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.profile-bio {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* ── Actions row ── */
+.profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Section cards (same pattern as home-section) ── */
+.profile-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.profile-section-header {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.profile-section-header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-section-header h3::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.9rem;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.profile-section-body {
+  padding: 1rem 1.25rem;
+}
+
+/* ── Stat chips ── */
+.profile-stats-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.profile-stat-chip {
+  flex: 1;
+  min-width: 6rem;
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.profile-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Rating rows ── */
+.profile-rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-rating-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-rating-row:first-child {
+  padding-top: 0;
+}
+
+.profile-rating-game {
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: capitalize;
+}
+
+.profile-rating-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-rating-number {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+
+.profile-rating-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+/* ── Match rows ── */
+.profile-match-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-match-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-match-row:first-child {
+  padding-top: 0;
+}
+
+.profile-match-game {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  min-width: 3.5rem;
+}
+
+.profile-match-result {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  min-width: 2.5rem;
+}
+
+.profile-match-opponent {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-match-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Friend rows ── */
+.friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.friend-row:last-child {
+  border-bottom: none;
+}
+
+.friend-row-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.friend-row-clickable:hover {
+  background: #f7f8ff;
+}
+
+.friend-row-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.friend-row-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.friend-row-username {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.friend-row-action {
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}

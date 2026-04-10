@@ -28,7 +28,7 @@ export interface SafeUserInfo {
   bio: string | null;
   avatarUrl: string | null;
   ratings: Partial<Record<GameKey, number>>;
-  hideFromGlobalLeaderboard?: boolean;
+  hideFromGlobalLeaderboard: boolean;
 }
 
 /*** TYPES USED IN THE USER API ***/
@@ -42,4 +42,5 @@ export const zUserUpdateRequest = z.object({
   display: z.string().optional(),
   bio: z.string().optional(),
   avatarUrl: z.string().optional(),
+  hideFromGlobalLeaderboard: z.boolean().optional(),
 });

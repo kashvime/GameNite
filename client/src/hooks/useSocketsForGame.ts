@@ -3,6 +3,15 @@ import type { GamePlayInfo, SafeUserInfo, TaggedGameView } from "@gamenite/share
 import useLoginContext from "./useLoginContext.ts";
 import { viewerSeat } from "../util/viewerSeat.ts";
 
+export interface RatingChange {
+  userId: string;
+  username: string;
+  display: string;
+  oldRating: number;
+  newRating: number;
+  delta: number;
+}
+
 /**
  * Custom hook to manage socket connection for a game
  * @throws if outside a LoginContext
@@ -22,6 +31,7 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
   const [view, setView] = useState<null | TaggedGameView>(null);
   const [hasWatched, setHasWatched] = useState<boolean>(false);
   const [players, setPlayers] = useState<SafeUserInfo[]>(initialPlayers);
+  const [ratingChanges, setRatingChanges] = useState<RatingChange[] | null>(null);
   const userPlayerIndex = viewerSeat(players, user);
   const userPlayerIndexRef = useRef(viewerSeat(initialPlayers, user));
   const watchSeqRef = useRef(0);
@@ -47,6 +57,10 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
       userPlayerIndexRef.current = viewerSeat(newPlayers, user);
     };
 
+    const handleRatingUpdated = (payload: { changes: RatingChange[] }) => {
+      setRatingChanges(payload.changes);
+    };
+
     const handleStateUpdated = (payload: TaggedGameView & { forPlayer: boolean }) => {
       if (!payload) return;
       // Personalized views must never be replaced by the broadcast watcher payload (same socket
@@ -63,12 +77,14 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
     socket.on("gameWatched", handleWatched);
     socket.on("gamePlayersUpdated", handlePlayersUpdated);
     socket.on("gameStateUpdated", handleStateUpdated);
+    socket.on("gameRatingUpdated", handleRatingUpdated);
     socket.emit("gameWatch", { token, payload: { gameId, watchId: myWatchId } });
 
     return () => {
       socket.off("gameWatched", handleWatched);
       socket.off("gamePlayersUpdated", handlePlayersUpdated);
       socket.off("gameStateUpdated", handleStateUpdated);
+      socket.off("gameRatingUpdated", handleRatingUpdated);
     };
   }, [gameId, socket, token, username, user]);
 
@@ -84,8 +100,8 @@ export default function useSocketsForGame(gameId: string, initialPlayers: SafeUs
     hasWatched,
     players,
     userPlayerIndex,
-
     view,
+    ratingChanges,
     joinGame,
     startGame,
   };

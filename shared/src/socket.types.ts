@@ -47,4 +47,14 @@ export interface ServerToClientEvents {
   friendRequestReceived: (payload: { from: SafeUserInfo }) => void;
   leagueChanged: (payload: { newLeague: League; oldLeague: League }) => void;
   leaderboardUpdated: () => void;
+  gameRatingUpdated: (payload: {
+    changes: Array<{
+      userId: string;
+      username: string;
+      display: string;
+      oldRating: number;
+      newRating: number;
+      delta: number;
+    }>;
+  }) => void;
 }

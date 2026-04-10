@@ -17,6 +17,7 @@ export interface MatchInfo {
   createdAt: Date;
   gameId?: string;
   pgn?: string;
+  ratingDelta?: number;
 }
 
 /*** TYPES USED IN THE MATCH API ***/
