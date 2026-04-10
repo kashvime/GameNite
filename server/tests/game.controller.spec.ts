@@ -185,7 +185,6 @@ describe("socketJoinAsPlayer", () => {
     expect(logSocketError).toHaveBeenCalledOnce();
   });
 
-
   it("skips socket.join for user room when already a member", async () => {
     const game = await createNimGame();
     const user1 = await getUserByUsername("user1");
@@ -271,7 +270,10 @@ describe("socketMakeMove", () => {
 
   it("calls logSocketError when token is valid but user is not in the database", async () => {
     const game = await createStartedNimGame();
-    await socketMakeMove(mockSocket, mockServer)({
+    await socketMakeMove(
+      mockSocket,
+      mockServer,
+    )({
       token: GHOST_TOKEN,
       payload: { gameId: game.gameId, move: 1 },
     });
