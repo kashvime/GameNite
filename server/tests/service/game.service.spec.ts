@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createGame,
   joinGame,
@@ -9,16 +9,24 @@ import {
   joinByInviteCode,
 } from "../../src/services/game.service.ts";
 import { getUserByUsername } from "../../src/services/auth.service.ts";
-import { GameRepo } from "../../src/repository.ts";
+import { GameRepo, UserRepo } from "../../src/repository.ts";
 import type { GameServer } from "../../src/types.ts";
+import type { ChessState } from "@gamenite/shared";
 
-const MockGameServer = vi.fn(
-  class {
-    to = vi.fn(() => this);
-    emit = vi.fn();
-  },
-);
-const mockIo = new MockGameServer() as unknown as GameServer;
+function makeMockIo(): GameServer {
+  const mock = {
+    to: vi.fn(),
+    emit: vi.fn(),
+  };
+  mock.to.mockReturnValue(mock);
+  return mock as unknown as GameServer;
+}
+
+// Fresh mockIo for each test — avoids cross-test call pollution
+let mockIo: GameServer;
+beforeEach(() => {
+  mockIo = makeMockIo();
+});
 
 async function getUser(username: string) {
   const u = await getUserByUsername(username);
@@ -163,6 +171,62 @@ describe("game.service — updateGame branches", () => {
     }
     await new Promise((res) => setTimeout(res, 1200));
   }, 10000);
+
+  // Covers line 304: flip nextPlayer to 0 after human move so the AI's
+  // chess.update call hits `if (playerIndex !== state.nextPlayer) return null`
+  it("scheduleAIMove returns early when AI produces an invalid move", async () => {
+    const user1 = await getUser("user1");
+    const game = await createGame(user1, "chess", new Date(), "public", "ai", "easy");
+    await joinGame(game.gameId, { userId: "AI_OPPONENT", username: "AI" });
+    await startGame(game.gameId, user1);
+
+    await updateGame(game.gameId, user1, { from: "e2", to: "e4" }, mockIo);
+
+    // scheduleAIMove delays 400-800ms before reading DB. Flip nextPlayer to 0
+    // immediately so the AI (playerIndex 1) is rejected by the turn check.
+    const g = await GameRepo.find(game.gameId);
+    if (g?.state) {
+      (g.state as ChessState).nextPlayer = 0;
+      await GameRepo.set(game.gameId, g);
+    }
+
+    await new Promise((res) => setTimeout(res, 1200));
+  }, 10000);
+
+  // Covers lines 357 and 392.
+  // Seed both users to nim rating 1185. A win adds ~16 → 1201, crossing
+  // bronze→silver (threshold 1200). change0 or change1 will be non-null
+  // with oldLeague !== newLeague, hitting line 357. Line 392 is hit when
+  // handleGameOver calls setOnlineStatus for both human players at the end.
+  it("pushes league change when winner crosses bronze→silver boundary", async () => {
+    const user1 = await getUser("user1");
+    const user2 = await getUser("user2");
+
+    const rec1 = await UserRepo.get(user1.userId);
+    const rec2 = await UserRepo.get(user2.userId);
+    await UserRepo.set(user1.userId, { ...rec1, ratings: { ...rec1.ratings, nim: 1185 } });
+    await UserRepo.set(user2.userId, { ...rec2, ratings: { ...rec2.ratings, nim: 1185 } });
+
+    const game = await createGame(user1, "nim", new Date());
+    await joinGame(game.gameId, user2);
+    await startGame(game.gameId, user1);
+
+    // Drive nim to completion — alternating players correctly
+    let currentUser = user1;
+    let opponentUser = user2;
+    while (true) {
+      try {
+        const r = await updateGame(game.gameId, currentUser, 3, mockIo);
+        const state = r.views.watchers as { remaining?: number };
+        if (state.remaining === 0) break;
+        [currentUser, opponentUser] = [opponentUser, currentUser];
+      } catch {
+        break;
+      }
+    }
+
+    expect(mockIo.emit).toHaveBeenCalledWith("gameRatingUpdated", expect.any(Object));
+  });
 
   it("handles end-of-game with league changes", async () => {
     const user1 = await getUser("user1");

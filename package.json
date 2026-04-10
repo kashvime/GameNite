@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10",
     "@types/passport": "^1.0.17",
-    "@types/passport-google-oauth20": "^2.0.17"
+    "@types/passport-google-oauth20": "^2.0.17",
+    "socket.io-client": "^4.8.3"
   }
 }
