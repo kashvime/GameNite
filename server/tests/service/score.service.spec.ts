@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { saveMatchRecords } from "../../src/services/score.service.ts";
+import {
+  getLeaderboard,
+  getMatchesByUserId,
+  getUserRank,
+  saveMatchRecords,
+} from "../../src/services/score.service.ts";
 import { getUserByUsername } from "../../src/services/auth.service.ts";
-import { ScoreRepo } from "../../src/repository.ts";
+import { ScoreRepo, UserRepo } from "../../src/repository.ts";
 import type { GameServer } from "../../src/types.ts";
 import { randomUUID } from "node:crypto";
+import { createGame, joinGame, startGame, updateGame } from "../../src/services/game.service.ts";
 
 describe("saveMatchRecords", () => {
   it("should set opponentId on each record when there are exactly 2 players", async () => {
@@ -107,11 +113,6 @@ describe("saveMatchRecords", () => {
     expect(mockIo.emit).not.toHaveBeenCalled();
   });
 });
-
-import { getMatchesByUserId } from "../../src/services/score.service.ts";
-import { createGame, joinGame, startGame, updateGame } from "../../src/services/game.service.ts";
-import { getLeaderboard, getUserRank } from "../../src/services/score.service.ts";
-import { UserRepo } from "../../src/repository.ts";
 
 describe("getMatchesByUserId - sorting and filtering", () => {
   it("sorts by score when sortOrder is 'score'", async () => {

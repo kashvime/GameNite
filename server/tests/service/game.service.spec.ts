@@ -345,8 +345,8 @@ describe("game.service — scheduleAIMove game over", () => {
     // Use fool's mate setup — white has already blundered
     const g = await GameRepo.find(game.gameId);
     if (g) {
-      const { Chess } = await import("chess.js");
-      const chess = new Chess();
+      const chessModule = await import("chess.js");
+      const chess = new chessModule.Chess();
       chess.move({ from: "f2", to: "f3" });
       chess.move({ from: "e7", to: "e5" });
       chess.move({ from: "g2", to: "g4" });
