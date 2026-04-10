@@ -1,4 +1,7 @@
 /* eslint no-console: "off" */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 import express, { Router } from "express";
 import { Server } from "socket.io";

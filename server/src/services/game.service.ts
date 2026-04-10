@@ -395,8 +395,7 @@ async function handleGameOver(
       game.visibility ?? "public",
     );
   }
-await Promise.all(humanPlayers.map((id) => setOnlineStatus(id, "online")));
-
+  await Promise.all(humanPlayers.map((id) => setOnlineStatus(id, "online")));
 }
 
 /**

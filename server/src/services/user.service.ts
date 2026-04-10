@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import {
   computeLeague,
   type GameKey,
@@ -31,6 +33,7 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
       bio: null,
       avatarUrl: null,
       ratings: {},
+      hideFromGlobalLeaderboard: false,
     };
   }
   const record = await UserRepo.get(userId);

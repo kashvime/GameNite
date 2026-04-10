@@ -17,8 +17,7 @@ import type { GameKey } from "./index.ts";
  */
 
 export interface SafeUserInfo {
-  userId: string; // 🔥 ADD THIS
-
+  userId: string;
   username: string;
   display: string;
   createdAt: Date;
