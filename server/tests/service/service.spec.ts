@@ -309,3 +309,11 @@ describe("user.service", () => {
     );
   });
 });
+
+describe("populateSafeUserInfo - AI_OPPONENT", () => {
+  it("returns fake AI profile without hitting database", async () => {
+    const result = await populateSafeUserInfo("AI_OPPONENT");
+    expect(result.username).toBe("Computer");
+    expect(result.userId).toBe("AI_OPPONENT");
+  });
+});

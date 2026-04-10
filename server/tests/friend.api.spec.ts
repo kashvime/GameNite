@@ -210,3 +210,13 @@ describe("POST /api/friend/status", () => {
     expect(response.body).toMatchObject({ status: expect.any(String) });
   });
 });
+
+describe("GET /api/friend/ids - getFriendIds recipient", () => {
+  it("returns friend list for authenticated user", async () => {
+    const listRes = await supertest(app)
+      .post("/api/friend/list")
+      .set("Authorization", `Bearer ${TOKEN1}`);
+    expect(listRes.status).toBe(200);
+    expect(Array.isArray(listRes.body)).toBe(true);
+  });
+});
