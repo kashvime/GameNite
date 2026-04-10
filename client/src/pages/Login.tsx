@@ -95,7 +95,7 @@ export default function Login({ setAuth }: LoginProps) {
 
             <div className="login-divider">or</div>
 
-            <a href="http://localhost:8000/auth/google" style={{ textDecoration: "none" }}>
+            <a href="/auth/google" style={{ textDecoration: "none" }}>
               <button type="button" className="google-btn">
                 <span className="google-icon">G</span>
                 Continue with Google

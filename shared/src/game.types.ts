@@ -13,6 +13,8 @@ import { type SafeUserInfo } from "./user.types.ts";
  * - `minPlayers`: the minimum number of players required to start the game
  * - `visibility`: if the games public or private
  * - `createdBy`: code to join a private game
+ * - `gameMode`: 'human' for two human players, 'ai' for vs computer
+ * - `aiDifficulty`: only present when gameMode is 'ai'
  */
 export interface GameInfo {
   gameId: string;
@@ -25,6 +27,8 @@ export interface GameInfo {
   minPlayers: number;
   visibility: "public" | "private";
   inviteCode?: string;
+  gameMode: GameMode;
+  aiDifficulty?: AIDifficulty;
 }
 
 /**
@@ -34,11 +38,15 @@ export interface GameInfo {
  * - `view`: null if the game is still in a waiting-room state, or the game
  *   view object
  * - `players`: currently active players for the game
+ * - `yourPlayerIndex`: this viewer's seat in `players`, or -1 if not a player
  */
 export interface GamePlayInfo {
   gameId: string;
   view: TaggedGameView | null;
   players: SafeUserInfo[];
+  yourPlayerIndex: number;
+  /** Echoed from the client when present; used to ignore stale gameWatch responses */
+  watchId?: number;
 }
 
 /*** TYPES USED IN THE GAMES API ***/
@@ -48,6 +56,14 @@ export const zGameMakeMovePayload = z.object({
   gameId: z.string(),
   move: z.unknown(),
 });
+
+/** Whether the opponent is a human or the computer */
+export type GameMode = "human" | "ai";
+export const zGameMode = z.union([z.literal("human"), z.literal("ai")]);
+
+/** Skill level of the AI opponent */
+export type AIDifficulty = "easy" | "medium" | "hard";
+export const zAIDifficulty = z.union([z.literal("easy"), z.literal("medium"), z.literal("hard")]);
 
 /*** INDIVIDUAL GAME TYPES ***/
 import type { NimView } from "./games/nim.types.ts";

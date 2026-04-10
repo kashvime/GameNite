@@ -1,37 +1,165 @@
 import useNewGameForm from "../hooks/useNewGameForm.ts";
 import { gameNames } from "../util/consts.ts";
+import "./NewGame.css";
 
 export default function NewGame() {
-  const { gameKey, visibility, setVisibility, handleInputChange, err, handleSubmit } =
-    useNewGameForm();
+  const {
+    gameKey,
+    visibility,
+    setVisibility,
+    timeControl,
+    setTimeControl,
+    gameMode,
+    setGameMode,
+    aiDifficulty,
+    setAiDifficulty,
+    err,
+    handleInputChange,
+    handleSubmit,
+  } = useNewGameForm();
 
   return (
-    <form className="content spacedSection" onSubmit={handleSubmit}>
-      <h2>Create new game</h2>
-      <div>
-        <select value={gameKey} aria-label="Game selection" onChange={(e) => handleInputChange(e)}>
-          <option value="">— Select a game —</option>
-          {Object.entries(gameNames).map(([key, name]) => (
-            <option key={key} value={key}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <select
-          value={visibility}
-          aria-label="Visibility"
-          onChange={(e) => setVisibility(e.target.value as "public" | "private")}
-        >
-          <option value="public">Public — appears in game list, counts for leaderboard</option>
-          <option value="private">Private — invite only, no leaderboard impact</option>
-        </select>
-      </div>
-      {err && <p className="error-message">{err}</p>}
-      <div>
-        <button className="primary narrow">Create New Game</button>
-      </div>
-    </form>
+    <div className="new-game-page">
+      <form className="new-game-card" onSubmit={handleSubmit}>
+        <div className="new-game-card-header">
+          <h2>Create new game</h2>
+        </div>
+        <div className="new-game-card-body">
+          <div className="new-game-field">
+            <label htmlFor="game-select">Game type</label>
+            <select
+              id="game-select"
+              value={gameKey}
+              aria-label="Game selection"
+              onChange={(e) => handleInputChange(e)}
+            >
+              <option value="">— Select a game —</option>
+              {Object.entries(gameNames).map(([key, name]) => (
+                <option key={key} value={key}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="new-game-field">
+            <label>Visibility</label>
+            <div className="visibility-options">
+              <label className={`visibility-option ${visibility === "public" ? "selected" : ""}`}>
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="public"
+                  checked={visibility === "public"}
+                  onChange={() => setVisibility("public")}
+                />
+                <div className="visibility-option-text">
+                  <strong>🌐 Public</strong>
+                  <span>Appears in game list, counts for leaderboard</span>
+                </div>
+              </label>
+              <label className={`visibility-option ${visibility === "private" ? "selected" : ""}`}>
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="private"
+                  checked={visibility === "private"}
+                  onChange={() => setVisibility("private")}
+                />
+                <div className="visibility-option-text">
+                  <strong>🔒 Private</strong>
+                  <span>Invite only, no leaderboard impact</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {gameKey === "chess" && (
+            <div className="new-game-field">
+              <label>Opponent</label>
+              <div className="visibility-options">
+                <label className={`visibility-option ${gameMode === "human" ? "selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="gameMode"
+                    value="human"
+                    checked={gameMode === "human"}
+                    onChange={() => setGameMode("human")}
+                  />
+                  <div className="visibility-option-text">
+                    <strong>👤 Human</strong>
+                    <span>Wait for another player to join</span>
+                  </div>
+                </label>
+                <label className={`visibility-option ${gameMode === "ai" ? "selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="gameMode"
+                    value="ai"
+                    checked={gameMode === "ai"}
+                    onChange={() => setGameMode("ai")}
+                  />
+                  <div className="visibility-option-text">
+                    <strong>🤖 Computer</strong>
+                    <span>Play immediately against the AI</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {gameKey === "chess" && gameMode === "ai" && (
+            <div className="new-game-field">
+              <label htmlFor="difficulty-select">Difficulty</label>
+              <select
+                id="difficulty-select"
+                value={aiDifficulty}
+                aria-label="AI difficulty"
+                onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard")}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          )}
+
+          {gameKey === "chess" && (
+            <div className="new-game-field">
+              <label>Time control</label>
+              <div className="visibility-options">
+                {([null, 5, 10, 30] as (5 | 10 | 30 | null)[]).map((t) => (
+                  <label
+                    key={String(t)}
+                    className={`visibility-option ${timeControl === t ? "selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="timeControl"
+                      checked={timeControl === t}
+                      onChange={() => setTimeControl(t)}
+                    />
+                    <div className="visibility-option-text">
+                      <strong>{t === null ? "⏳ No timer" : "⏱ " + t + " minutes"}</strong>
+                      <span>
+                        {t === null ? "Untimed game" : "Each player gets " + t + " minutes"}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {err && <p className="error-message">{err}</p>}
+        </div>
+
+        <div className="new-game-card-footer">
+          <button type="submit" className="primary narrow">
+            Create New Game
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

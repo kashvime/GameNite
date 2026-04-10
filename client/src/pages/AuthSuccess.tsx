@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import type { AuthContext } from "../contexts/LoginContext";
 import type { SafeUserInfo } from "@gamenite/shared";
+import { getUserById } from "../services/userService.ts";
+import { clearStoredAuthToken, setStoredAuthToken } from "../util/authToken.ts";
 
 interface Props {
-  setAuth: (auth: AuthContext | null) => void;
+  setAuth: Dispatch<SetStateAction<AuthContext | null>>;
 }
 
 export default function AuthSuccess({ setAuth }: Props) {
@@ -20,31 +22,44 @@ export default function AuthSuccess({ setAuth }: Props) {
       return;
     }
 
-    localStorage.setItem("token", token);
+    setStoredAuthToken(token);
 
-    const user = jwtDecode<SafeUserInfo>(token);
-    setAuth({
-      user,
-      pass: token,
-      reset: () => {
-        setAuth(null);
-        localStorage.removeItem("token");
-      },
-      updateUser: (newUser: SafeUserInfo) => {
-        setAuth({
-          user: newUser,
-          pass: token,
-          reset: () => {
-            setAuth(null);
-            localStorage.removeItem("token");
-          },
-          updateUser: () => {},
-        });
-      },
-    });
-    setTimeout(() => {
-      navigate("/");
-    }, 50);
+    let cancelled = false;
+    void (async () => {
+      let decoded: { username: string };
+      try {
+        decoded = jwtDecode<{ username: string }>(token);
+      } catch {
+        clearStoredAuthToken();
+        navigate("/login");
+        return;
+      }
+
+      const loaded = await getUserById(decoded.username);
+      if (cancelled) return;
+      if ("error" in loaded) {
+        clearStoredAuthToken();
+        navigate("/login");
+        return;
+      }
+
+      setAuth({
+        user: loaded,
+        pass: token,
+        reset: () => {
+          setAuth(null);
+          clearStoredAuthToken();
+        },
+        updateUser: (newUser: SafeUserInfo) => {
+          setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
+        },
+      });
+      setTimeout(() => navigate("/"), 50);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [navigate, setAuth]);
 
   return <div>Logging you in...</div>;

@@ -1,5 +1,6 @@
 import type { ErrorMsg } from "@gamenite/shared";
 import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
+import { getStoredAuthToken } from "../util/authToken.ts";
 
 /**
  * Function to handle successful responses
@@ -13,8 +14,12 @@ const handleErr = (err: AxiosError) => {
   return Promise.reject(err);
 };
 
+/**
+ * Empty baseURL: in dev, Vite proxies `/api` to the backend; in production, the API is served
+ * from the same host as the SPA (see server `MODE=production`).
+ */
 export const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "",
   withCredentials: true,
 });
 /**
@@ -22,7 +27,7 @@ export const api = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
+    const token = getStoredAuthToken();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

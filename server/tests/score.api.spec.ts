@@ -12,12 +12,18 @@ let response: Response;
 const BRIAN_TOKEN = makeToken("briangriffin");
 const STEWIE_TOKEN = makeToken("stewiegrififfin");
 
+type LeaderboardRow = { user: { username: string }; rating: number };
+
+function leaderboardHasUsername(rows: LeaderboardRow[], username: string): boolean {
+  return rows.some((e) => e.user.username === username);
+}
+
 describe("GET /api/scores/leaderboard", () => {
   it("should return chess leaderboard sorted by rating", async () => {
     response = await supertest(app).get("/api/scores/leaderboard?gameType=chess");
     expect(response.status).toBe(200);
 
-    expect(response.body.length).toBe(10);
+    expect(response.body.length).toBe(15);
     expect(response.body[0].user.username).toBe("stewiegrififfin");
     expect(response.body[0].rating).toBe(1900);
     expect(response.body[1].user.username).toBe("briangriffin");
@@ -47,6 +53,56 @@ describe("GET /api/scores/leaderboard", () => {
     expect(response.status).toBe(200);
 
     expect(response.body).toStrictEqual([]);
+  });
+
+  it("should exclude users who opted out of the global leaderboard", async () => {
+    await supertest(app)
+      .post("/api/user/briangriffin")
+      .set("Authorization", `Bearer ${BRIAN_TOKEN}`)
+      .send({ hideFromGlobalLeaderboard: true });
+
+    const profile = await supertest(app).get("/api/user/briangriffin");
+    expect(profile.body.hideFromGlobalLeaderboard).toBe(true);
+
+    response = await supertest(app).get("/api/scores/leaderboard?gameType=chess&limit=50");
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBe(14);
+    const globalRows = response.body as LeaderboardRow[];
+    expect(leaderboardHasUsername(globalRows, "briangriffin")).toBe(false);
+  });
+
+  it("should still list opted-out users on friends-only leaderboard when they are friends", async () => {
+    await supertest(app)
+      .post("/api/friend/request")
+      .set("Authorization", `Bearer ${makeToken("petergriffin")}`)
+      .send({ toUsername: "briangriffin" });
+
+    const pendingRes = await supertest(app)
+      .post("/api/friend/pending")
+      .set("Authorization", `Bearer ${BRIAN_TOKEN}`)
+      .send({});
+    const requestId = pendingRes.body[0]?.requestId as string;
+
+    await supertest(app)
+      .post("/api/friend/respond")
+      .set("Authorization", `Bearer ${BRIAN_TOKEN}`)
+      .send({ requestId, accept: true });
+
+    await supertest(app)
+      .post("/api/user/briangriffin")
+      .set("Authorization", `Bearer ${BRIAN_TOKEN}`)
+      .send({ hideFromGlobalLeaderboard: true });
+
+    const globalRes = await supertest(app).get("/api/scores/leaderboard?gameType=chess&limit=50");
+    const globalRows = globalRes.body as LeaderboardRow[];
+    expect(leaderboardHasUsername(globalRows, "briangriffin")).toBe(false);
+
+    const friendsRes = await supertest(app).get(
+      "/api/scores/leaderboard?gameType=chess&friendsOnly=true&username=petergriffin",
+    );
+    expect(friendsRes.status).toBe(200);
+    const friendRows = friendsRes.body as LeaderboardRow[];
+    expect(leaderboardHasUsername(friendRows, "briangriffin")).toBe(true);
   });
 });
 
@@ -90,7 +146,7 @@ describe("POST /api/scores/myrank", () => {
       .set("Authorization", `Bearer ${makeToken("meggriffin")}`);
     expect(response.status).toBe(200);
 
-    expect(response.body).toStrictEqual({});
+    expect(response.body).toStrictEqual({ rank: expect.any(Number), rating: 1000 });
   });
 
   it("should return empty object when filtering to friends with none", async () => {

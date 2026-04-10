@@ -11,6 +11,7 @@ const makeToken = (username: string) => jwt.sign({ username }, process.env.JWT_S
 let response: Response;
 
 const TOKEN3 = makeToken("user3");
+const TOKEN1 = makeToken("user1");
 
 const userShape = {
   userId: expect.any(String),
@@ -19,6 +20,7 @@ const userShape = {
   totalGamesPlayed: expect.any(Number),
   winRate: expect.any(Number),
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
   ratings: expect.any(Object),
@@ -39,12 +41,26 @@ describe("POST /api/game/create", () => {
     expect(response.status).toBe(400);
   });
 
-  it("should return 403 with bad auth", async () => {
+  it("should return 401 with bad auth", async () => {
     response = await supertest(app)
       .post(`/api/game/create`)
       .set("Authorization", `Bearer invalidtoken`)
       .send({ gameKey: "nim" });
     expect(response.status).toBe(401);
+  });
+
+  it("should return 401 with no auth", async () => {
+    response = await supertest(app).post(`/api/game/create`).send({ gameKey: "nim" });
+    expect(response.status).toBe(401);
+  });
+
+  it("should return 403 when user is not found", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ gameKey: "nim" });
+    expect(response.status).toBe(403);
   });
 
   it("should succeed when asked to create a game of nim", async () => {
@@ -63,7 +79,155 @@ describe("POST /api/game/create", () => {
       minPlayers: 2,
       players: [{ ...userShape, username: "user3", display: "Frau Drei" }],
       visibility: "public",
+      gameMode: "human",
     });
+  });
+
+  it("should create a private game with an invite code", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "nim", visibility: "private" });
+    expect(response.status).toBe(200);
+    expect(response.body.visibility).toBe("private");
+    expect(response.body.inviteCode).toBeDefined();
+  });
+
+  it("should create an AI chess game with status active and no AI player visible", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "medium" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      type: "chess",
+      status: "active",
+      gameMode: "ai",
+      aiDifficulty: "medium",
+      players: [{ username: "user3" }],
+    });
+    const usernames = (response.body.players as { username: string }[]).map((p) => p.username);
+    expect(usernames).not.toContain("AI_OPPONENT");
+    expect(usernames).not.toContain("Computer");
+  });
+
+  it("should create an AI chess game with easy difficulty", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "easy" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ gameMode: "ai", aiDifficulty: "easy", status: "active" });
+  });
+
+  it("should create an AI chess game with hard difficulty", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "hard" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ gameMode: "ai", aiDifficulty: "hard", status: "active" });
+  });
+
+  it("should default to human gameMode when not specified", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess" });
+    expect(response.status).toBe(200);
+    expect(response.body.gameMode).toBe("human");
+    expect(response.body.status).toBe("waiting");
+  });
+
+  it("should return 400 for invalid aiDifficulty", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "impossible" });
+    expect(response.status).toBe(400);
+  });
+
+  it("should create a private AI chess game", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "hard", visibility: "private" });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      gameMode: "ai",
+      visibility: "private",
+      status: "active",
+    });
+    expect(response.body.inviteCode).toBeDefined();
+  });
+
+  it("should create a chess game with time control", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", timeControl: 5 });
+    expect(response.status).toBe(200);
+    expect(response.body.type).toBe("chess");
+  });
+});
+
+describe("POST /api/game/join-by-code", () => {
+  it("should return 400 on ill-formed payload", async () => {
+    response = await supertest(app)
+      .post(`/api/game/join-by-code`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({});
+    expect(response.status).toBe(400);
+  });
+
+  it("should return 401 with no auth", async () => {
+    response = await supertest(app).post(`/api/game/join-by-code`).send({ code: "ABC123" });
+    expect(response.status).toBe(401);
+  });
+
+  it("should return 403 when user is not found", async () => {
+    const token = makeToken("nonexistentuser");
+    response = await supertest(app)
+      .post(`/api/game/join-by-code`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ code: "ABC123" });
+    expect(response.status).toBe(403);
+  });
+
+  it("should return 400 for invalid invite code", async () => {
+    response = await supertest(app)
+      .post(`/api/game/join-by-code`)
+      .set("Authorization", `Bearer ${TOKEN1}`)
+      .send({ code: "INVALID" });
+    expect(response.status).toBe(400);
+  });
+
+  it("should return 400 when trying to join a game already joined", async () => {
+    const createRes = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "nim", visibility: "private" });
+    const { inviteCode } = createRes.body;
+    response = await supertest(app)
+      .post(`/api/game/join-by-code`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ code: inviteCode });
+    expect(response.status).toBe(400);
+  });
+
+  it("should succeed with a valid invite code", async () => {
+    const createRes = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "nim", visibility: "private" });
+    const { inviteCode } = createRes.body;
+
+    response = await supertest(app)
+      .post(`/api/game/join-by-code`)
+      .set("Authorization", `Bearer ${TOKEN1}`)
+      .send({ code: inviteCode });
+    expect(response.status).toBe(200);
+    expect(response.body.players).toHaveLength(2);
   });
 });
 
@@ -84,6 +248,18 @@ describe("GET /api/game/:id", () => {
     response = await supertest(app).get(`/api/game/${gameInfo.gameId}`);
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual(gameInfo);
+  });
+
+  it("should return AI chess game with correct fields", async () => {
+    response = await supertest(app)
+      .post(`/api/game/create`)
+      .set("Authorization", `Bearer ${TOKEN3}`)
+      .send({ gameKey: "chess", gameMode: "ai", aiDifficulty: "hard" });
+    const { gameId } = response.body;
+
+    response = await supertest(app).get(`/api/game/${gameId}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ gameMode: "ai", aiDifficulty: "hard", status: "active" });
   });
 });
 

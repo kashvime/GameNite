@@ -11,6 +11,14 @@ import { type GameMakeMovePayload, type GamePlayInfo, type TaggedGameView } from
 import { type SafeUserInfo } from "./user.types.ts";
 import { type League } from "./league.ts";
 
+/** `string` is legacy; prefer `{ gameId, watchId }` so the client can drop out-of-order replies */
+export type GameWatchPayload =
+  | string
+  | {
+      gameId: string;
+      watchId?: number;
+    };
+
 /**
  * The Socket.io interface for client to server communication
  */
@@ -21,7 +29,7 @@ export interface ClientToServerEvents {
   gameJoinAsPlayer: (payload: WithToken<string>) => void;
   gameMakeMove: (payload: WithToken<GameMakeMovePayload>) => void;
   gameStart: (payload: WithToken<string>) => void;
-  gameWatch: (payload: WithToken<string>) => void;
+  gameWatch: (payload: WithToken<GameWatchPayload>) => void;
 }
 
 /**
@@ -39,4 +47,14 @@ export interface ServerToClientEvents {
   friendRequestReceived: (payload: { from: SafeUserInfo }) => void;
   leagueChanged: (payload: { newLeague: League; oldLeague: League }) => void;
   leaderboardUpdated: () => void;
+  gameRatingUpdated: (payload: {
+    changes: Array<{
+      userId: string;
+      username: string;
+      display: string;
+      oldRating: number;
+      newRating: number;
+      delta: number;
+    }>;
+  }) => void;
 }

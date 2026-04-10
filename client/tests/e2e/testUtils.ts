@@ -59,7 +59,7 @@ export async function createAndLoadGame(
   await page1.getByPlaceholder("Send a message to chat").click();
 
   if (doAssess) {
-    await expect(page1.getByText("you are player #1")).toBeVisible();
+    await expect(page1.getByText("You (player #1)")).toBeVisible();
 
     // This is the only expectation that insists the game cannot start with one player
     await expect(page1.getByRole("button", { name: "Start Game" })).not.toBeVisible();
@@ -94,8 +94,8 @@ export async function createAndLoadGame(
   await page2.getByRole("button", { name: "Join Game" }).click();
 
   if (doAssess) {
-    await expect(page1.getByText("you are player #1")).toBeVisible();
-    await expect(page2.getByText("you are player #2")).toBeVisible();
+    await expect(page1.getByText("You (player #1)")).toBeVisible();
+    await expect(page2.getByText("You (player #2)")).toBeVisible();
 
     // React's strict mode causes chat to be joined twice
     // https://react.dev/reference/react/StrictMode

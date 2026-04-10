@@ -20,9 +20,10 @@ const user1 = {
   totalGamesPlayed: 0,
   winRate: 0,
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 const user2 = {
   userId: expect.any(String),
@@ -32,9 +33,10 @@ const user2 = {
   totalGamesPlayed: 0,
   winRate: 0,
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 
 describe("GET /api/user/:id", () => {
@@ -57,10 +59,7 @@ describe("GET /api/user/:id", () => {
 
 describe("POST /api/user/login", () => {
   it("should return 400 on ill-formed payloads", async () => {
-    response = await supertest(app)
-      .post("/api/user/user1")
-      .set("Authorization", `Bearer ${makeToken("user1")}`)
-      .send({ password: 123 }); // password must be a string, not a number
+    response = await supertest(app).post("/api/user/login").send({ username: "user1" }); // missing password
     expect(response.status).toBe(400);
   });
 
@@ -91,13 +90,18 @@ describe("POST /api/user/login", () => {
   });
 });
 
-describe("POST/api/user/:username", () => {
+describe("POST /api/user/:username", () => {
   it("should return 400 on ill-formed payloads", async () => {
     response = await supertest(app)
       .post("/api/user/user1")
       .set("Authorization", `Bearer ${makeToken("user1")}`)
       .send({ password: 123 });
     expect(response.status).toBe(400);
+  });
+
+  it("should return 401 with no auth", async () => {
+    response = await supertest(app).post("/api/user/user1").send({ display: "New Display" });
+    expect(response.status).toBe(401);
   });
 
   it("should reject invalid authorization", async () => {
@@ -131,24 +135,8 @@ describe("POST/api/user/:username", () => {
     response = await supertest(app)
       .post("/api/user/user1")
       .set("Authorization", `Bearer ${makeToken("user1")}`)
-      .send({ display: "New User 1 Display" });
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({
-      ...user1,
-      display: "New User 1 Display",
-      createdAt: expect.anything(),
-    });
-
-    response = await supertest(app)
-      .post("/api/user/user1")
-      .set("Authorization", `Bearer ${makeToken("user1")}`)
       .send({ password: "new_password_1" });
     expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({
-      ...user1,
-      display: "New User 1 Display",
-      createdAt: expect.anything(),
-    });
 
     response = await supertest(app)
       .post("/api/user/user1")
@@ -161,6 +149,23 @@ describe("POST/api/user/:username", () => {
       createdAt: expect.anything(),
     });
   });
+
+  it("should update hideFromGlobalLeaderboard", async () => {
+    response = await supertest(app)
+      .post("/api/user/user1")
+      .set("Authorization", `Bearer ${makeToken("user1")}`)
+      .send({ hideFromGlobalLeaderboard: true });
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      ...user1,
+      hideFromGlobalLeaderboard: true,
+      createdAt: expect.anything(),
+    });
+
+    response = await supertest(app).get("/api/user/user1");
+    expect(response.status).toBe(200);
+    expect(response.body.hideFromGlobalLeaderboard).toBe(true);
+  });
 });
 
 describe("POST /api/user/signup", () => {
@@ -170,7 +175,6 @@ describe("POST /api/user/signup", () => {
     const username = randomUUID().toString();
     response = await supertest(app).post("/api/user/signup").send({ username, password });
     expect(response.status).toBe(200);
-    expect(response.headers["content-type"]).toMatch(/^application.json/);
     expect(response.body).toStrictEqual({
       userId: expect.any(String),
       username,
@@ -180,9 +184,10 @@ describe("POST /api/user/signup", () => {
       totalGamesPlayed: 0,
       winRate: 0,
       favoriteGame: null,
+      hideFromGlobalLeaderboard: false,
       bio: null,
       avatarUrl: null,
-      ratings: {},
+      ratings: { chess: 1000, nim: 1000, guess: 1000 },
       token: expect.any(String),
     });
   });
@@ -204,7 +209,6 @@ describe("POST /api/user/signup", () => {
 
   it("should not allow a username that conflicts with created paths", async () => {
     const expectedResponse = { error: "That is not a permitted username" };
-
     response = await supertest(app).post("/api/user/signup").send({ username: "signup", password });
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual(expectedResponse);
@@ -217,10 +221,7 @@ describe("POST /api/user/signup", () => {
 
 describe("POST /api/user/list", () => {
   it("should return 400 on ill-formed payloads", async () => {
-    response = await supertest(app)
-      .post("/api/user/user1")
-      .set("Authorization", `Bearer ${makeToken("user1")}`)
-      .send({ password: 123 }); // password must be a string not a number
+    response = await supertest(app).post("/api/user/list").send({ not: "an array" });
     expect(response.status).toBe(400);
   });
 

@@ -1,4 +1,11 @@
-import { type GameInfo, type League, zGameKey, zGameMakeMovePayload } from "@gamenite/shared";
+import {
+  type GameInfo,
+  type League,
+  zGameKey,
+  zGameMakeMovePayload,
+  zGameMode,
+  zAIDifficulty,
+} from "@gamenite/shared";
 import { type RestAPI, type GameViewUpdates, type SocketAPI, type GameServer } from "../types.ts";
 import {
   createGame,
@@ -27,6 +34,11 @@ function verifySocketToken(token: unknown): JwtUser {
 
 const zSocketPayload = <T extends z.ZodType>(zT: T) => z.object({ token: z.string(), payload: zT });
 
+const zGameWatchBody = z.object({
+  token: z.string(),
+  payload: z.union([z.string(), z.object({ gameId: z.string(), watchId: z.number().optional() })]),
+});
+
 /**
  * Handle POST requests to `/api/game/create` by creating a game. The game
  * starts with one player, the user who made the POST request.
@@ -36,6 +48,12 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     .object({
       gameKey: zGameKey,
       visibility: z.enum(["public", "private"]).default("public"),
+      timeControl: z
+        .union([z.literal(5), z.literal(10), z.literal(30)])
+        .nullable()
+        .optional(),
+      gameMode: zGameMode.default("human"),
+      aiDifficulty: zAIDifficulty.optional(),
     })
     .safeParse(req.body);
   if (body.error) {
@@ -52,8 +70,21 @@ export const postCreate: RestAPI<GameInfo> = async (req, res) => {
     res.status(403).send({ error: "User not found" });
     return;
   }
-  const game = await createGame(user, body.data.gameKey, new Date(), body.data.visibility);
-  res.send(game);
+  const { gameKey, visibility, gameMode, aiDifficulty } = body.data;
+  const game = await createGame(
+    user,
+    gameKey,
+    new Date(),
+    visibility,
+    gameMode,
+    aiDifficulty,
+    body.data.timeControl ?? null,
+  );
+  if (gameMode === "ai") {
+    await joinGame(game.gameId, { userId: "AI_OPPONENT", username: "AI" });
+    await startGame(game.gameId, user);
+  }
+  res.send((await getGameById(game.gameId)) ?? game);
 };
 
 export const postJoinByCode: RestAPI<GameInfo> = async (req, res) => {
@@ -110,14 +141,14 @@ function sendViewUpdates(io: GameServer, gameId: string, updates: GameViewUpdate
 
 export const socketWatch: SocketAPI = (socket) => async (body) => {
   try {
-    const parsed = zSocketPayload(z.string()).parse(body);
+    const parsed = zGameWatchBody.parse(body);
     const jwtUser = verifySocketToken(parsed.token);
     const user = await getUserByUsername(jwtUser.username);
     if (!user) throw new Error("User not found");
-    const { isPlayer, view, players } = await viewGame(parsed.payload, user);
-    const roomsToJoin = isPlayer
-      ? [parsed.payload, userRoom(parsed.payload, user.userId)]
-      : [parsed.payload];
+    const gameId = typeof parsed.payload === "string" ? parsed.payload : parsed.payload.gameId;
+    const watchId = typeof parsed.payload === "object" ? parsed.payload.watchId : undefined;
+    const { isPlayer, view, players, yourPlayerIndex } = await viewGame(gameId, user);
+    const roomsToJoin = isPlayer ? [gameId, userRoom(gameId, user.userId)] : [gameId];
 
     for (const room of roomsToJoin) {
       if (!socket.rooms.has(room)) {
@@ -125,7 +156,13 @@ export const socketWatch: SocketAPI = (socket) => async (body) => {
       }
     }
     await socket.join(roomsToJoin);
-    socket.emit("gameWatched", { gameId: parsed.payload, view, players });
+    socket.emit("gameWatched", {
+      gameId,
+      view,
+      players,
+      yourPlayerIndex,
+      ...(watchId !== undefined ? { watchId } : {}),
+    });
   } catch (err) {
     logSocketError(socket, err);
   }
@@ -169,7 +206,12 @@ export const socketMakeMove: SocketAPI = (socket, io) => async (body) => {
     const user = await getUserByUsername(jwtUser.username);
     if (!user) throw new Error("User not found");
     const { gameId, move } = parsed.payload;
-    const { views, moveDescription, chatId, leagueChanges } = await updateGame(gameId, user, move);
+    const { views, moveDescription, chatId, leagueChanges } = await updateGame(
+      gameId,
+      user,
+      move,
+      io,
+    );
     sendViewUpdates(io, gameId, views);
     for (const change of (leagueChanges ?? []) as {
       userId: string;

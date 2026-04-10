@@ -1,4 +1,4 @@
-import type { GameKey } from "@gamenite/shared";
+import type { AIDifficulty, GameKey, GameMode } from "@gamenite/shared";
 
 /**
  * Record identifiers used to look up keys in a database. This type
@@ -83,6 +83,9 @@ export interface GameRecord {
   createdBy: RecordId; // References User records
   visibility: "public" | "private";
   inviteCode?: string;
+  timeControl?: 5 | 10 | 30 | null;
+  gameMode?: GameMode;
+  aiDifficulty?: AIDifficulty;
 }
 
 /**
@@ -123,6 +126,7 @@ export interface ThreadRecord {
  * - `favoriteGame`: the game the user has played the most
  * - `bio`: optional short user-written bio
  * - `avatarUrl`: optional path to uploaded profile picture
+ * - `hideFromGlobalLeaderboard`: whether user opts out of global leaderboard listings
  * - `rating`: the user's current Elo rating (starts at 1000)
  */
 export interface UserRecord {
@@ -134,6 +138,7 @@ export interface UserRecord {
   favoriteGame?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+  hideFromGlobalLeaderboard?: boolean;
   ratings?: Partial<Record<GameKey, number>>;
   onlineStatus?: "online" | "offline" | "in_match";
 }
@@ -156,6 +161,7 @@ export interface ScoreRecord {
   gameId: RecordId;
   score?: number;
   result: "win" | "loss" | "draw";
+  ratingDelta?: number;
   durationSeconds?: number;
   createdAt: DateISO;
 }

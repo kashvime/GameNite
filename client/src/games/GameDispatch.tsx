@@ -18,8 +18,7 @@ export default function GameDispatch({
   players,
   view,
 }: GameDispatchProps): JSX.Element {
-  const { socket } = useLoginContext();
-  const token = localStorage.getItem("token") ?? "";
+  const { socket, pass: token } = useLoginContext();
 
   function makeMove(move: unknown) {
     socket.emit("gameMakeMove", { token, payload: { gameId, move } });

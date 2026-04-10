@@ -1,50 +1,99 @@
 .filterBar {
   display: flex;
-  gap: 5px;
-  padding: 10px;
-  background-color: lightblue;
-  width: fit-content;
-  margin: 20px 0;
-  border: 1px solid var(--gray-foreground);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
 }
 
-.filterChips {
-  display: flex;
-  gap: 0.9rem;
-  margin-bottom: 0.5rem;
-}
-
-.filterChip {
-  padding: 0.2rem 0.9rem;
-  background: gray;
-  color: white;
-  border-radius: 999px;
-  font-size: 0.7rem;
-}
-
-.clearAll {
-  background: none;
-  border: none;
-  color: var(--gray-foreground);
+.filterBar select,
+.filterBar input[type="date"] {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: #f8fafc;
   cursor: pointer;
-  font-size: 0.8rem;
-  text-decoration: underline;
-}
-.filterChip button {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 0.65rem;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  padding-right: 2rem;
 }
 
-.dateError {
-  font-size: 0.8rem;
-  color: red;
+.filterBar select:focus,
+.filterBar input[type="date"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .dateInputs {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.dateInputs input[type="date"] {
+  background-image: none;
+  padding-right: 0.75rem;
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--color-primary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.filterChip button {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0;
+  line-height: 1;
+}
+
+.clearAll {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.clearAll:hover {
+  color: var(--color-danger);
+}
+
+.dateError {
+  font-size: 0.8rem;
+  color: var(--color-danger);
 }

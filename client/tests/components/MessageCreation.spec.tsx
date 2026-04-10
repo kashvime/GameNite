@@ -20,7 +20,7 @@ describe("MessageCreation component", () => {
     render(<MessageCreation handleMessageCreation={handleMessageCreation} />);
 
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "Comment" } });
-    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
     expect(handleMessageCreation).toHaveBeenCalledExactlyOnceWith("Comment");
   });
 

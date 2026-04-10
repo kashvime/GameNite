@@ -23,8 +23,11 @@ import Friends from "./pages/Friends.tsx";
 import MatchHistory from "./pages/MatchHistory.tsx";
 import Leaderboard from "./pages/Leaderboard.tsx";
 import AuthSuccess from "./pages/AuthSuccess";
+import Messages from "./pages/Messages.tsx";
 import { jwtDecode } from "jwt-decode";
 import type { SafeUserInfo } from "@gamenite/shared";
+import { clearStoredAuthToken, getStoredAuthToken } from "./util/authToken.ts";
+import { getUserById } from "./services/userService.ts";
 
 /** If `true`, all incoming socket messages will be logged */
 const DEBUG_SOCKETS = false;
@@ -57,35 +60,51 @@ export default function App() {
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    let cancelled = false;
 
-    if (token) {
-      try {
-        const decoded = jwtDecode<SafeUserInfo>(token);
+    const finishLoading = () => {
+      if (!cancelled) setLoading(false);
+    };
 
-        // Fetch full user data to get avatarUrl and other fields
-        fetch(`http://localhost:8000/api/user/${encodeURIComponent(decoded.username)}`)
-          .then((res) => res.json())
-          .then((user: SafeUserInfo) => {
-            queueMicrotask(() => {
-              setAuth({
-                user,
-                pass: token,
-                reset: () => {
-                  setAuth(null);
-                  localStorage.removeItem("token");
-                },
-                updateUser: (newUser) => {
-                  setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
-                },
-              });
-            });
-          });
-      } catch {
-        localStorage.removeItem("token");
-      }
+    const token = getStoredAuthToken();
+    if (!token) {
+      finishLoading();
+      return () => {
+        cancelled = true;
+      };
     }
-    queueMicrotask(() => setLoading(false));
+
+    try {
+      const decoded = jwtDecode<{ username: string }>(token);
+      void (async () => {
+        const loaded = await getUserById(decoded.username);
+        if (cancelled) return;
+        if ("error" in loaded) {
+          clearStoredAuthToken();
+          finishLoading();
+          return;
+        }
+        setAuth({
+          user: loaded,
+          pass: token,
+          reset: () => {
+            setAuth(null);
+            clearStoredAuthToken();
+          },
+          updateUser: (newUser) => {
+            setAuth((prev) => (prev ? { ...prev, user: newUser } : null));
+          },
+        });
+        finishLoading();
+      })();
+    } catch {
+      clearStoredAuthToken();
+      finishLoading();
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {
@@ -117,6 +136,7 @@ export default function App() {
             <Route path="/game/:gameId" element={<Game />} />
             <Route path="/profile/:username" element={<Profile />} />
             <Route path="/friends" element={<Friends />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/matches" element={<MatchHistory />} />
             <Route path="/*" element={<NoSuchRoute />} />
             <Route path="/leaderboard" element={<Leaderboard />} />

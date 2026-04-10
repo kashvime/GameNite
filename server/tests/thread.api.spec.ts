@@ -12,6 +12,7 @@ let response: Response;
 
 const TOKEN1 = makeToken("user1");
 const TOKEN2 = makeToken("user2");
+const TOKEN_NONEXISTENT = makeToken("nonexistentuser");
 
 const userShape = {
   userId: expect.any(String),
@@ -20,9 +21,10 @@ const userShape = {
   totalGamesPlayed: expect.any(Number),
   winRate: expect.any(Number),
   favoriteGame: null,
+  hideFromGlobalLeaderboard: false,
   bio: null,
   avatarUrl: null,
-  ratings: {},
+  ratings: { chess: 1000, nim: 1000, guess: 1000 },
 };
 
 describe("GET /api/thread/list", () => {
@@ -74,12 +76,27 @@ describe("POST /api/thread/create", () => {
     expect(response.status).toBe(400);
   });
 
-  it("should return 403 with bad auth", async () => {
+  it("should return 401 with bad auth", async () => {
     response = await supertest(app)
       .post(`/api/thread/create`)
       .set("Authorization", `Bearer invalidtoken`)
       .send({ title: "Evil title", text: "Evil contents" });
     expect(response.status).toBe(401);
+  });
+
+  it("should return 401 with no auth", async () => {
+    response = await supertest(app)
+      .post(`/api/thread/create`)
+      .send({ title: "Title", text: "Text" });
+    expect(response.status).toBe(401);
+  });
+
+  it("should return 403 when user is not found", async () => {
+    response = await supertest(app)
+      .post(`/api/thread/create`)
+      .set("Authorization", `Bearer ${TOKEN_NONEXISTENT}`)
+      .send({ title: "Title", text: "Text" });
+    expect(response.status).toBe(403);
   });
 
   it("should succeed with correct information", async () => {
@@ -100,7 +117,7 @@ describe("POST /api/thread/create", () => {
 });
 
 describe("POST /api/thread/:id/comment", () => {
-  it("should return 400 on on ill-formed payload", async () => {
+  it("should return 400 on ill-formed payload", async () => {
     response = await supertest(app)
       .post(`/api/thread/deadbeefdeadbeefdeadbeef/comment`)
       .set("Authorization", `Bearer ${TOKEN1}`)
@@ -116,12 +133,27 @@ describe("POST /api/thread/:id/comment", () => {
     expect(response.status).toBe(404);
   });
 
-  it("should return 403 with bad auth", async () => {
+  it("should return 401 with bad auth", async () => {
     response = await supertest(app)
       .post(`/api/thread/deadbeefdeadbeefdeadbeef/comment`)
       .set("Authorization", `Bearer invalidtoken`)
       .send({ payload: "FIRST!" });
     expect(response.status).toBe(401);
+  });
+
+  it("should return 401 with no auth", async () => {
+    response = await supertest(app)
+      .post(`/api/thread/deadbeefdeadbeefdeadbeef/comment`)
+      .send({ payload: "FIRST!" });
+    expect(response.status).toBe(401);
+  });
+
+  it("should return 403 when user is not found", async () => {
+    response = await supertest(app)
+      .post(`/api/thread/deadbeefdeadbeefdeadbeef/comment`)
+      .set("Authorization", `Bearer ${TOKEN_NONEXISTENT}`)
+      .send({ payload: "FIRST!" });
+    expect(response.status).toBe(403);
   });
 
   it("should succeed with correct information", async () => {

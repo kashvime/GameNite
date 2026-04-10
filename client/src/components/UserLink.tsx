@@ -1,5 +1,6 @@
 import type { SafeUserInfo } from "@gamenite/shared";
 import useLoginContext from "../hooks/useLoginContext";
+import { isSameUser } from "../util/viewerSeat.ts";
 import { NavLink } from "react-router-dom";
 
 interface UserLinkProps {
@@ -9,7 +10,7 @@ interface UserLinkProps {
 
 export default function UserLink({ user, capitalize }: UserLinkProps) {
   const loggedInUser = useLoginContext();
-  if (user.username === loggedInUser.user.username) {
+  if (isSameUser(user, loggedInUser.user)) {
     return capitalize ? "You" : "you";
   }
   return <NavLink to={`/profile/${user.username}`}>{user.display}</NavLink>;

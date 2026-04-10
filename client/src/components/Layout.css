@@ -9,4 +9,6 @@
 
 .right_main {
   grid-area: main;
+  overflow-y: auto;
+  min-width: 0;
 }
