@@ -333,6 +333,7 @@ describe("populateSafeUserInfo - winRate zero branch", () => {
     const newUserId = "test-no-games-user";
     await userRepo2.set(newUserId, {
       username: "testnosgames",
+      display: "testnosgames",
       createdAt: new Date().toISOString(),
     });
     const result = await populateSafeUserInfo(newUserId);
