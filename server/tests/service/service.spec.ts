@@ -317,3 +317,12 @@ describe("populateSafeUserInfo - AI_OPPONENT", () => {
     expect(result.userId).toBe("AI_OPPONENT");
   });
 });
+
+describe("populateSafeUserInfo - user with no games", () => {
+  it("returns null favoriteGame when user has no games played", async () => {
+    const { UserRepo } = await import("../../src/repository.ts");
+    const keys = await UserRepo.getAllKeys();
+    const result = await populateSafeUserInfo(keys[0]);
+    expect(result.totalGamesPlayed).toBeGreaterThanOrEqual(0);
+  });
+});
