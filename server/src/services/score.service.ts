@@ -80,7 +80,9 @@ export async function getMatchesByUserId(
       if (createdAt < filter.dateRange.from || createdAt > filter.dateRange.to) continue;
     }
     if (filter?.result && record.result !== filter.result) continue;
-    const opponent = record.opponentId ? await populateSafeUserInfo(record.opponentId) : undefined;
+    const opponent = record.opponentId
+      ? await populateSafeUserInfo(record.opponentId).catch(() => undefined)
+      : undefined;
     if (filter?.opponentUsername && opponent?.username !== filter.opponentUsername) continue;
     let pgn: string | undefined;
     if (record.gameType === "chess" && record.gameId) {

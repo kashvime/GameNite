@@ -131,12 +131,11 @@ export function createRepo<T = unknown>(repoName: string): Repo<T> {
     getMany: async (keys) => {
       const store = getStore();
       const values = await store.getMany(keys);
-      return values.filter((v): v is T => {
-        if (v === undefined) {
-          throw new Error(`getMany in repository ${repoName} had undefined keys`);
-        }
-        return true;
-      });
+      const missingIndex = values.findIndex((v) => v === undefined);
+      if (missingIndex !== -1) {
+        throw new Error(`getMany in repository ${repoName} had undefined keys`);
+      }
+      return values as T[];
     },
 
     getAllKeys: async () => {

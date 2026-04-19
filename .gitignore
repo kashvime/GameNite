@@ -75,6 +75,8 @@ typings/
 
 # dotenv environment variables file
 .env*
+!.env.example
+!server/.env.example
 *.local
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -134,3 +136,4 @@ test-results/
 # misc
 client/build
 .DS_Store
+server/.env

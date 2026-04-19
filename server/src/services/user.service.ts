@@ -34,7 +34,23 @@ export async function populateSafeUserInfo(userId: string): Promise<SafeUserInfo
       hideFromGlobalLeaderboard: false,
     };
   }
-  const record = await UserRepo.get(userId);
+  const record = await UserRepo.find(userId);
+  if (!record) {
+    return {
+      userId,
+      username: "Deleted User",
+      display: "Deleted User",
+      createdAt: new Date(0),
+      onlineStatus: "offline",
+      totalGamesPlayed: 0,
+      winRate: 0,
+      favoriteGame: null,
+      bio: null,
+      avatarUrl: null,
+      ratings: {},
+      hideFromGlobalLeaderboard: true,
+    };
+  }
 
   // Calculate real stats from match history
   const keys = await ScoreRepo.getAllKeys();
@@ -192,7 +208,7 @@ export async function updateRating(
   gameType: GameKey,
   opponentRating: number,
   result: "win" | "loss" | "draw",
-): Promise<{ oldRating: number; newRating: number; oldLeague: League; newLeague: League } | null> {
+): Promise<{ oldRating: number; newRating: number; oldLeague: League; newLeague: League }> {
   const record = await UserRepo.get(userId);
   const oldRating = record.ratings?.[gameType] ?? 1000;
   const actualScore = result === "win" ? 1 : result === "draw" ? 0.5 : 0;
@@ -202,7 +218,6 @@ export async function updateRating(
   const newLeague = computeLeague(newRating);
   record.ratings = { ...record.ratings, [gameType]: newRating };
   await UserRepo.set(userId, record);
-  if (oldLeague === newLeague) return null; // ← add this
   return { oldRating, newRating, oldLeague, newLeague };
 }
 /**

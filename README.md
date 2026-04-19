@@ -1,209 +1,285 @@
-#### CI Pipeline Verified
+<div align="center">
 
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/LS0tMb4M)
-The individual and team project for this class are designed to mirror the
-experiences of a software engineer joining a new development team: you will be
-“onboarded” to our codebase, make several individual contributions, and then
-form a team to propose, develop and implement new features. The codebase that
-we'll be developing is GameNite, a website that answers the question "what if
-Twitch, but for correspondence chess?"
+# GameNite
 
-You will get an opportunity to work with the starter code which provides basic
-skeleton for the app and then additional features will be proposed and
-implemented by you! All implementation will take place in the TypeScript
-programming language, using React for the user interface.
+### A full-stack multiplayer gaming platform with real-time gameplay, Elo-based rankings, and social features. Built with TypeScript, React, Node.js, and MongoDB.
 
-GameNite is a competitive multiplayer gaming platform featuring real-time
-leaderboards, a friend system, skill-based leagues, match history tracking,
-and enhanced user profiles. The platform supports Chess, Nim, and Number
-Guesser, with a full Chess experience including AI opponents, timed matches,
-and move-by-move game replay. Getting Started Run npm install in the root
-directory to install all dependencies for the client, server, and shared
-folders. Working on the application While you're working on the application,
-it's useful to run it in "development mode" locally. Development mode watches
-files for changes and updates the application when changes happen. To run
-gamenite locally in development mode, do one of the following:
+<br/>
 
-Run npm run dev in the top-level directory Open two terminal windows
+[![CI](https://github.com/kashvime/gamenite/actions/workflows/main.yml/badge.svg)](https://github.com/kashvime/gamenite/actions)
+&nbsp;
+![TypeScript](https://img.shields.io/badge/TypeScript-DA70A6?style=flat-square&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_19-DA70A6?style=flat-square&logo=react&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-DA70A6?style=flat-square&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express_5-DA70A6?style=flat-square&logo=express&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-C45FA0?style=flat-square&logo=socketdotio&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-C45FA0?style=flat-square&logo=mongodb&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-A0336B?style=flat-square&logo=vitest&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-A0336B?style=flat-square&logo=playwright&logoColor=white)
 
-In the first, navigate to the server directory and run npm run dev In the
-second, navigate to the client directory and also run npm run dev
+<br/>
+<a href="https://gameniteserver-production.up.railway.app">
+  <img src="https://img.shields.io/badge/Deployed_Site_%E2%86%92-0891B2?style=for-the-badge&logoColor=white" height="42" alt="Deployed Site ->"/>
+</a>
 
-The second terminal window, the one in the client directory, shows a URL that
-you should go to to preview the application, probably http://localhost:4530/.
-You can use the default username/password combinations user0/pwd0000,
-user1/pwd1111, user2/pwd2222, and user3/pwd3333 to log in. Checking the
-application Checks can be run on every part of the application at once by
-running the following commands from the repository root:
+</div>
 
-npm run check - Checks all three projects with TypeScript npm run lint -
-Checks all three projects with ESLint npm run test - Runs Vitest tests on all
-three projects and end-to-end Playwright tests
+<br/>
 
-Building the application If you want to deploy the application or build it in
-production mode, running npm run build -w=client in the root of the repository
-will create the production build of the client. Then, the server can be
-started in production mode by running npm start -w=server and accessed by
-going to http://localhost:8000/. Codebase Folder Structure
+---
 
-client: Contains the frontend application code, responsible for the user
-interface and interacting with the backend. This directory includes all React
-components and related assets. server: Contains the backend application code,
-handling the logic, APIs, and database interactions. It serves requests from
-the client and processes data accordingly. shared: Contains all shared type
-definitions that are used by both the client and server. This helps maintain
-consistency and reduces duplication of code between the two folders.
+## Features
 
-API Routes The server provides the following REST endpoints: requests are
-routed to these endpoints in server/src/app.ts. /api/game
-EndpointMethodDescription/createPOSTCreate new game/listGETList all
-games/:idGETGet information about a specific game/join-by-codePOSTJoin a
-private game by invite code /api/thread
-EndpointMethodDescription/createPOSTCreate new forum post/listGETList all
-forum posts/:idGETGet information about a forum post/:id/commentPOSTAdd a
-comment to a forum post /api/user EndpointMethodDescription/listPOSTGet
-details of a list of users/loginPOSTValidate username/password
-entry/signupPOSTCreate a new user/:usernamePOSTUpdate user's display name or
-password/:usernameGETGet information about a user /api/friend
-EndpointMethodDescription/requestPOSTSend a friend request/respondPOSTAccept
-or decline a friend request/listPOSTGet current friends list/pendingPOSTGet
-pending friend requests /api/match EndpointMethodDescription/historyPOSTGet
-match history with filters /api/score
-EndpointMethodDescription/leaderboardGETGet leaderboard rankings/rankGETGet
-current user's rank Websockets The Socket.io API for event-driven
-communication between clients and the server is detailed in
-shared/src/socket.types.ts. Data Architecture This web application stores
-information about users, forum posts, and games. The structure of the data can
-be described by this diagram: erDiagram Auth { string username "unique key"
-userId userId "unique" string password "" }
+### Chess
 
-    User {
-        userId userId "generated key"
-        username username "unique"
-        string display ""
-        Date createdAt ""
-        number rating ""
-        string league ""
-    }
-    User ||--|| Auth: "User.username"
-    Auth ||--|| User: "Auth.userId"
+Full rule enforcement via chess.js — castling, en passant, pawn promotion,
+check, stalemate, and checkmate. Optional 5 10 30 minute time controls,
+resignation, and an AI opponent at three difficulty levels. Elo ratings update
+live the moment a game ends.
 
-    Thread {
-        threadId threadId "generated key"
-        string title ""
-        string text ""
-        Date createdAt ""
-        userId createdBy ""
-        commentId[] comments ""
-    }
-    Thread ||--|| User: "Thread.createdBy"
-    Thread ||--o{ Comment: "Thread.comments"
+<br/>
+<div align="center">
+  <img src="screenshots-readme/chess-game-end.png" alt="Chess game end with Elo delta" width="500"/>
+</div>
+<br/>
 
-    Comment {
-        commentId commentId "generated key"
-        string text ""
-        userId createdBy ""
-        Date createdAt ""
-        Date editedAt "can be null"
-    }
-    Comment ||--|| User: "Comment.createdBy"
+Every match is logged with opponent, result, exact rating delta, and date.
+From match history you can filter by game type, result, opponent, or date
+range — and expand any chess game to step through moves on an inline replay
+board with the full move list.
 
-    Game {
-        gameId gameId "generated key"
-        GameKey type ""
-        unknown state ""
-        boolean done ""
-        chatId chat ""
-        userId[] players ""
-        Date createdAt ""
-        userId createdBy ""
-        string visibility ""
-        string inviteCode "private games only"
-        number timeControl "chess only"
-    }
-    Game ||--|| Chat: "Game.chat"
-    Game ||--|| User: "Game.createdBy"
-    Game ||--o{ User: "Game.players"
+<br/>
+<div align="center">
+  <img src="screenshots-readme/match-history.png" alt="Match history with inline PGN replay" width="760"/>
+</div>
+<br/>
 
-    Chat {
-        chatId chatId "generated key"
-        messageId[] messages ""
-        Date createdAt ""
-    }
-    Chat ||--o{ Message: "Chat.messages"
+**The game architecture is extensible by design.** Each game implements a
+`GameLogic<State, View>` interface — start update isDone winner viewAs — and
+registers itself in a central service map. Adding a new game means dropping in
+one new file per layer (types, server logic, React component) with no changes
+to core infrastructure.
 
-    Message {
-        messageId messageId "generated key"
-        string text ""
-        Date createdAt ""
-    }
-    Message ||--|| User: "Message.createdBy"
+---
 
-    ScoreRecord {
-        string userId ""
-        string opponentId ""
-        string gameType ""
-        string gameId ""
-        string result ""
-        Date createdAt ""
-    }
-    ScoreRecord ||--|| User: "ScoreRecord.userId"
+### Platform
 
-    FriendRecord {
-        string from ""
-        string to ""
-        string status ""
-        Date createdAt ""
-    }
-    FriendRecord ||--|| User: "FriendRecord.from"
-    FriendRecord ||--|| User: "FriendRecord.to"
+**Elo + Leagues** — every completed match updates both players' ratings using
+the standard Elo formula K=32. Cross a threshold and you're automatically
+promoted or demoted between Bronze Silver Gold. A live socket event fires so
+every connected client updates instantly.
 
-Games To create a new game example, you need to take the following steps:
+**Leaderboard** — global or friends-only, filterable by game type and league.
+Your own rank is always visible even if you fall outside the top 30.
 
-In a new file shared/src/games/example.types.ts, define the game's state: what
-gets stored on the server as an ExampleState, what gets sent to players as an
-ExampleView, and what players send as moves as an ExampleMove. In the existing
-file shared/src/game.types.ts:
+**Friends and Profiles** — every user has a public profile showing per-game
+ratings, progress to next league, win rate, and recent matches. On a friend's
+profile, you also see your head-to-head record against them.
 
-The ExampleView needs to be imported from shared/src/games/example.types.ts.
-Everything in shared/src/games/example.ts file needs be exported (so it can be
-used in other files that import game.types.ts). The GameKey example needs to
-be added to zGameKey and { type: 'example'; view: ExampleView } needs to be
-added to TaggedGameView.
+<br/>
+<table>
+<tr>
+<td width="50%"><img src="screenshots-readme/my-profile.png" alt="User profile"/></td>
+<td width="50%"><img src="screenshots-readme/my-friend.png" alt="Friend profile with head-to-head stats"/></td>
+</tr>
+<tr>
+<td align="center"><sub>Per-game ratings · league progress · win rate</sub></td>
+<td align="center"><sub>Head-to-head stats on any friend's profile</sub></td>
+</tr>
+</table>
+<br/>
 
-In a new file server/src/games/example.ts, the rules of the game, which are
-evaluated in the backend server, need to be added. This file should export
-exampleLogic and exampleGameService. In the existing file
-server/src/services/game.service.ts, the mapping from example to
-exampleGameService needs to be added to gameServices. In a new file
-client/src/games/ExampleGame.tsx, a React component ExampleGame needs to be
-defined, which takes GameProps<ExampleView, ExampleMove> as its props. In the
-existing file client/src/games/GameDispatch.tsx, a case statement for
-'example' needs to be added. In the existing file client/src/util/consts.ts, a
-mapping from example to the user-facing name for the game needs to be added.
+**Private Games** — generate an invite code, share it, and spectators can
+watch live via the same WebSocket room.
 
-Chess Features GameNite includes a full-featured Chess implementation:
+**Auth** — username/password or Google SSO via OAuth 2.0. Both flow through a
+Passport.js strategy abstraction that issues the same JWT. The rest of the app
+never knows which provider was used.
 
-Full rule enforcement via chess.js, including castling, pawn promotion, check
-detection, and stalemate/checkmate detection Timed matches with optional 5,
-10, or 30 minute time controls — a player automatically loses when their clock
-runs out Resignation — players can resign at any point during a match AI
-opponent — play against a computer opponent with easy, medium, or hard
-difficulty levels Post-game statistics — total moves played, pieces captured
-by each side, and time used per player Move history replay — completed chess
-games store the full PGN move sequence, viewable and replayable move-by-move
-from the Match History page Rating and league updates — after each match,
-player ratings and league placements are automatically updated using an
-Elo-based algorithm
+---
 
-New Platform Features
+## System Architecture
 
-Leaderboards — real-time global and friends-only leaderboards filterable by
-game type and league Friend system — send, accept, and manage friend requests;
-view friends-only leaderboards and head-to-head stats Match history — detailed
-records of past games with filtering by game type, result, opponent, and date
-range Skill-based leagues — Bronze, Silver, and Gold leagues based on Elo
-ratings, with automatic promotion and demotion Enhanced profiles — public
-profile pages showing stats, ratings, online status, and recent activity
-Private games — create invite-only games with a shareable code Single Sign-On
-(SSO) — secure login via Google OAuth
+<br/>
+<div align="center">
+  <img src="screenshots-readme/System architecture diagram.png" alt="System Architecture" width="640"/>
+</div>
+<br/>
+
+> React communicates over REST for CRUD and WebSocket via Socket.io for live
+> game state. Board state is authoritative server-side only — the client never
+> mutates, only renders what it receives.
+
+---
+
+## How It's Built
+
+**Storage** — a Keyv abstraction wraps every repository. In production a
+single env var points it at MongoDB. No conditionals scattered through the
+app, no code change required.
+
+**Elo writes are atomic** — when a game ends, the rating delta for both
+players is calculated and committed in a single service call. A crash
+mid-update can't leave one player's rating changed and the other's untouched.
+
+**End-to-end type safety** — `shared/src/socket.types.ts` is a single package
+imported by both client and server. If an event name or payload shape changes
+on one side, the build fails before anything ships.
+
+```ts
+interface ServerToClientEvents {
+  gameStateUpdated: (
+    payload: TaggedGameView & { forPlayer: boolean },
+  ) => void;
+  gameRatingUpdated: (payload: { changes: RatingDelta[] }) => void;
+  leagueChanged: (payload: { newLeague: League; oldLeague: League }) => void;
+  friendRequestReceived: (payload: { from: SafeUserInfo }) => void;
+}
+```
+
+**Chess AI is async** — after a human move, the AI response is scheduled with
+a short delay and runs outside the request cycle. The event loop never blocks
+waiting for minimax to finish. Hard mode uses alpha-beta pruning and
+piece-square tables at depth 3.
+
+---
+
+## API Routes
+
+<details>
+<summary>User</summary>
+<br/>
+
+| Method | Route                 | Description                     |
+| :----: | --------------------- | ------------------------------- |
+| `POST` | `/api/user/signup`    | Create account → JWT            |
+| `POST` | `/api/user/login`     | Authenticate → JWT              |
+| `GET`  | `/api/user/:username` | Public profile                  |
+| `POST` | `/api/user/:username` | Update display name or password |
+| `POST` | `/api/user/list`      | Bulk user lookup                |
+
+</details>
+
+<details>
+<summary>Game</summary>
+<br/>
+
+| Method | Route                    | Description                      |
+| :----: | ------------------------ | -------------------------------- |
+| `POST` | `/api/game/create`       | Create game (public or private)  |
+| `GET`  | `/api/game/list`         | Active games                     |
+| `GET`  | `/api/game/:id`          | Game state                       |
+| `POST` | `/api/game/join-by-code` | Join private game by invite code |
+
+</details>
+
+<details>
+<summary>Friends</summary>
+<br/>
+
+| Method | Route                 | Description                   |
+| :----: | --------------------- | ----------------------------- |
+| `POST` | `/api/friend/request` | Send friend request           |
+| `POST` | `/api/friend/respond` | Accept / decline              |
+| `POST` | `/api/friend/list`    | Your friends                  |
+| `POST` | `/api/friend/pending` | Pending requests              |
+| `POST` | `/api/friend/status`  | Friendship status with a user |
+
+</details>
+
+<details>
+<summary>Scores &amp; Matches</summary>
+<br/>
+
+| Method | Route                     | Description                |
+| :----: | ------------------------- | -------------------------- |
+| `GET`  | `/api/scores/leaderboard` | Global rankings            |
+| `POST` | `/api/scores/myrank`      | Your current rank          |
+| `POST` | `/api/matches`            | Match history with filters |
+
+</details>
+
+<details>
+<summary>Forum</summary>
+<br/>
+
+| Method | Route                     | Description    |
+| :----: | ------------------------- | -------------- |
+| `POST` | `/api/thread/create`      | New forum post |
+| `GET`  | `/api/thread/list`        | All posts      |
+| `GET`  | `/api/thread/:id`         | Single post    |
+| `POST` | `/api/thread/:id/comment` | Add comment    |
+
+</details>
+
+<details>
+<summary>Auth</summary>
+<br/>
+
+| Method | Route                   | Description                 |
+| :----: | ----------------------- | --------------------------- |
+| `GET`  | `/auth/google`          | Initiate Google OAuth       |
+| `GET`  | `/auth/google/callback` | Google OAuth callback → JWT |
+
+</details>
+
+---
+
+## Testing
+
+Three-layer coverage across every critical path.
+
+| Layer       | Tool               | Covers                                     |
+| ----------- | ------------------ | ------------------------------------------ |
+| Unit        | Vitest             | Chess rules, Elo algorithm, auth, services |
+| Integration | Vitest + supertest | All REST endpoints, Socket.io events       |
+| E2E         | Playwright         | Login, game creation, chat, full gameplay  |
+
+```bash
+npm test          # run all layers
+npm run check     # TypeScript, all packages
+npm run lint      # ESLint, all packages
+```
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/kashvime/gamenite
+cd gamenite && npm install
+cp server/.env.example server/.env
+npm run dev    # Vite :4530  ·  Express :8000
+```
+
+Test accounts: `user0/pwd0000` · `user1/pwd1111` · `user2/pwd2222` ·
+`user3/pwd3333`
+
+---
+
+## Contributors
+
+<table>
+<tr>
+<td align="center" width="25%">
+  <b>Kashvi</b><br/>
+  <a href="https://github.com/kashvime">@kashvime</a><br/>
+  <sub>Database layer · Elo + league system · match history · game flow</sub>
+</td>
+<td align="center" width="25%">
+  <b>Tanisha</b><br/>
+  <a href="https://github.com/tanishajoshii">@tanishajoshii</a><br/>
+  <sub>Chess features · UI · profile page</sub>
+</td>
+<td align="center" width="25%">
+  <b>Ha</b><br/>
+  <a href="https://github.com/hanguyen04">@hanguyen04</a><br/>
+  <sub>Friends · leaderboard · private games</sub>
+</td>
+<td align="center" width="25%">
+  <b>Aunnie</b><br/>
+  <a href="https://github.com/Aunnieo">@Aunnieo</a><br/>
+  <sub>Google SSO · Chess AI · test coverage</sub>
+</td>
+</tr>
+</table>

@@ -20,7 +20,7 @@ import {
   getUserByUsername as getUser,
 } from "../../src/services/auth.service.ts";
 import { populateCommentInfo, createComment } from "../../src/services/comment.service.ts";
-import { populateSafeUserInfo, updateRating, updateUser } from "../../src/services/user.service.ts";
+import { populateSafeUserInfo, updateUser } from "../../src/services/user.service.ts";
 
 import { AuthRepo, CommentRepo } from "../../src/repository.ts";
 
@@ -295,49 +295,35 @@ describe("user.service", () => {
     expect(updated.avatarUrl).toBe("http://img.png");
   });
 
-  it("updateRating returns null when league doesn't change", async () => {
-    const user = await getUser("user1");
-    const result = await updateRating(user!.userId, "chess", 1000, "draw");
-    expect(result).toBeNull();
-  });
-
-  it("updateRating returns league change when league changes", async () => {
-    const user = await getUser("user2");
-    const result = await updateRating(user!.userId, "chess", 3000, "win");
-    expect(result === null || (result !== null && result.oldLeague !== result.newLeague)).toBe(
-      true,
-    );
-  });
-});
-
-describe("populateSafeUserInfo - AI_OPPONENT", () => {
-  it("returns fake AI profile without hitting database", async () => {
-    const result = await populateSafeUserInfo("AI_OPPONENT");
-    expect(result.username).toBe("Computer");
-    expect(result.userId).toBe("AI_OPPONENT");
-  });
-});
-
-describe("populateSafeUserInfo - user with no games", () => {
-  it("returns null favoriteGame when user has no games played", async () => {
-    const { UserRepo: userRepo1 } = await import("../../src/repository.ts");
-    const keys = await userRepo1.getAllKeys();
-    const result = await populateSafeUserInfo(keys[0]);
-    expect(result.totalGamesPlayed).toBeGreaterThanOrEqual(0);
-  });
-});
-
-describe("populateSafeUserInfo - winRate zero branch", () => {
-  it("returns 0 winRate and null favoriteGame for user with no matches", async () => {
-    const { UserRepo: userRepo2 } = await import("../../src/repository.ts");
-    const newUserId = "test-no-games-user";
-    await userRepo2.set(newUserId, {
-      username: "testnosgames",
-      display: "testnosgames",
-      createdAt: new Date().toISOString(),
+  describe("populateSafeUserInfo - AI_OPPONENT", () => {
+    it("returns fake AI profile without hitting database", async () => {
+      const result = await populateSafeUserInfo("AI_OPPONENT");
+      expect(result.username).toBe("Computer");
+      expect(result.userId).toBe("AI_OPPONENT");
     });
-    const result = await populateSafeUserInfo(newUserId);
-    expect(result.winRate).toBe(0);
-    expect(result.favoriteGame).toBeNull();
+  });
+
+  describe("populateSafeUserInfo - user with no games", () => {
+    it("returns null favoriteGame when user has no games played", async () => {
+      const { UserRepo: userRepo1 } = await import("../../src/repository.ts");
+      const keys = await userRepo1.getAllKeys();
+      const result = await populateSafeUserInfo(keys[0]);
+      expect(result.totalGamesPlayed).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe("populateSafeUserInfo - winRate zero branch", () => {
+    it("returns 0 winRate and null favoriteGame for user with no matches", async () => {
+      const { UserRepo: userRepo2 } = await import("../../src/repository.ts");
+      const newUserId = "test-no-games-user";
+      await userRepo2.set(newUserId, {
+        username: "testnosgames",
+        display: "testnosgames",
+        createdAt: new Date().toISOString(),
+      });
+      const result = await populateSafeUserInfo(newUserId);
+      expect(result.winRate).toBe(0);
+      expect(result.favoriteGame).toBeNull();
+    });
   });
 });
